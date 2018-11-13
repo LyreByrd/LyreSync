@@ -1,0 +1,3 @@
+node_modules
+.next
+client/dist/*-bundle.js
