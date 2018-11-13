@@ -1,0 +1,24 @@
+{
+  "name": "lyresync",
+  "version": "0.0.1",
+  "description": "Synchronization service for LyreByrd",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LyreByrd/LyreSync.git"
+  },
+  "author": "LyreByrd",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LyreByrd/LyreSync/issues"
+  },
+  "homepage": "https://github.com/LyreByrd/LyreSync#readme",
+  "dependencies": {
+    "next": "^7.0.2",
+    "react": "^16.6.3",
+    "react-dom": "^16.6.3"
+  }
+}
