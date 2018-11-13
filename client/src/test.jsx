@@ -1,5 +1,6 @@
 import React from 'react';
-import Lobby from '../components/Lobby.js';
+import ReactDOM from 'react-dom';
+import Lobby from './components/Lobby.jsx';
 
 class Test extends React.Component {
   constructor(props) {
@@ -18,4 +19,5 @@ class Test extends React.Component {
   }
 }
 
-export default Test;
+
+ReactDOM.render(<Test />, document.getElementById('app'));
