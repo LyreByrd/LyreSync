@@ -10,7 +10,7 @@ app.use(bodyParser.json())
 app.use(express.static(__dirname + '/../client/dist'));
 
 app.get('/test*', (req, res) => {
-  res.sendFile(path.join(__dirname + '/../client/dist/test.html'));
+  res.sendFile(path.join(__dirname + '/../client/dist/devclient.html'));
 })
 
 app.get('*', (req, res) => {
