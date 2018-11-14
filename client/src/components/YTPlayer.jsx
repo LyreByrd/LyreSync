@@ -1,6 +1,5 @@
 import React from 'react'
 import io from 'socket.io-client';
-import { runInThisContext } from 'vm';
 
 let loadYT
 
@@ -39,9 +38,27 @@ class YTPlayer extends React.Component {
 
   onPlayerReady() {
     this.socket = io();
+    this.socket.on('initPing', () => {
+      this.socket.emit('getClientStart');
+    })
+    this.socket.on('initState', event => {
+
+    })
     this.socket.on('hostAction', event => {
       if(event.type === 'stateChange') {
-        if(event.newVal === 2) {
+        let newVideo = event.newVideo;
+        let currVideo = this.player.getVideoData().video_id
+        console.log(`Playing id ${currVideo}, directive to look for ${newVideo}`);
+        if(event.newVideo !== this.player.getVideoData().video_id) {
+          this.player.loadVideoById({videoId: event.newVideo, startSeconds: event.newTime});
+        } else if (Math.abs(event.newTime - this.player.getCurrentTime()) > 1) {
+          if(event.newVal === 1) {
+            this.player.playVideo();
+          }
+          this.player.seekTo(event.newTime, true)
+            .then(() => console.log('seekTo is thennable'));
+        }
+        if(event.newState === 2) {
           this.player.pauseVideo();
         } else if (event.newVal === 1) {
           this.player.playVideo();

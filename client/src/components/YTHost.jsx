@@ -6,12 +6,18 @@ let loadYT
 class YTHost extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      
+    }
     this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
     this.loadVideo = this.loadVideo.bind(this);
     this.logPlayer = this.logPlayer.bind(this);
   }
   componentDidMount () {
     this.socket = io();
+    this.socket.on('initPing', () => {
+      this.socket.emit('claimHost');
+    })
     if (!loadYT) {
       window.YT = {};
       loadYT = new Promise((resolve) => {
@@ -31,14 +37,25 @@ class YTHost extends React.Component {
         width: this.props.width || 640,
         videoId: this.props.YTid,
         events: {
-          onStateChange: this.onPlayerStateChange
+          onReady: this.onPlayerReady,
+          onStateChange: this.onPlayerStateChange,
+          onPlaybackRateChange: this.onPlaybackRateChange,
         }
       })
     })
   }
 
+  onPlayerReady() {
+
+  }
+
   onPlayerStateChange(e) {
-    this.socket.emit('hostAction', {type:'stateChange', newVal: e.data})
+    this.socket.emit('hostAction', {
+        type:'stateChange', 
+        newState: e.data, 
+        newVideo: this.player.getVideoData().video_id, 
+        newTime: this.player.getCurrentTime(),
+      })
     if (typeof this.props.onStateChange === 'function') {
       this.props.onStateChange(e)
     }
@@ -60,13 +77,16 @@ class YTHost extends React.Component {
 
   render () {
     return (
-      <section className='youtubeComponent-wrapper'>
-        <div style={{width:'640px', height:'390px', display:'inline-block'}} ref={(r) => { this.youtubePlayerAnchorHost = r }}></div>
-        <br />
+      <div>
+        <section className='youtubeComponent-wrapper'>
+          <div style={{width:'640px', height:'390px', display:'inline-block'}} ref={(r) => { this.youtubePlayerAnchorHost = r }}></div>
+          <br />
+        </section>
+        <input type='text'></input>
         <button onClick={this.loadVideo}>Load Video</button>
         <button onClick={this.logPlayer}>Log Player</button>
         <span> Now Hosting </span>
-      </section>
+      </div>
     )
   }
 }
