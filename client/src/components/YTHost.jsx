@@ -7,7 +7,7 @@ class YTHost extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      
+      videoQueue: [],
     }
     this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
     this.onPlaybackRateChange = this.onPlaybackRateChange.bind(this);
@@ -18,6 +18,14 @@ class YTHost extends React.Component {
     this.socket = io();
     this.socket.on('initPing', () => {
       this.socket.emit('claimHost');
+    })
+    this.socket.on('findInitStatus', (socketId) => {
+      console.log('client attempting to initialize, id: ' + socketId)
+      if(!this.player) {
+        this.socket.emit('sendInitStatus', {status: 'loadingPlayer', socketId});
+      } else {
+        this.socket.emit('sendInitStatus', {status: 'details to come', socketId});
+      }
     })
     if (!loadYT) {
       window.YT = {};

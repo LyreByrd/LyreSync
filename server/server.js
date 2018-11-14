@@ -10,6 +10,7 @@ const port = process.env.PORT_NUM || 3000;
 
 let host = null;
 let hostAttempt = false;
+let activeSockets = {};
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json())
@@ -25,6 +26,7 @@ app.get('*', (req, res) => {
 
 io.on('connection', socket => {
   console.log('New socket connection');
+  activeSockets[socket.id] = socket;
   socket.emit('initPing');
   socket.on('claimHost', () => {
     if (host) {
@@ -35,7 +37,17 @@ io.on('connection', socket => {
       setHostActions(host);
     }
   })
+  socket.on('getClientStart', () => {
+    console.log('Client attempting to initialize');
+    if (host) {
+      host.emit('findInitStatus', socket.id);
+    }
+  })
+  socket.on('disconnect', () => {
+    delete activeSockets[socket.id];
+  })
 });
+
 
 setHostActions = (newHost) => {
   newHost.on('hostAction', event => {
@@ -44,6 +56,12 @@ setHostActions = (newHost) => {
   newHost.on('disconnect', () => {
     host = null;
     console.log('Host disconnected');
+  })
+  host.on('sendInitStatus', data => {
+    let target = activeSockets[data.socketId];
+    if (target) {
+      target.emit('initState', data);
+    }
   })
 }
 
