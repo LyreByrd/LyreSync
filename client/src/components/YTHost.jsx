@@ -10,6 +10,7 @@ class YTHost extends React.Component {
       
     }
     this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
+    this.onPlaybackRateChange = this.onPlaybackRateChange.bind(this);
     this.loadVideo = this.loadVideo.bind(this);
     this.logPlayer = this.logPlayer.bind(this);
   }
@@ -47,6 +48,14 @@ class YTHost extends React.Component {
 
   onPlayerReady() {
 
+  }
+
+  onPlaybackRateChange() {
+    console.log(this.player.getPlaybackRate());
+    this.socket.emit('hostAction', {
+      type: 'rateChange',
+      newSpeed: this.player.getPlaybackRate(),
+    });
   }
 
   onPlayerStateChange(e) {

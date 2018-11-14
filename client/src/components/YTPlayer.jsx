@@ -27,6 +27,8 @@ class YTPlayer extends React.Component {
         videoId: this.props.YTid,
         playerVars: {
           controls: 0,
+          modestbranding: 1,
+          disablekb: 1,
         },
         events: {
           onReady: this.onPlayerReady,
@@ -62,6 +64,8 @@ class YTPlayer extends React.Component {
         } else if (event.newState === 1) {
           this.player.playVideo();
         }
+      } else if (event.type === 'rateChange') {
+        this.player.setPlaybackRate(event.newSpeed);
       }
       console.log(event);
     })
