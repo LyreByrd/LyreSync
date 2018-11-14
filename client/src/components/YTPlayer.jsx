@@ -49,18 +49,17 @@ class YTPlayer extends React.Component {
         let newVideo = event.newVideo;
         let currVideo = this.player.getVideoData().video_id
         console.log(`Playing id ${currVideo}, directive to look for ${newVideo}`);
-        if(event.newVideo !== this.player.getVideoData().video_id) {
+        if(newVideo !== currVideo) {
           this.player.loadVideoById({videoId: event.newVideo, startSeconds: event.newTime});
         } else if (Math.abs(event.newTime - this.player.getCurrentTime()) > 1) {
-          if(event.newVal === 1) {
+          if(event.newState === 1) {
             this.player.playVideo();
           }
-          this.player.seekTo(event.newTime, true)
-            .then(() => console.log('seekTo is thennable'));
+          this.player.seekTo(event.newTime, true);
         }
         if(event.newState === 2) {
           this.player.pauseVideo();
-        } else if (event.newVal === 1) {
+        } else if (event.newState === 1) {
           this.player.playVideo();
         }
       }
