@@ -24,7 +24,13 @@ class YTHost extends React.Component {
       if(!this.player) {
         this.socket.emit('sendInitStatus', {status: 'loadingPlayer', socketId});
       } else {
-        this.socket.emit('sendInitStatus', {status: 'details to come', socketId});
+        let currentState = {
+          videoId: this.player.getVideoData().video_id,
+          time: this.player.getCurrentTime(),
+          state: this.player.getPlayerState(),
+          rate: this.player.getPlaybackRate(),
+        }
+        this.socket.emit('sendInitStatus', {status: currentState, socketId});
       }
     })
     if (!loadYT) {

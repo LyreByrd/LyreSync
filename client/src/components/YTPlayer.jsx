@@ -43,8 +43,12 @@ class YTPlayer extends React.Component {
     this.socket.on('initPing', () => {
       this.socket.emit('getClientStart');
     })
-    this.socket.on('initState', data => {
-      console.log(data);
+    this.socket.on('initState', ({status, socketId}) => {
+      this.player.loadVideoById(status.videoId, status.time);
+      if(status.state === 2) {
+        this.player.pauseVideo();
+      }
+      this.player.setPlaybackRate(status.rate);
     })
     this.socket.on('hostAction', event => {
       if(event.type === 'stateChange') {
