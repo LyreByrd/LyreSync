@@ -7,12 +7,15 @@ class Test extends React.Component {
     super(props);
     this.state = {
       valid: true,
+      sessionHost: null,
+      inSession: false,
+      isHost: false,
     }
   }
 
   render() {
     if (this.state.valid) {
-      return <Lobby />
+      return <Lobby inSession={this.state.inSession} isHost={this.state.isHost} />
     } else {
       return <div>No idea how you got here.</div>
     }
