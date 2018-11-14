@@ -9,7 +9,8 @@
     "next-build": "next build",
     "next-start": "next start",
     "react-dev": "webpack -d --watch",
-    "server-dev": "nodemon server/server.js"
+    "server-dev": "nodemon server/server.js",
+    "pack-once": "webpack -d"
   },
   "repository": {
     "type": "git",
