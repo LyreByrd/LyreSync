@@ -4,6 +4,13 @@ const path = require('path');
 
 
 const app = express();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+const port = process.env.PORT_NUM || 3000;
+
+let host = null;
+let hostAttempt = false;
+let activeSockets = {};
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json())
@@ -17,6 +24,57 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname + '../client/dist/index.html'));
 });
 
-app.listen(3000, function() {
-  console.log('Listening on port 3000');
+io.on('connection', socket => {
+  console.log('New socket connection');
+  activeSockets[socket.id] = socket;
+  socket.emit('initPing');
+  socket.on('claimHost', () => {
+    if (host) {
+      socket.emit('hostConflict');
+    } else {
+      console.log('New host claimed')
+      host = socket;
+      setHostActions(host);
+    }
+  })
+  socket.on('getClientStart', () => {
+    console.log('Client attempting to initialize');
+    if (host) {
+      host.emit('findInitStatus', socket.id);
+    }
+  })
+  socket.on('disconnect', () => {
+    delete activeSockets[socket.id];
+  })
+});
+
+
+setHostActions = (newHost) => {
+  newHost.on('hostAction', event => {
+    io.emit('hostAction', event);
+  });
+  newHost.on('disconnect', () => {
+    host = null;
+    console.log('Host disconnected');
+  })
+  host.on('sendInitStatus', data => {
+    let target = activeSockets[data.socketId];
+    if (target) {
+      target.emit('initState', data);
+    }
+  })
+}
+
+app.post('/host', (req, res) => {
+  if(host || hostAttempt) {
+    res.sendStatus(403);
+  } else {
+    hostAttempt = true;
+    setTimeout(() => {hostAttempt = false}, 2000);
+    res.sendStatus(200);
+  }
+})
+
+http.listen(port, function() {
+  console.log(`Listening on port ${port}`);
 })
