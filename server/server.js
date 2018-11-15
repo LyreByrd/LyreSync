@@ -25,16 +25,20 @@ app.get('/test*', (req, res) => {
 
 io.on('connection', socket => {
   console.log('New socket connection');
-  activeSockets[socket.id] = socket;
+  
   socket.emit('initPing');
-  socket.on('claimHost', () => {
-    if (host) {
-      socket.emit('hostConflict');
-    } else {
-      console.log('New host claimed')
-      host = socket;
-      setHostActions(host);
-    }
+  socket.on('claimHost', (event) => {
+    console.log(event);
+    let hostingName = event;
+      console.log('New host claimed');
+      try {
+        socket.join(hostingName);
+        activeSessions[hostingName].host = socket;
+        setHostActions(socket, hostingName);
+      } catch (err) {
+        console.log('host error', err)
+        socket.emit('hostingError');
+      }
   })
   socket.on('getClientStart', () => {
     console.log('Client attempting to initialize');
@@ -48,16 +52,20 @@ io.on('connection', socket => {
 });
 
 
-const setHostActions = (newHost) => {
+const setHostActions = (newHost, hostName, nsp) => {
   newHost.on('hostAction', event => {
-    io.emit('hostAction', event);
+    io.to(hostName).emit('hostAction', event);
   });
   newHost.on('disconnect', () => {
-    host = null;
-    console.log('Host disconnected');
+    setTimeout(() => {
+      if(socket.disconnected) {
+        deleteClosedSession(hostName);
+        socket.close();
+      }
+    }, 10000);
   })
-  host.on('sendInitStatus', data => {
-    let target = activeSockets[data.socketId];
+  newHost.on('sendInitStatus', data => {
+    let target = activeSessions[hostingName].activeSockets[data.socketId];
     if (target) {
       target.emit('initState', data);
     }
@@ -65,21 +73,34 @@ const setHostActions = (newHost) => {
 }
 
 app.post('/host', (req, res) => {
-  if(host || hostAttempt) {
+  //req.body.hostingName
+  if(activeSessions[req.body.hostingName] || !req.body.hostingName) {
     res.sendStatus(403);
   } else {
-    hostAttempt = true;
-    setTimeout(() => {hostAttempt = false}, 2000);
-    res.sendStatus(200);
+    let hostName = req.body.hostingName;
+    makeNewSession(hostName);
+    setTimeout(() => {
+      if(activeSessions[hostName] && activeSessions[hostName].host === null) {
+        deleteClosedSession(hostName);
+      }
+    }, 5000);
+    res.status(201).send({hostName});
   }
 })
 
 app.get('/api/sessions', (req, res) => {
-  if (host) {
-    res.json([{sessionId: 'host'}]);
+  let hostedSessions = Object.keys(activeSessions);
+  if(hostedSessions) {
+    hostedSessions = hostedSessions.map(key => ({sessionHost: key}));
   } else {
-    res.json([]);
+    hostedSessions = activeSessions;
   }
+  res.json(hostedSessions);
+  //if (host) {
+  //  res.json([{sessionId: 'host'}]);
+  //} else {
+  //  res.json([]);
+  //}
 })
 
 app.get('*', (req, res) => {
@@ -90,11 +111,65 @@ http.listen(port, function() {
   console.log(`Listening on port ${port}`);
 })
 
-const makeNewSession = (host, hostName) => {
+const makeNewSession = (hostName) => {
+  //let nsp = io.of(`/${hostName}`);
+  //nsp.on('connection', socket => {
+  //  console.log(`namespace ${hostName} being connected`);
+  //  setNamespaceActions(socket, hostName, nsp);
+  //})
   let sessionInfo = {
-    sessionHostId: host.id,
-    host,
+    //sessionSpace: nsp, 
+    activeSockets: {},
+    host: null,
     hostName,
   }
-  activeSession[host.id] = sessionInfo;
+  activeSessions[hostName] = sessionInfo;
 }
+
+const deleteClosedSession = (hostName) => {
+  let closingSession = activeSessions[hostName];
+  if (closingSession) {
+    Object.keys(closingSession.activeSockets).forEach(socketId => {
+      let socket = closingSession.activeSockets[socketId];
+      socket.emit('sessionDeleting');
+      socket.close();
+    });
+    delete activeSessions[hostName];
+    console.log('Deleting session hosted by ' + hostName);
+  }
+}
+
+/* may switch to this implementation later
+const setNamespaceActions = (socket, hostName, nsp) => {
+  console.log('namespace actions being set for ' + hostName)
+  let session = activeSessions[hostName];
+  if(!session) {
+    socket.emit('invalidSession');
+    socket.close();
+  } else {
+    session.activeSockets[socket.id] = socket;
+    socket.emit('initPing');
+    socket.on('claimHost', (event) => {
+      console.log('claimHost fired. Event: ',event)
+      let hostingName = event;
+      console.log('New host claimed');
+      try {
+        activeSessions[hostingName].host = socket;
+        setHostActions(socket, hostingName, nsp);
+      } catch (err) {
+        console.log('host error', err)
+        socket.emit('hostingError');
+      }
+    })
+    socket.on('getClientStart', () => {
+      console.log('Client attempting to initialize');
+      if (host) {
+        host.emit('findInitStatus', socket.id);
+      }
+    })
+    socket.on('disconnect', () => {
+      delete session.activeSockets[socket.id];
+    })
+  }
+}
+*/

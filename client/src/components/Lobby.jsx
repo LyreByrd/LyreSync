@@ -5,13 +5,13 @@ import HostNameTextBox from './HostNameTextBox.jsx';
 
 const Lobby = (props) => {
   if (props.inSession) {
-    return <div>{props.isHost ? <YTHost sessionHost={this.sessionHost}/> : <YTPlayer sessionHost={this.sessionHost}/>}</div>
+    return <div>{props.isHost ? <YTHost sessionHost={props.sessionHost} hostingName={props.hostingName}/> : <YTPlayer sessionHost={props.sessionHost}/>}</div>
   }
   let sessionButtons = <div>No known sessions.</div>;
   if (props.knownSessions.length) {
     sessionButtons = props.knownSessions.map(session => {
         return (
-          <button onClick={() => props.joinSession(session.sessionId)}>Join session with {session.sessionId}</button>
+          <button onClick={() => props.joinSession(session.sessionHost)}>Join session with {session.sessionHost}</button>
         )
       })
   }

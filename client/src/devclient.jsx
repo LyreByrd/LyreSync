@@ -33,7 +33,10 @@ class Test extends React.Component {
     console.log('attempting to host as ' + this.state.hostingName)
     axios.post('/host', {hostingName: this.state.hostingName})
       .then((res) => {
-        this.setState({inSession: true, isHost: true});
+        console.log('host claim response: ', res);
+        if(res.data.hostName === this.state.hostingName) {
+          this.setState({inSession: true, isHost: true});
+        }
       })
       .catch((err) => {
         if(err.response.status === 403) {
