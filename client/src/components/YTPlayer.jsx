@@ -44,10 +44,15 @@ class YTPlayer extends React.Component {
       this.socket.emit('getClientStart');
     })
     this.socket.on('initState', ({status, socketId}) => {
-      this.player.loadVideoById(status.videoId, status.time);
-      if(status.state === 2) {
-        this.player.pauseVideo();
+      if(status.state === 1) {
+        this.player.loadVideoById(status.videoId, status.time);
+      } else {
+        this.player.cueVideoById(status.videoId, status.time);
+        this.player.cuedTime = status.time;
       }
+      // if(status.state !== 1) {
+      //   this.player.pauseVideo();
+      // }
       this.player.setPlaybackRate(status.rate);
     })
     this.socket.on('hostAction', event => {
@@ -58,10 +63,17 @@ class YTPlayer extends React.Component {
         if(newVideo !== currVideo) {
           this.player.loadVideoById({videoId: event.newVideo, startSeconds: event.newTime});
         } else if (Math.abs(event.newTime - this.player.getCurrentTime()) > 1) {
-          if(event.newState === 1) {
-            this.player.playVideo();
+          console.log('time is wrong');
+          if(this.player.getPlayerState() === 5 && this.player.cuedTime && (Math.abs(event.newTime - this.player.cuedTime) <= 1)) {
+           this.player.playVideo();
+          } else {
+            if(event.newState === 1 && this.player.getPlayerState() !== 5) {
+              console.log('ensuring player is playing');
+              this.player.playVideo();
+            }
+            console.log('seeking, time: ' + event.newTime);
+            this.player.seekTo(event.newTime, true);
           }
-          this.player.seekTo(event.newTime, true);
         }
         if(event.newState === 2) {
           this.player.pauseVideo();

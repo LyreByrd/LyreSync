@@ -85,7 +85,9 @@ class YTHost extends React.Component {
   }
 
   componentWillUnmount() {
-    this.socket.close();
+    if(this.socket) {
+      this.socket.close();
+    }
   }
 
 

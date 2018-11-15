@@ -11,9 +11,20 @@ class Test extends React.Component {
       sessionHost: null,
       inSession: false,
       isHost: false,
+      knownSessions: [],
     }
     this.tryClaimHost = this.tryClaimHost.bind(this);
     this.joinSession = this.joinSession.bind(this);
+    this.fetchActiveSessions = this.fetchActiveSessions.bind(this);
+    this.leaveSession = this.leaveSession.bind(this);
+  }
+
+  leaveSession() {
+    this.setState({
+      sessionHost: null,
+      inSession: false,
+      isHost: false,
+    })
   }
 
   tryClaimHost() {
@@ -34,6 +45,32 @@ class Test extends React.Component {
     this.setState({inSession: true, isHost: false});
   }
 
+  fetchActiveSessions() {
+    axios.get('/api/sessions')
+      .then(res => {
+        this.setState({knownSessions: res.data});
+      })
+      .catch(err => {
+        console.error(err);
+      })
+  }
+
+  componentDidMount() {
+    this.fetchActiveSessions();
+    this.lobbyInterval = setInterval(() => {
+      if (this.state.inSession === false) {
+        this.fetchActiveSessions();
+      }
+    }, 3000);
+  }
+
+  componentWillUnmount() {
+    if (this.lobbyInterval) {
+      clearInterval(this.lobbyInterval);
+      delete this.lobbyInterval;
+    }
+  }
+
   render() {
     if (this.state.valid) {
       return (
@@ -42,6 +79,7 @@ class Test extends React.Component {
           isHost={this.state.isHost} 
           tryClaimHost={this.tryClaimHost}
           joinSession={this.joinSession}
+          knownSessions={this.state.knownSessions}
         />
       )
     } else {

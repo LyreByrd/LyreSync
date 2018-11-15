@@ -20,9 +20,6 @@ app.get('/test*', (req, res) => {
   res.sendFile(path.join(__dirname + '/../client/dist/devclient.html'));
 })
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname + '../client/dist/index.html'));
-});
 
 io.on('connection', socket => {
   console.log('New socket connection');
@@ -74,6 +71,18 @@ app.post('/host', (req, res) => {
     res.sendStatus(200);
   }
 })
+
+app.get('/api/sessions', (req, res) => {
+  if (host) {
+    res.json([{sessionId: 'host'}]);
+  } else {
+    res.json([]);
+  }
+})
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname + '../client/dist/index.html'));
+});
 
 http.listen(port, function() {
   console.log(`Listening on port ${port}`);
