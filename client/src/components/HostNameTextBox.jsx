@@ -12,7 +12,7 @@ class HostNameTextBox extends React.Component {
   render() {
     return (<div>
       <form onSubmit={this.handleSubmit}>
-        <input type='text' value={this.props.hostingName} onChange={this.props.hostNameTextChange} />
+        <input type='text' placeholder='Name to host with' value={this.props.hostingName} onChange={this.props.hostNameTextChange} />
         <button type='submit' >Claim host if available</button>
       </form >
     </div>)
