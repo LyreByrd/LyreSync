@@ -8,10 +8,6 @@ const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const port = process.env.PORT_NUM || 3000;
 
-let host = null;
-let hostAttempt = false;
-let activeSockets = {};
-
 let activeSessions = {};
 
 app.use(bodyParser.urlencoded({extended: false}));
@@ -43,7 +39,8 @@ io.on('connection', socket => {
   socket.on('getClientStart', (sessionHost) => {
     let target = activeSessions[sessionHost];
     if(target) {
-      socket.join(sessionHost)
+      socket.host = sessionHost;
+      socket.join(sessionHost);
       target.activeSockets[socket.id] = socket;
       console.log('Client attempting to initialize');
       try {
@@ -54,7 +51,10 @@ io.on('connection', socket => {
     }
   })
   socket.on('disconnect', () => {
-    delete activeSockets[socket.id];
+    let targetSession = activeSessions[socket.host];
+    if(targetSession) {
+      delete targetSession.activeSockets[socket.id]
+    }
   })
 });
 
