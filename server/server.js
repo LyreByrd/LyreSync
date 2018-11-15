@@ -24,7 +24,6 @@ io.on('connection', socket => {
   
   socket.emit('initPing');
   socket.on('claimHost', (hostingName) => {
-    let hostingName = event;
     console.log('New host claimed: ' + hostingName);
     try {
       socket.join(hostingName);
