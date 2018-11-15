@@ -12,6 +12,8 @@ let host = null;
 let hostAttempt = false;
 let activeSockets = {};
 
+let activeSessions = {};
+
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json())
 app.use(express.static(__dirname + '/../client/dist'));
@@ -46,7 +48,7 @@ io.on('connection', socket => {
 });
 
 
-setHostActions = (newHost) => {
+const setHostActions = (newHost) => {
   newHost.on('hostAction', event => {
     io.emit('hostAction', event);
   });
@@ -87,3 +89,12 @@ app.get('*', (req, res) => {
 http.listen(port, function() {
   console.log(`Listening on port ${port}`);
 })
+
+const makeNewSession = (host, hostName) => {
+  let sessionInfo = {
+    sessionHostId: host.id,
+    host,
+    hostName,
+  }
+  activeSession[host.id] = sessionInfo;
+}
