@@ -23,23 +23,22 @@ io.on('connection', socket => {
   console.log('New socket connection');
   
   socket.emit('initPing');
-  socket.on('claimHost', (event) => {
-    console.log(event);
+  socket.on('claimHost', (hostingName) => {
     let hostingName = event;
-      console.log('New host claimed');
-      try {
-        socket.join(hostingName);
-        activeSessions[hostingName].host = socket;
-        setHostActions(socket, hostingName);
-      } catch (err) {
-        socket.emit('hostingError');
-        socket.disconnect();
-      }
+    console.log('New host claimed: ' + hostingName);
+    try {
+      socket.join(hostingName);
+      activeSessions[hostingName].host = socket;
+      setHostActions(socket, hostingName);
+    } catch (err) {
+      socket.emit('hostingError');
+      socket.disconnect();
+    }
   })
   socket.on('getClientStart', (sessionHost) => {
     let target = activeSessions[sessionHost];
     if(target) {
-      socket.host = sessionHost;
+      socket.hostName = sessionHost;
       socket.join(sessionHost);
       target.activeSockets[socket.id] = socket;
       console.log('Client attempting to initialize');
@@ -51,7 +50,7 @@ io.on('connection', socket => {
     }
   })
   socket.on('disconnect', () => {
-    let targetSession = activeSessions[socket.host];
+    let targetSession = activeSessions[socket.hostName];
     if(targetSession) {
       delete targetSession.activeSockets[socket.id]
     }
@@ -59,7 +58,7 @@ io.on('connection', socket => {
 });
 
 
-const setHostActions = (newHost, hostName, nsp) => {
+const setHostActions = (newHost, hostName) => {
   newHost.on('hostAction', event => {
     io.to(hostName).emit('hostAction', event);
   });
@@ -99,14 +98,9 @@ app.get('/api/sessions', (req, res) => {
   if(hostedSessions) {
     hostedSessions = hostedSessions.map(key => ({sessionHost: key}));
   } else {
-    hostedSessions = activeSessions;
+    hostedSessions = [];
   }
   res.json(hostedSessions);
-  //if (host) {
-  //  res.json([{sessionId: 'host'}]);
-  //} else {
-  //  res.json([]);
-  //}
 })
 
 app.get('*', (req, res) => {
@@ -137,7 +131,6 @@ const deleteClosedSession = (hostName) => {
   if (closingSession) {
     Object.keys(closingSession.activeSockets).forEach(socketId => {
       let socket = closingSession.activeSockets[socketId];
-      console.log('closing connection id ' + socketId);
       socket.emit('sessionDeleting');
       socket.disconnect();
     });
