@@ -9,7 +9,8 @@
     "next-build": "next build",
     "next-start": "next start",
     "react-dev": "webpack -d --watch",
-    "server-dev": "nodemon server/server.js"
+    "server-dev": "nodemon server/server.js",
+    "pack-once": "webpack -d"
   },
   "repository": {
     "type": "git",
@@ -24,6 +25,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "body-parser": "^1.18.3",
+    "dotenv": "^6.1.0",
     "express": "^4.16.4",
     "next": "^7.0.2",
     "socket-io": "^1.0.0",

@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
+require('dotenv').config();
 
 
 const app = express();
@@ -18,6 +19,9 @@ app.get('/test*', (req, res) => {
   res.sendFile(path.join(__dirname + '/../client/dist/devclient.html'));
 })
 
+app.get('/secret', (req, res) => {
+  res.send(process.env.SECRET_ENV_VAR);
+});
 
 io.on('connection', socket => {
   console.log('New socket connection');
@@ -103,7 +107,7 @@ app.get('/api/sessions', (req, res) => {
 })
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname + '../client/dist/index.html'));
+  res.sendFile(path.join(__dirname + '/../client/dist/index.html'));
 });
 
 http.listen(port, function() {
