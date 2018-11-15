@@ -15,9 +15,12 @@ class YTHost extends React.Component {
     this.logPlayer = this.logPlayer.bind(this);
   }
   componentDidMount () {
-    this.socket = io();
+    let props = this.props
+    console.log(this.props)
+    this.socket = io(); //io(`/${this.props.hostingName}`); namespace implementation
     this.socket.on('initPing', () => {
-      this.socket.emit('claimHost');
+      console.log('claiming host, name: ' + props.hostingName);
+      this.socket.emit('claimHost', props.hostingName);
     })
     this.socket.on('findInitStatus', (socketId) => {
       console.log('client attempting to initialize, id: ' + socketId)
@@ -32,6 +35,9 @@ class YTHost extends React.Component {
         }
         this.socket.emit('sendInitStatus', {status: currentState, socketId});
       }
+    })
+    this.socket.on('hostingError', () => {
+      this.props.resetToLobby();
     })
     if (!loadYT) {
       window.YT = {};
@@ -85,7 +91,9 @@ class YTHost extends React.Component {
   }
 
   componentWillUnmount() {
-    this.socket.close();
+    if(this.socket) {
+      this.socket.close();
+    }
   }
 
 
