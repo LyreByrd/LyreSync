@@ -41,7 +41,7 @@ class YTPlayer extends React.Component {
   onPlayerReady() {
     this.socket = io();
     this.socket.on('initPing', () => {
-      this.socket.emit('getClientStart');
+      this.socket.emit('getClientStart', this.props.sessionHost);
     })
     this.socket.on('initState', ({status, socketId}) => {
       if(status.state === 1) {
@@ -54,7 +54,14 @@ class YTPlayer extends React.Component {
       //   this.player.pauseVideo();
       // }
       this.player.setPlaybackRate(status.rate);
-    })
+    });
+    this.socket.on('clientError', () => {
+      this.props.resetToLobby();
+    });
+    this.socket.on('sessionDeleting', () => {
+      console.log('session deleted from server');
+      this.props.resetToLobby();
+    });
     this.socket.on('hostAction', event => {
       if(event.type === 'stateChange') {
         let newVideo = event.newVideo;

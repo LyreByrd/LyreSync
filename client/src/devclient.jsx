@@ -19,6 +19,16 @@ class Test extends React.Component {
     this.fetchActiveSessions = this.fetchActiveSessions.bind(this);
     this.leaveSession = this.leaveSession.bind(this);
     this.hostNameTextChange = this.hostNameTextChange.bind(this);
+    this.resetToLobby = this.resetToLobby.bind(this);
+  }
+
+  resetToLobby() {
+    this.setState({
+      sessionHost: null,
+      inSession: false,
+      isHost: false,
+      knownSessions: [],
+    })
   }
 
   leaveSession() {
@@ -47,8 +57,8 @@ class Test extends React.Component {
       });
   }
 
-  joinSession() {
-    this.setState({inSession: true, isHost: false});
+  joinSession(hostName) {
+    this.setState({inSession: true, isHost: false, sessionHost: hostName});
   }
 
   fetchActiveSessions() {
@@ -93,6 +103,7 @@ class Test extends React.Component {
           knownSessions={this.state.knownSessions}
           hostingName={this.state.hostingName}
           hostNameTextChange={this.hostNameTextChange}
+          resetToLobby={this.resetToLobby}
         />
       )
     } else {

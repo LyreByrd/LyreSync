@@ -5,7 +5,7 @@ import HostNameTextBox from './HostNameTextBox.jsx';
 
 const Lobby = (props) => {
   if (props.inSession) {
-    return <div>{props.isHost ? <YTHost sessionHost={props.sessionHost} hostingName={props.hostingName}/> : <YTPlayer sessionHost={props.sessionHost}/>}</div>
+    return <div>{props.isHost ? <YTHost resetToLobby={props.resetToLobby} sessionHost={props.sessionHost} hostingName={props.hostingName}/> : <YTPlayer resetToLobby={props.resetToLobby} sessionHost={props.sessionHost}/>}</div>
   }
   let sessionButtons = <div>No known sessions.</div>;
   if (props.knownSessions.length) {

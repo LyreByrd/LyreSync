@@ -36,14 +36,21 @@ io.on('connection', socket => {
         activeSessions[hostingName].host = socket;
         setHostActions(socket, hostingName);
       } catch (err) {
-        console.log('host error', err)
         socket.emit('hostingError');
+        socket.disconnect();
       }
   })
-  socket.on('getClientStart', () => {
-    console.log('Client attempting to initialize');
-    if (host) {
-      host.emit('findInitStatus', socket.id);
+  socket.on('getClientStart', (sessionHost) => {
+    let target = activeSessions[sessionHost];
+    if(target) {
+      socket.join(sessionHost)
+      target.activeSockets[socket.id] = socket;
+      console.log('Client attempting to initialize');
+      try {
+        target.host.emit('findInitStatus', socket.id);
+      } catch(err) {
+        socket.emit('clientError');
+      }
     }
   })
   socket.on('disconnect', () => {
@@ -58,14 +65,13 @@ const setHostActions = (newHost, hostName, nsp) => {
   });
   newHost.on('disconnect', () => {
     setTimeout(() => {
-      if(socket.disconnected) {
+      if(newHost.disconnected) {
         deleteClosedSession(hostName);
-        socket.close();
       }
     }, 10000);
   })
   newHost.on('sendInitStatus', data => {
-    let target = activeSessions[hostingName].activeSockets[data.socketId];
+    let target = activeSessions[hostName].activeSockets[data.socketId];
     if (target) {
       target.emit('initState', data);
     }
@@ -131,8 +137,9 @@ const deleteClosedSession = (hostName) => {
   if (closingSession) {
     Object.keys(closingSession.activeSockets).forEach(socketId => {
       let socket = closingSession.activeSockets[socketId];
+      console.log('closing connection id ' + socketId);
       socket.emit('sessionDeleting');
-      socket.close();
+      socket.disconnect();
     });
     delete activeSessions[hostName];
     console.log('Deleting session hosted by ' + hostName);

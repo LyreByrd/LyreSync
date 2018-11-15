@@ -36,6 +36,9 @@ class YTHost extends React.Component {
         this.socket.emit('sendInitStatus', {status: currentState, socketId});
       }
     })
+    this.socket.on('hostingError', () => {
+      this.props.resetToLobby();
+    })
     if (!loadYT) {
       window.YT = {};
       loadYT = new Promise((resolve) => {
