@@ -1,7 +1,31 @@
 import React from 'react';
+import YTPlayer from './YTPlayer.jsx';
+import YTHost from './YTHost.jsx';
+import HostNameTextBox from './HostNameTextBox.jsx';
 
 const Lobby = (props) => {
-  return <div>Coming soon...</div> 
+  if (props.inSession) {
+    return <div>{props.isHost ? <YTHost resetToLobby={props.resetToLobby} hostingName={props.hostingName}/> : <YTPlayer resetToLobby={props.resetToLobby} sessionHost={props.sessionHost}/>}</div>
+  }
+  let sessionButtons = <div>No known sessions.</div>;
+  if (props.knownSessions.length) {
+    sessionButtons = props.knownSessions.map(session => {
+        return (
+          <button onClick={() => props.joinSession(session.sessionHost)}>Join session with {session.sessionHost}</button>
+        )
+      })
+  }
+  return (
+    <div>
+      <HostNameTextBox 
+        hostingName={props.hostingName} 
+        hostNameTextChange={props.hostNameTextChange} 
+        tryClaimHost={props.tryClaimHost}
+      />
+      
+      {sessionButtons}
+    </div> 
+  )
 }
 
 export default Lobby;
