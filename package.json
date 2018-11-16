@@ -10,7 +10,8 @@
     "next-start": "next start",
     "react-dev": "webpack -d --watch",
     "server-dev": "nodemon server/server.js",
-    "pack-once": "webpack -d"
+    "pack-once": "webpack -d",
+    "transpile": "babel client/src --out-dir client/transpiled --presets es2015,react"
   },
   "repository": {
     "type": "git",
@@ -24,6 +25,7 @@
   "homepage": "https://github.com/LyreByrd/LyreSync#readme",
   "dependencies": {
     "axios": "^0.18.0",
+    "babel": "^6.23.0",
     "body-parser": "^1.18.3",
     "dotenv": "^6.1.0",
     "express": "^4.16.4",
@@ -32,6 +34,7 @@
     "socket.io": "^2.1.1"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
     "babel-loader": "^8.0.4",
     "babel-preset-env": "^1.7.0",
     "babel-preset-es2015": "^6.24.1",
@@ -41,6 +44,7 @@
     "jest": "^23.6.0",
     "jest-enzyme": "^7.0.1",
     "react": "^16.6.3",
+    "react-app": "^1.1.2",
     "react-dom": "^16.6.3",
     "webpack": "^4.25.1",
     "webpack-cli": "^3.1.2"
