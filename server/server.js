@@ -2,17 +2,23 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const fs = require('fs');
-const React = require('react');
-const { renderToString } = require('react-dom/server');
-const ClientWindow = require('./../client/transpiled/clientwindow.js').default;
-const HostWindow = require('./../client/transpiled/hostwindow.js').default;
+// const React = require('react');
+// const { renderToString } = require('react-dom/server');
+// const ClientWindow = require('./../client/transpiled/clientwindow.js').default;
+// const HostWindow = require('./../client/transpiled/hostwindow.js').default;
 require('dotenv').config();
+let config;
+try {
+  config = require('../config.js');
+} catch (err) {
+  config = {};
+}
 
 
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-const port = process.env.PORT_NUM || 3000;
+const port = config.PORT_NUM || 3000;
 
 let activeSessions = {};
 
@@ -68,7 +74,6 @@ io.on('connection', socket => {
       setHostActions(socket, hostingName);
       console.log('gets host actions');
     } catch (err) {
-      console.log(err);
       socket.emit('hostingError', err);
       socket.disconnect();
     }

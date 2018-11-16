@@ -19,14 +19,16 @@ class Loader extends React.Component {
       inSession: false,
     }
     this.onClick = this.onClick.bind(this);
-    this.hostComponentReady.bind(this);
+    this.hostComponentReady = this.hostComponentReady.bind(this);
+    this.tryClaimHost = this.tryClaimHost.bind(this)
   }
+
   resetToLobby(err) {
     console.log('reset to lobby', err);
     this.setState({inSession: false});
   }
-  onClick(type) {
 
+  onClick(type) {
     console.log('clicked ' + type)
     if(type === 'host') {
       if(HostComponent.loaded === false) {
@@ -50,8 +52,7 @@ class Loader extends React.Component {
     if (newComponent) {
       HostComponent = newComponent;
     }
-    this.setState({hostLoaded: true}, this.tryClaimHost.bind(this));
-    //ReactDOM.render(<HostComponent {...this.state.subProps} />, document.getElementById('player-window'));
+    this.setState({hostLoaded: true}, this.tryClaimHost);
   }
   tryClaimHost() {
     axios.post('/host', {hostingName: 'LNB'})
