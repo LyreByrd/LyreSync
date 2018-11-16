@@ -5,7 +5,9 @@ var DIST_DIR = path.join(__dirname, '/client/dist');
 module.exports = {
   entry: {
     front: `${SRC_DIR}/index.jsx`,
-    devclient: `${SRC_DIR}/devclient.jsx`
+    devclient: `${SRC_DIR}/devclient.jsx`,
+    hostwindow: `${SRC_DIR}/hostwindow.jsx`,
+    duplex: `${SRC_DIR}/duplexloader.jsx`
   },
   output: {
     filename: '[name]-bundle.js',

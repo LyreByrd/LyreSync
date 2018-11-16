@@ -1,6 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
+const fs = require('fs');
+const React = require('react');
+const { renderToString } = require('react-dom/server');
+const ClientWindow = require('./../client/transpiled/clientwindow.js').default;
+const HostWindow = require('./../client/transpiled/hostwindow.js').default;
 require('dotenv').config();
 
 
@@ -23,6 +28,32 @@ app.get('/secret', (req, res) => {
   res.send(process.env.SECRET_ENV_VAR);
 });
 
+app.get('/duplex', (req, res) => {
+  res.sendFile(path.join(__dirname + '/../client/dist/fakeplayerwindow.html'))
+})
+app.get('/api/player/host/', (req, res) => {
+  const scriptPath = path.resolve(__dirname, '..', 'client', 'dist', 'hostwindow-bundle.js');
+
+  fs.readFile(scriptPath, 'utf8', (err, js) => {
+    res.send(js);
+  });
+})
+
+//app.get('/api/player/host/:hostName', (req, res) => {
+//  const htmlPath = path.resolve(__dirname, '..', 'client', 'dist', 'fakeplayerwindow.html');
+//
+//  fs.readFile(htmlPath, 'utf8', (err, html) => {
+//    const rootElem = '<div id="player-window">';
+//    const renderedApp = renderToString(
+//      React.createElement(HostWindow, {
+//        resetToLobby: () => {console.log('would boot from lobby')},
+//        hostingName: req.params.hostName,
+//      }));
+//    //res.send(html)
+//    res.send(html.replace(rootElem, rootElem + renderedApp));
+//  });
+//})
+
 io.on('connection', socket => {
   console.log('New socket connection');
   
@@ -31,10 +62,14 @@ io.on('connection', socket => {
     console.log('New host claimed: ' + hostingName);
     try {
       socket.join(hostingName);
+      console.log('joins room')
       activeSessions[hostingName].host = socket;
+      console.log('starts session in object');
       setHostActions(socket, hostingName);
+      console.log('gets host actions');
     } catch (err) {
-      socket.emit('hostingError');
+      console.log(err);
+      socket.emit('hostingError', err);
       socket.disconnect();
     }
   })
