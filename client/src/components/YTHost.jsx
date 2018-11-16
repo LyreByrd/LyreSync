@@ -1,5 +1,6 @@
 import React from 'react'
 import io from 'socket.io-client';
+import { HOME_URL, SOCKET_PORT } from '../../../config.js';
 
 let loadYT
 
@@ -17,7 +18,7 @@ class YTHost extends React.Component {
   componentDidMount () {
     let props = this.props
     console.log(this.props)
-    this.socket = io(); //io(`/${this.props.hostingName}`); namespace implementation
+    this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`); //io(`/${this.props.hostingName}`); namespace implementation
     this.socket.on('initPing', () => {
       console.log('claiming host, name: ' + props.hostingName);
       this.socket.emit('claimHost', props.hostingName);

@@ -1,6 +1,7 @@
 module.exports = {
-  HOME_URL: 'http://localhost',
-  PORT_NUM: 2500,
-  PROXY_URL: 'http://localhost',
-  PROXY_PORT: 2500,
+  HOME_URL: 'localhost',
+  PORT_NUM: 3000,
+  SOCKET_PORT: 3000,
+  PROXY_URL: 'localhost',
+  PROXY_PORT: 3000,
 }

@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const fs = require('fs');
+const url = require('url');
 // const React = require('react');
 // const { renderToString } = require('react-dom/server');
 // const ClientWindow = require('./../client/transpiled/clientwindow.js').default;
@@ -18,7 +19,8 @@ try {
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-const port = config.PORT_NUM || 3000;
+const socketPort = config.SOCKET_PORT || 3000;
+const apiPort = config.PORT_NUM || 3000;
 
 let activeSessions = {};
 
@@ -122,7 +124,7 @@ const setHostActions = (newHost, hostName) => {
 
 app.post('/host', (req, res) => {
   //req.body.hostingName
-  if(activeSessions[req.body.hostingName] || !req.body.hostingName) {
+  if(isInvalidName(req.body.hostingName) || activeSessions[req.body.hostingName] || !req.body.hostingName) {
     res.sendStatus(403);
   } else {
     let hostName = req.body.hostingName;
@@ -150,8 +152,12 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname + '/../client/dist/index.html'));
 });
 
-http.listen(port, function() {
-  console.log(`Listening on port ${port}`);
+app.listen(apiPort, function() {
+  console.log(`Listening for http on port ${apiPort}`);
+})
+
+http.listen(socketPort, function() {
+  console.log(`Listening on port ${socketPort}`);
 })
 
 const makeNewSession = (hostName) => {
@@ -182,7 +188,29 @@ const deleteClosedSession = (hostName) => {
   }
 }
 
-/* may switch to this implementation later
+const isInvalidName = (string) => {
+  console.log('checking name');
+  for(let i = 0; i < string.length; i++) {
+    let asciiNum = string.charCodeAt(i);
+    console.log(typeof asciiNum, asciiNum);
+    if(isNiceAscii(asciiNum) === false) {
+      return true;
+    }
+  }
+  return false;
+}
+const isNiceAscii = (ascii) => {
+  if (48 <= ascii && ascii <= 90) {
+    return true;
+  } 
+  if (97 <= ascii && ascii <= 122){
+    return true;
+  }
+  return false;
+}
+
+/* may switch 
+to this implementation later
 const setNamespaceActions = (socket, hostName, nsp) => {
   console.log('namespace actions being set for ' + hostName)
   let session = activeSessions[hostName];
