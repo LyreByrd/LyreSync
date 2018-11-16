@@ -23,6 +23,6 @@ class HostWindow extends React.Component {
 //export default HostWindow;
 //ReactDOM.render(<HostWindow />, document.getElementById('player-window'));
 if(window.hasHostComponent) {
-  console.log('host window gets defined')
+  //console.log('host window gets defined')
   window.hasHostComponent(HostWindow);
 }

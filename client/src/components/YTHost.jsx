@@ -19,14 +19,14 @@ class YTHost extends React.Component {
   }
   componentDidMount () {
     let props = this.props
-    console.log(this.props)
+    //console.log(this.props)
     this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`); //io(`/${this.props.hostingName}`); namespace implementation
     this.socket.on('initPing', () => {
-      console.log('claiming host, name: ' + props.hostingName);
+      //console.log('claiming host, name: ' + props.hostingName);
       this.socket.emit('claimHost', props.hostingName);
     })
     this.socket.on('findInitStatus', (socketId) => {
-      console.log('client attempting to initialize, id: ' + socketId)
+      //console.log('client attempting to initialize, id: ' + socketId)
       if(!this.player) {
         this.socket.emit('sendInitStatus', {status: 'loadingPlayer', socketId});
       } else {
@@ -40,13 +40,13 @@ class YTHost extends React.Component {
       }
     })
     this.socket.on('hostingError', (err) => {
-      console.log('got host error');
+      //console.log('got host error');
       this.props.resetToLobby(err);
     })
     if (!loadYT) {
       window.YT = {};
       loadYT = new Promise((resolve) => {
-        console.log('Host trying to add a script')
+        //console.log('Host trying to add a script')
         const tag = document.createElement('script')
         tag.src = 'https://www.youtube.com/iframe_api'
         const firstScriptTag = document.getElementsByTagName('script')[0]
@@ -56,7 +56,7 @@ class YTHost extends React.Component {
       })
     }
     loadYT.then((YT) => {
-      console.log('loadYT\'s .then fired in host')
+      //console.log('loadYT\'s .then fired in host')
       this.player = new YT.Player(this.youtubePlayerAnchorHost, {
         height: this.props.height || 390,
         width: this.props.width || 640,
@@ -75,7 +75,7 @@ class YTHost extends React.Component {
   }
 
   onPlaybackRateChange() {
-    console.log(this.player.getPlaybackRate());
+    //console.log(this.player.getPlaybackRate());
     this.socket.emit('hostAction', {
       type: 'rateChange',
       newSpeed: this.player.getPlaybackRate(),
@@ -110,8 +110,8 @@ class YTHost extends React.Component {
   }
 
   logPlayer() {
-    console.log(this.player)
-    window.player = this.player;
+    //console.log(this.player)
+    //window.player = this.player;
   }
 
   onIdValChange(e) {

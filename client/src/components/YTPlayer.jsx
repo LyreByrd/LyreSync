@@ -60,26 +60,26 @@ class YTPlayer extends React.Component {
       this.props.resetToLobby();
     });
     this.socket.on('sessionDeleting', () => {
-      console.log('session deleted from server');
+      //console.log('session deleted from server');
       this.props.resetToLobby();
     });
     this.socket.on('hostAction', event => {
       if(event.type === 'stateChange') {
         let newVideo = event.newVideo;
         let currVideo = this.player.getVideoData().video_id
-        console.log(`Playing id ${currVideo}, directive to look for ${newVideo}`);
+        //console.log(`Playing id ${currVideo}, directive to look for ${newVideo}`);
         if(newVideo !== currVideo) {
           this.player.loadVideoById({videoId: event.newVideo, startSeconds: event.newTime});
         } else if (Math.abs(event.newTime - this.player.getCurrentTime()) > 1) {
-          console.log('time is wrong');
+          //console.log('time is wrong');
           if(this.player.getPlayerState() === 5 && this.player.cuedTime && (Math.abs(event.newTime - this.player.cuedTime) <= 1)) {
            this.player.playVideo();
           } else {
             if(event.newState === 1 && this.player.getPlayerState() !== 5) {
-              console.log('ensuring player is playing');
+              //console.log('ensuring player is playing');
               this.player.playVideo();
             }
-            console.log('seeking, time: ' + event.newTime);
+            //console.log('seeking, time: ' + event.newTime);
             this.player.seekTo(event.newTime, true);
           }
         }
@@ -91,7 +91,7 @@ class YTPlayer extends React.Component {
       } else if (event.type === 'rateChange') {
         this.player.setPlaybackRate(event.newSpeed);
       }
-      console.log(event);
+      //console.log(event);
     })
   }
 
@@ -108,12 +108,15 @@ class YTPlayer extends React.Component {
   }
 
   loadVideo() {
-    this.player.loadVideoById('QLOpdWMbebI')
+    if(this.socket) {
+      this.socket.emit('getClientStart', this.props.sessionHost);
+    }
+    //this.player.loadVideoById('QLOpdWMbebI')
   }
 
   logPlayer() {
-    console.log(this.player)
-    window.player = this.player;
+    //console.log(this.player)
+    //window.player = this.player;
   }
 
   render () {

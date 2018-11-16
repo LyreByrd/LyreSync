@@ -32,17 +32,17 @@ class Loader extends React.Component {
   }
 
   resetToLobby(err) {
-    console.log('reset to lobby', err);
+    //console.log('reset to lobby', err);
     this.setState({inSession: false, isHosting: false});
   }
 
   onClick(type) {
-    console.log('clicked ' + type)
+    //console.log('clicked ' + type)
     if(type === 'host') {
       if(HostComponent.loaded === false) {
-        console.log('fetching host component');
+        //console.log('fetching host component');
         loadHost = new Promise((resolve) => {
-          console.log('getting script');
+          //console.log('getting script');
           const tag = document.createElement('script')
           tag.src = '/api/player/host/'
           const firstScriptTag = document.getElementsByTagName('script')[0]
@@ -56,9 +56,9 @@ class Loader extends React.Component {
     }
     if (type === 'client') {
       if(ClientComponent.loaded === false) {
-        console.log('fetching client component');
+        //console.log('fetching client component');
         loadHost = new Promise((resolve) => {
-          console.log('getting script');
+          //console.log('getting script');
           const tag = document.createElement('script')
           tag.src = '/api/player/client/'
           const firstScriptTag = document.getElementsByTagName('script')[0]
@@ -88,10 +88,12 @@ class Loader extends React.Component {
   tryClaimHost() {
     axios.post('/host', {hostingName: 'LNB'})
       .then((res) => {
-        console.log('host claim response: ', res);
+        //console.log('host claim response: ', res);
         if(res.data.hostName === this.state.subProps.hostingName) {
-          console.log('setting state to in session')
-          this.setState({inSession: true, isHosting: true}, () => console.log(this.state.inSession));
+          //console.log('setting state to in session')
+          this.setState({inSession: true, isHosting: true}, 
+            () => undefined //console.log(this.state.inSession)
+          );
         }
       })
       .catch((err) => {

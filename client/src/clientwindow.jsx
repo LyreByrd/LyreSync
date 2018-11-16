@@ -23,6 +23,6 @@ class ClientWindow extends React.Component {
 // export default ClientWindow;
 //ReactDOM.render(<ClientWindow />, document.getElementById('player-window'));
 if(window.hasClientComponent) {
-  console.log('client window gets defined')
+  // console.log('client window gets defined')
   window.hasClientComponent(ClientWindow);
 }

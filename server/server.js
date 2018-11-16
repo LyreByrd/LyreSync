@@ -45,7 +45,7 @@ app.get('/duplex', (req, res) => {
   res.sendFile(path.join(__dirname + '/../client/dist/fakeplayerwindow.html'))
 })
 app.get('/api/player/host/', (req, res) => {
-  console.log('host player request to ' + req.url);
+  //console.log('host player request to ' + req.url);
   const scriptPath = path.resolve(__dirname, '..', 'client', 'dist', 'hostwindow-bundle.js');
 
   fs.readFile(scriptPath, 'utf8', (err, js) => {
@@ -54,9 +54,9 @@ app.get('/api/player/host/', (req, res) => {
 });
 
 app.get('/api/player/client/', (req, res) => {
-  console.log('client player request to ' + req.url);
+  //console.log('client player request to ' + req.url);
   const scriptPath = path.resolve(__dirname, '..', 'client', 'dist', 'clientwindow-bundle.js');
-  console.log('client script path: ' + scriptPath);
+  //console.log('client script path: ' + scriptPath);
   fs.readFile(scriptPath, 'utf8', (err, js) => {
     if (err) {
       res.send(err)
@@ -82,18 +82,18 @@ app.get('/api/player/client/', (req, res) => {
 //})
 
 io.on('connection', socket => {
-  console.log('New socket connection');
+  //console.log('New socket connection');
   
   socket.emit('initPing');
   socket.on('claimHost', (hostingName) => {
-    console.log('New host claimed: ' + hostingName);
+    //console.log('New host claimed: ' + hostingName);
     try {
       socket.join(hostingName);
-      console.log('joins room')
+      //console.log('joins room')
       activeSessions[hostingName].host = socket;
-      console.log('starts session in object');
+      //console.log('starts session in object');
       setHostActions(socket, hostingName);
-      console.log('gets host actions');
+      //console.log('gets host actions');
     } catch (err) {
       socket.emit('hostingError', err);
       socket.disconnect();
@@ -105,7 +105,7 @@ io.on('connection', socket => {
       socket.hostName = sessionHost;
       socket.join(sessionHost);
       target.activeSockets[socket.id] = socket;
-      console.log('Client attempting to initialize');
+      //console.log('Client attempting to initialize');
       try {
         target.host.emit('findInitStatus', socket.id);
       } catch(err) {
@@ -203,15 +203,15 @@ const deleteClosedSession = (hostName) => {
       socket.disconnect();
     });
     delete activeSessions[hostName];
-    console.log('Deleting session hosted by ' + hostName);
+    //console.log('Deleting session hosted by ' + hostName);
   }
 }
 
 const isInvalidName = (string) => {
-  console.log('checking name');
+  //console.log('checking name');
   for(let i = 0; i < string.length; i++) {
     let asciiNum = string.charCodeAt(i);
-    console.log(typeof asciiNum, asciiNum);
+    //console.log(typeof asciiNum, asciiNum);
     if(isNiceAscii(asciiNum) === false) {
       return true;
     }
