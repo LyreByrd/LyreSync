@@ -34,7 +34,9 @@ app.use(express.static(__dirname + '/../client/dist'));
 // })
 
 app.get('/test*', (req, res) => {
-  res.sendFile(path.join(__dirname + '/../client/dist/devclient.html'));
+  if (process.env.ALLOW_TEST) {
+    res.sendFile(path.join(__dirname + '/../client/dist/devclient.html'));
+  }
 })
 
 app.get('/secret', (req, res) => {
@@ -42,7 +44,9 @@ app.get('/secret', (req, res) => {
 });
 
 app.get('/duplex', (req, res) => {
-  res.sendFile(path.join(__dirname + '/../client/dist/fakeplayerwindow.html'))
+  if (process.env.ALLOW_DUPLEX) {
+    res.sendFile(path.join(__dirname + '/../client/dist/fakeplayerwindow.html'))
+  }
 })
 app.get('/api/player/host/', (req, res) => {
   //console.log('host player request to ' + req.url);
