@@ -9,11 +9,13 @@ class YTHost extends React.Component {
     super(props);
     this.state = {
       videoQueue: [],
+      idVal: '',
     }
     this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
     this.onPlaybackRateChange = this.onPlaybackRateChange.bind(this);
     this.loadVideo = this.loadVideo.bind(this);
     this.logPlayer = this.logPlayer.bind(this);
+    this.onIdValChange = this.onIdValChange.bind(this);
   }
   componentDidMount () {
     let props = this.props
@@ -100,12 +102,20 @@ class YTHost extends React.Component {
 
 
   loadVideo() {
-    this.player.loadVideoById('QLOpdWMbebI')
+    if (this.state.idVal && this.player) {
+      this.player.loadVideoById(this.state.idVal)
+    } else if (this.player) {
+      this.player.loadVideoById('QLOpdWMbebI')
+    }
   }
 
   logPlayer() {
     console.log(this.player)
     window.player = this.player;
+  }
+
+  onIdValChange(e) {
+    this.setState({idVal: e.target.value});
   }
 
   render () {
@@ -115,7 +125,7 @@ class YTHost extends React.Component {
           <div style={{width:'640px', height:'390px', display:'inline-block'}} ref={(r) => { this.youtubePlayerAnchorHost = r }}></div>
           <br />
         </section>
-        <input type='text'></input>
+        <input type='text' value={this.state.idVal} onChange={this.onIdValChange}></input>
         <button onClick={this.loadVideo}>Load Video</button>
         <button onClick={this.logPlayer}>Log Player</button>
         <span> Now Hosting </span>
