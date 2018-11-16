@@ -127,7 +127,7 @@ class YTHost extends React.Component {
         </section>
         <input type='text' value={this.state.idVal} onChange={this.onIdValChange}></input>
         <button onClick={this.loadVideo}>Load Video</button>
-        <button onClick={this.logPlayer}>Log Player</button>
+        {/* <button onClick={this.logPlayer}>Log Player</button> */}
         <span> Now Hosting </span>
       </div>
     )

@@ -124,8 +124,8 @@ class YTPlayer extends React.Component {
       <section className='youtubeComponent-wrapper'>
         <div ref={(r) => { this.youtubePlayerAnchor = r }}></div>
         <br />
-        <button onClick={this.loadVideo}>Load Video</button>
-        <button onClick={this.logPlayer}>Log Player</button>
+        <button onClick={this.loadVideo}>Re-Sync to Host</button>
+        {/* <button onClick={this.logPlayer}>Log Player</button> */}
       </section>
     )
   }
