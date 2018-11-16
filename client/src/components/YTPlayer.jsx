@@ -1,5 +1,6 @@
 import React from 'react'
 import io from 'socket.io-client';
+import { HOME_URL, SOCKET_PORT } from '../../../config.js';
 
 let loadYT
 
@@ -39,7 +40,7 @@ class YTPlayer extends React.Component {
   }
 
   onPlayerReady() {
-    this.socket = io();
+    this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`);
     this.socket.on('initPing', () => {
       this.socket.emit('getClientStart', this.props.sessionHost);
     })

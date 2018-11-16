@@ -28,6 +28,11 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json())
 app.use(express.static(__dirname + '/../client/dist'));
 
+// app.use((req, res, next) => {
+//   console.log(req.url);
+//   next();
+// })
+
 app.get('/test*', (req, res) => {
   res.sendFile(path.join(__dirname + '/../client/dist/devclient.html'));
 })
@@ -40,12 +45,26 @@ app.get('/duplex', (req, res) => {
   res.sendFile(path.join(__dirname + '/../client/dist/fakeplayerwindow.html'))
 })
 app.get('/api/player/host/', (req, res) => {
+  console.log('host player request to ' + req.url);
   const scriptPath = path.resolve(__dirname, '..', 'client', 'dist', 'hostwindow-bundle.js');
 
   fs.readFile(scriptPath, 'utf8', (err, js) => {
     res.send(js);
   });
-})
+});
+
+app.get('/api/player/client/', (req, res) => {
+  console.log('client player request to ' + req.url);
+  const scriptPath = path.resolve(__dirname, '..', 'client', 'dist', 'clientwindow-bundle.js');
+  console.log('client script path: ' + scriptPath);
+  fs.readFile(scriptPath, 'utf8', (err, js) => {
+    if (err) {
+      res.send(err)
+    } else {
+      res.send(js);
+    }
+  });
+});
 
 //app.get('/api/player/host/:hostName', (req, res) => {
 //  const htmlPath = path.resolve(__dirname, '..', 'client', 'dist', 'fakeplayerwindow.html');

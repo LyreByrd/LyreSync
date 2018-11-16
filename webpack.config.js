@@ -7,7 +7,8 @@ module.exports = {
     front: `${SRC_DIR}/index.jsx`,
     devclient: `${SRC_DIR}/devclient.jsx`,
     hostwindow: `${SRC_DIR}/hostwindow.jsx`,
-    duplex: `${SRC_DIR}/duplexloader.jsx`
+    duplex: `${SRC_DIR}/duplexloader.jsx`,
+    clientwindow: `${SRC_DIR}/clientwindow.jsx`
   },
   output: {
     filename: '[name]-bundle.js',

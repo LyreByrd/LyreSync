@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+// import ReactDOM from 'react-dom';
 import YTHost from './components/YTHost.jsx';
 
 
@@ -9,17 +9,14 @@ class HostWindow extends React.Component {
     this.state = {
       mounted: false,
     }
-    this.act.bind(this);
-  }
-
-  act() {
   }
   componentDidMount() {
+    this.setState({mounted: true});
   }
   render() {
-    return <div>
-      <YTHost {...this.props} />
-    </div>
+    return (<div>
+      {this.state.mounted ? <YTHost {...this.props} /> : 'Loading...'}
+    </div>)
   }
 }
 
