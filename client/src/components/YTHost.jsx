@@ -1,12 +1,12 @@
 import React from 'react'
 import io from 'socket.io-client';
-let HOME_URL, SOCKET_PORT;
-try {
+//let HOME_URL, SOCKET_PORT;
+//try {
   import { HOME_URL, SOCKET_PORT } from '../../../config.js';
-} catch (err) {
-  HOME_URL = 'localhost';
-  SOCKET_PORT = 9001;
-}
+//} catch (err) {
+//  HOME_URL = 'localhost';
+//  SOCKET_PORT = 9001;
+//}
 
 let loadYT
 
