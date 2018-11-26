@@ -34,8 +34,10 @@ app.use(express.static(__dirname + '/../client/dist'));
 // })
 
 app.get('/test*', (req, res) => {
-  if (process.env.ALLOW_TEST !== false) {
+  if (process.env.ALLOW_TEST) {
     res.sendFile(path.join(__dirname + '/../client/dist/devclient.html'));
+  } else {
+    res.sendFile(path.join(__dirname + '/../client/dist/index.html'));
   }
 })
 
@@ -46,6 +48,8 @@ app.get('/secret', (req, res) => {
 app.get('/duplex', (req, res) => {
   if (process.env.ALLOW_DUPLEX) {
     res.sendFile(path.join(__dirname + '/../client/dist/fakeplayerwindow.html'))
+  } else {
+    res.sendFile(path.join(__dirname + '/../client/dist/index.html'));
   }
 })
 app.get('/api/player/host/', (req, res) => {
@@ -90,7 +94,7 @@ io.on('connection', socket => {
   
   socket.emit('initPing');
   socket.on('claimHost', (hostingName) => {
-    console.log('New host claimed: ' + hostingName);
+    //console.log('New host claimed: ' + hostingName);
     try {
       socket.join(hostingName);
       //console.log('joins room')
@@ -146,7 +150,7 @@ const setHostActions = (newHost, hostName) => {
 }
 
 app.post('/host', (req, res) => {
-  console.log('requested host name: ', req.body.hostingName);
+  //console.log('requested host name: ', req.body.hostingName);
   if(isInvalidName(req.body.hostingName) || activeSessions[req.body.hostingName] || !req.body.hostingName) {
     res.sendStatus(403);
   } else {
