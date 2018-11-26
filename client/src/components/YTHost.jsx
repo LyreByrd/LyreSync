@@ -10,6 +10,7 @@ class YTHost extends React.Component {
     this.state = {
       videoQueue: [],
       idVal: '',
+      hasErrored: false,
     }
     this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
     this.onPlaybackRateChange = this.onPlaybackRateChange.bind(this);
@@ -41,7 +42,9 @@ class YTHost extends React.Component {
     })
     this.socket.on('hostingError', (err) => {
       //console.log('got host error');
-      this.props.resetToLobby(err);
+      this.setState({hasErrored: true}, () => {
+        setTimeout(() => this.props.resetToLobby(err), 5000);
+      });
     })
     if (!loadYT) {
       window.YT = {};
@@ -127,8 +130,7 @@ class YTHost extends React.Component {
         </section>
         <input type='text' value={this.state.idVal} onChange={this.onIdValChange}></input>
         <button onClick={this.loadVideo}>Load Video</button>
-        <button onClick={this.logPlayer}>Log Player</button>
-        <span> Now Hosting </span>
+        <span> {this.state.hasErrored ? 'Error connecting to session. Attempting to refresh' : 'Now Hosting'} </span>
       </div>
     )
   }
