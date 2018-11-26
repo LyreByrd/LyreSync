@@ -150,11 +150,7 @@ const setHostActions = (newHost, hostName) => {
 }
 
 app.post('/host', (req, res) => {
-<<<<<<< HEAD
   //console.log('requested host name: ', req.body.hostingName);
-=======
-  //req.body.hostingName
->>>>>>> 5feab37a83078abee72db78b50b25a38b847dacd
   if(isInvalidName(req.body.hostingName) || activeSessions[req.body.hostingName] || !req.body.hostingName) {
     res.sendStatus(403);
   } else {
