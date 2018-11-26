@@ -1,5 +1,6 @@
 import React from 'react'
 import io from 'socket.io-client';
+import getVideoId from 'get-video-id';
 
 let HOME_URL, SOCKET_PORT;
 try {
@@ -113,12 +114,26 @@ class YTHost extends React.Component {
   }
 
 
-  loadVideo() {
+  loadVideo(event) {
+    event.preventDefault();
     if (this.state.idVal && this.player) {
-      this.player.loadVideoById(this.state.idVal)
+      if(this.state.idVal.length === 11) {
+        this.player.loadVideoById(this.state.idVal)
+      } else {
+        let {id, service} = getVideoId(this.state.idVal);
+        if(service === 'youtube' && id) {
+          this.player.loadVideoById(id);
+        } else {
+          this.gotInvalidIdPattern();
+        }
+      }
     } else if (this.player) {
       this.player.loadVideoById('QLOpdWMbebI')
     }
+  }
+
+  gotInvalidIdPattern() {
+    console.log('try again buddy');
   }
 
   logPlayer() {
@@ -137,8 +152,10 @@ class YTHost extends React.Component {
           <div style={{width:'640px', height:'390px', display:'inline-block'}} ref={(r) => { this.youtubePlayerAnchorHost = r }}></div>
           <br />
         </section>
-        <input type='text' value={this.state.idVal} onChange={this.onIdValChange}></input>
-        <button onClick={this.loadVideo}>Load Video</button>
+        <form onSubmit={this.loadVideo}>
+          <input type='text' value={this.state.idVal} onChange={this.onIdValChange}></input>
+          <button>Load Video</button>
+        </form>
         <span> {this.state.hasErrored ? 'Error connecting to session. Attempting to refresh' : 'Now Hosting'} </span>
       </div>
     )
