@@ -41,7 +41,7 @@ class YTHost extends React.Component {
     })
     this.socket.on('hostingError', (err) => {
       //console.log('got host error');
-      setTimeout(() => this.props.resetToLobby(err), 5000);
+      this.props.resetToLobby(err);
     })
     if (!loadYT) {
       window.YT = {};
