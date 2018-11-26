@@ -5,7 +5,7 @@ try {
   import { HOME_URL, SOCKET_PORT } from '../../../config.js';
 } catch (err) {
   HOME_URL = 'localhost';
-  SOCKET_PORT = 2501;
+  SOCKET_PORT = 9001;
 }
 
 let loadYT

@@ -19,7 +19,7 @@ try {
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-const socketPort = config.SOCKET_PORT || 2345;
+const socketPort = config.SOCKET_PORT || 9001;
 const apiPort = config.PORT_NUM || 1234;
 
 let activeSessions = {};
