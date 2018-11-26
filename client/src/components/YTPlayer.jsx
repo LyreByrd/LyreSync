@@ -26,6 +26,7 @@ class YTPlayer extends React.Component {
     this.logPlayer = this.logPlayer.bind(this);
     this.onPlayerReady = this.onPlayerReady.bind(this);
     this.toggleMute = this.toggleMute.bind(this);
+    this.setVolume = this.setVolume.bind(this);
   }
   componentDidMount () {
     if (!loadYT) {
@@ -148,13 +149,23 @@ class YTPlayer extends React.Component {
     );
   }
 
+  setVolume(event) {
+    this.setState({volume: event.target.value}, 
+      () => {
+        this.player.setVolume(this.state.volume);
+      }
+    );
+  }
+
   render () {
     return (
       <section className='youtubeComponent-wrapper'>
         <div ref={(r) => { this.youtubePlayerAnchor = r }}></div>
         <br />
-        <button onClick={this.loadVideo}>Re-Sync To Host</button>
         <button onClick={this.toggleMute}>{this.state.isMuted ? 'Unmute' : 'Mute'}</button>
+        <input type='range' name='volume' min='0' max='100' defaultValue='100' onChange={this.setVolume}/>
+        <br />
+        <button onClick={this.loadVideo}>Re-Sync To Host</button>
         {this.state.hasErrored ? 'No such session. Returning to lobby...' : ''}
       </section>
     )
