@@ -73,7 +73,9 @@ class YTPlayer extends React.Component {
       this.player.setPlaybackRate(status.rate);
     });
     this.socket.on('clientError', () => {
-      this.props.resetToLobby();
+      this.setState({hasErrored: true}, () => {
+        setTimeout(() => this.props.resetToLobby(), 5000);
+      });
     });
     this.socket.on('sessionDeleting', () => {
       //console.log('session deleted from server');
