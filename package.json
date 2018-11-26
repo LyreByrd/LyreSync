@@ -10,7 +10,7 @@
     "next-start": "next start",
     "react-dev": "webpack -d --watch",
     "server-dev": "nodemon server/server.js",
-    "pack-once": "webpack -d",
+    "pack-once": "webpack -p",
     "transpile": "babel client/src --out-dir client/transpiled --presets es2015,react"
   },
   "repository": {
@@ -29,6 +29,7 @@
     "body-parser": "^1.18.3",
     "dotenv": "^6.1.0",
     "express": "^4.16.4",
+    "get-video-id": "^3.1.0",
     "next": "^7.0.2",
     "socket-io": "^1.0.0",
     "socket.io": "^2.1.1"
