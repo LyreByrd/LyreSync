@@ -19,8 +19,8 @@ try {
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-const socketPort = config.SOCKET_PORT || 9001;
-const apiPort = config.PORT_NUM || 1234;
+const socketPort = config.SOCKET_PORT || 3000;
+const apiPort = config.PORT_NUM || 3000;
 
 let activeSessions = {};
 
@@ -150,7 +150,11 @@ const setHostActions = (newHost, hostName) => {
 }
 
 app.post('/host', (req, res) => {
+<<<<<<< HEAD
   //console.log('requested host name: ', req.body.hostingName);
+=======
+  //req.body.hostingName
+>>>>>>> 5feab37a83078abee72db78b50b25a38b847dacd
   if(isInvalidName(req.body.hostingName) || activeSessions[req.body.hostingName] || !req.body.hostingName) {
     res.sendStatus(403);
   } else {
