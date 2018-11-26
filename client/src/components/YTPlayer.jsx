@@ -1,8 +1,11 @@
 import React from 'react'
 import io from 'socket.io-client';
+
 let HOME_URL, SOCKET_PORT;
 try {
-  import { HOME_URL, SOCKET_PORT } from '../../../config.js';
+  let config = require('../../../config.js');
+  HOME_URL = config.HOME_URL;
+  SOCKET_PORT = config.SOCKET_PORT;
 } catch (err) {
   HOME_URL = 'localhost';
   SOCKET_PORT = 9001;
@@ -15,11 +18,15 @@ class YTPlayer extends React.Component {
     super(props);
     this.state = {
       hasErrored: false,
+      volume: 100,
+      isMuted: false,
     }
     this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
     this.loadVideo = this.loadVideo.bind(this);
     this.logPlayer = this.logPlayer.bind(this);
     this.onPlayerReady = this.onPlayerReady.bind(this);
+    this.toggleMute = this.toggleMute.bind(this);
+    this.setVolume = this.setVolume.bind(this);
   }
   componentDidMount () {
     if (!loadYT) {
@@ -130,10 +137,33 @@ class YTPlayer extends React.Component {
     //window.player = this.player;
   }
 
+  toggleMute() {
+    this.setState({isMuted: !this.state.isMuted},
+      ()=> {
+        if(this.state.isMuted) {
+          this.player.mute();
+        } else {
+          this.player.unMute();
+        }
+      }
+    );
+  }
+
+  setVolume(event) {
+    this.setState({volume: event.target.value}, 
+      () => {
+        this.player.setVolume(this.state.volume);
+      }
+    );
+  }
+
   render () {
     return (
       <section className='youtubeComponent-wrapper'>
         <div ref={(r) => { this.youtubePlayerAnchor = r }}></div>
+        <br />
+        <button onClick={this.toggleMute}>{this.state.isMuted ? 'Unmute' : 'Mute'}</button>
+        <input type='range' name='volume' min='0' max='100' defaultValue='100' onChange={this.setVolume}/>
         <br />
         <button onClick={this.loadVideo}>Re-Sync To Host</button>
         {this.state.hasErrored ? 'No such session. Returning to lobby...' : ''}
