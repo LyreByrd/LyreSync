@@ -73,7 +73,9 @@ class YTPlayer extends React.Component {
       this.player.setPlaybackRate(status.rate);
     });
     this.socket.on('clientError', () => {
-      this.props.resetToLobby();
+      this.setState({hasErrored: true}, () => {
+        setTimeout(() => this.props.resetToLobby(), 5000);
+      });
     });
     this.socket.on('sessionDeleting', () => {
       //console.log('session deleted from server');
@@ -164,6 +166,7 @@ class YTPlayer extends React.Component {
         <br />
         <button onClick={this.toggleMute}>{this.state.isMuted ? 'Unmute' : 'Mute'}</button>
         <input type='range' name='volume' min='0' max='100' defaultValue='100' onChange={this.setVolume}/>
+        <span>  {this.state.volume}/100</span>
         <br />
         <button onClick={this.loadVideo}>Re-Sync To Host</button>
         {this.state.hasErrored ? 'No such session. Returning to lobby...' : ''}
