@@ -164,6 +164,7 @@ class YTPlayer extends React.Component {
         <br />
         <button onClick={this.toggleMute}>{this.state.isMuted ? 'Unmute' : 'Mute'}</button>
         <input type='range' name='volume' min='0' max='100' defaultValue='100' onChange={this.setVolume}/>
+        <span>  {this.state.volume}/100</span>
         <br />
         <button onClick={this.loadVideo}>Re-Sync To Host</button>
         {this.state.hasErrored ? 'No such session. Returning to lobby...' : ''}

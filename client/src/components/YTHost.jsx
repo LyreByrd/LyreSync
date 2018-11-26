@@ -118,7 +118,7 @@ class YTHost extends React.Component {
     event.preventDefault();
     if (this.state.idVal && this.player) {
       if(this.state.idVal.length === 11) {
-        this.player.loadVideoById(this.state.idVal)
+        this.player.loadVideoById(this.state.idVal);
       } else {
         let {id, service} = getVideoId(this.state.idVal);
         if(service === 'youtube' && id) {
@@ -153,7 +153,9 @@ class YTHost extends React.Component {
           <br />
         </section>
         <form onSubmit={this.loadVideo}>
-          <input type='text' value={this.state.idVal} onChange={this.onIdValChange}></input>
+          <label for='YTLocation'>YouTube link, embed code, or video ID:</label>
+          <br />
+          <input type='text' name='YTLocation' value={this.state.idVal} onChange={this.onIdValChange}></input>
           <button>Load Video</button>
         </form>
         <span> {this.state.hasErrored ? 'Error connecting to session. Attempting to refresh' : 'Now Hosting'} </span>
