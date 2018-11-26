@@ -13,6 +13,9 @@ let loadYT
 class YTPlayer extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      hasErrored: false,
+    }
     this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
     this.loadVideo = this.loadVideo.bind(this);
     this.logPlayer = this.logPlayer.bind(this);
@@ -67,7 +70,9 @@ class YTPlayer extends React.Component {
     });
     this.socket.on('sessionDeleting', () => {
       //console.log('session deleted from server');
-      this.props.resetToLobby();
+      this.setState({hasErrored: true}, () => {
+        setTimeout(() => this.props.resetToLobby(), 5000);
+      });
     });
     this.socket.on('hostAction', event => {
       if(event.type === 'stateChange') {
@@ -130,8 +135,8 @@ class YTPlayer extends React.Component {
       <section className='youtubeComponent-wrapper'>
         <div ref={(r) => { this.youtubePlayerAnchor = r }}></div>
         <br />
-        <button onClick={this.loadVideo}>Load Video</button>
-        <button onClick={this.logPlayer}>Log Player</button>
+        <button onClick={this.loadVideo}>Re-Sync To Host</button>
+        {this.state.hasErrored ? 'No such session. Returning to lobby...' : ''}
       </section>
     )
   }
