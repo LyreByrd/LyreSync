@@ -34,7 +34,7 @@ class YTHost extends React.Component {
     this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`); //io(`/${this.props.hostingName}`); namespace implementation
     this.socket.on('initPing', () => {
       //console.log('claiming host, name: ' + props.hostingName);
-      this.socket.emit('claimHost', props.hostingName);
+      this.socket.emit('claimHost', {host: props.hostingName, service:'youtube'});
     })
     this.socket.on('findInitStatus', (socketId) => {
       //console.log('client attempting to initialize, id: ' + socketId)
@@ -153,7 +153,7 @@ class YTHost extends React.Component {
           <br />
         </section>
         <form onSubmit={this.loadVideo}>
-          <label for='YTLocation'>YouTube link, embed code, or video ID:</label>
+          <label htmlFor='YTLocation'>YouTube link, embed code, or video ID:</label>
           <br />
           <input type='text' name='YTLocation' value={this.state.idVal} onChange={this.onIdValChange}></input>
           <button>Load Video</button>

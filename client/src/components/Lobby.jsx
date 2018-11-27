@@ -11,7 +11,7 @@ const Lobby = (props) => {
   if (props.knownSessions.length) {
     sessionButtons = props.knownSessions.map(session => {
         return (
-          <button onClick={() => props.joinSession(session.sessionHost)}>Join session with {session.sessionHost}</button>
+          <button onClick={() => props.joinSession(session)}>Join session with {session.sessionHost} ({session.service})</button>
         )
       })
   }
