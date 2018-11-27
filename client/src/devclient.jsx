@@ -13,6 +13,7 @@ class Test extends React.Component {
       isHost: false,
       hostingName: '',
       knownSessions: [],
+      service: null,
     }
     this.tryClaimHost = this.tryClaimHost.bind(this);
     this.joinSession = this.joinSession.bind(this);
@@ -28,6 +29,7 @@ class Test extends React.Component {
       inSession: false,
       isHost: false,
       knownSessions: [],
+      service: null,
     })
   }
 
@@ -57,13 +59,14 @@ class Test extends React.Component {
       });
   }
 
-  joinSession(hostName) {
-    this.setState({inSession: true, isHost: false, sessionHost: hostName});
+  joinSession(hostName, service) {
+    this.setState({inSession: true, isHost: false, sessionHost: hostName, service: service});
   }
 
   fetchActiveSessions() {
     axios.get('/api/sessions')
       .then(res => {
+        console.log('sessions:', res.data)
         this.setState({knownSessions: res.data});
       })
       .catch(err => {

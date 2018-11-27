@@ -3,9 +3,10 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const fs = require('fs');
 const url = require('url');
+const ytSocketActions = require('./youtubeSocketActions.js');
 // const React = require('react');
 // const { renderToString } = require('react-dom/server');
-// const ClientWindow = require('./../client/transpiled/clientwindow.js').default;
+// const ClientWindow = require('./../client/ranspiled/clientwindow.js').default;
 // const HostWindow = require('./../client/transpiled/hostwindow.js').default;
 require('dotenv').config();
 let config;
@@ -16,13 +17,17 @@ try {
 }
 
 
+
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const socketPort = config.SOCKET_PORT || 9001;
 const apiPort = config.PORT_NUM || 1234;
 
-let activeYTSessions = {};
+const services = ['youtube'];
+const activeSessions = {};
+
+services.forEach(service => { activeSessions[service] = {}; })
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json())
@@ -98,12 +103,13 @@ io.on('connection', socket => {
     try {
       socket.join(data.host);
       //console.log('joins room')
-      if (data.service !== 'youtube') {
+      if (data.service === 'youtube') {
+        activeSessions.youtube[data.host].host = socket;
+        ytSocketActions.setYTSocketHost(socket, data.host, activeSessions.youtube, io);
+      } else {
         throw new Error('no such service')
       }
-      activeYTSessions[data.host].host = socket;
       //console.log('starts session in object');
-      setHostActions(socket, data.host);
       //console.log('gets host actions');
     } catch (err) {
       socket.emit('hostingError', err);
@@ -111,9 +117,9 @@ io.on('connection', socket => {
     }
   })
   socket.on('getClientStart', ({sessionHost, service}) => {
-    let target 
+    let target; 
     if (service === 'youtube') {
-      target = activeYTSessions[sessionHost];
+      target = activeSessions.youtube[sessionHost];
     }
     if(target) {
       socket.hostName = sessionHost;
@@ -130,7 +136,7 @@ io.on('connection', socket => {
     }
   })
   socket.on('disconnect', () => {
-    let targetSession = activeYTSessions[socket.hostName];
+    let targetSession = activeSessions.youtube[socket.hostName];
     if(targetSession) {
       delete targetSession.activeSockets[socket.id]
     }
@@ -138,34 +144,15 @@ io.on('connection', socket => {
 });
 
 
-const setHostActions = (newHost, hostName) => {
-  newHost.on('hostAction', event => {
-    io.to(hostName).emit('hostAction', event);
-  });
-  newHost.on('disconnect', () => {
-    setTimeout(() => {
-      if(newHost.disconnected) {
-        deleteClosedSession(hostName);
-      }
-    }, 10000);
-  })
-  newHost.on('sendInitStatus', data => {
-    let target = activeYTSessions[hostName].activeSockets[data.socketId];
-    if (target) {
-      target.emit('initState', data);
-    }
-  })
-}
-
 app.post('/host', (req, res) => {
   //console.log('requested host name: ', req.body.hostingName);
-  if(isInvalidName(req.body.hostingName) || activeYTSessions[req.body.hostingName] || !req.body.hostingName) {
+  if(isInvalidName(req.body.hostingName) || activeSessions.youtube[req.body.hostingName] || !req.body.hostingName) {
     res.sendStatus(403);
   } else {
     let hostName = req.body.hostingName;
     makeNewSession(hostName);
     setTimeout(() => {
-      if(activeYTSessions[hostName] && activeYTSessions[hostName].host === null) {
+      if(activeSessions.youtube[hostName] && activeSessions.youtube[hostName].host === null) {
         deleteClosedSession(hostName);
       }
     }, 5000);
@@ -174,12 +161,14 @@ app.post('/host', (req, res) => {
 })
 
 app.get('/api/sessions', (req, res) => {
-  let hostedSessions = Object.keys(activeYTSessions);
-  if(hostedSessions) {
-    hostedSessions = hostedSessions.map(key => ({sessionHost: key}));
-  } else {
-    hostedSessions = [];
-  }
+  let hostedSessions = [];
+  services.forEach(service => {
+    let serviceSessions = Object.keys(activeSessions[service]).map(sessionHost => {
+      return {sessionHost, service};
+    });
+    //console.log(`${service} sessions: `, serviceSessions);
+    hostedSessions = hostedSessions.concat(serviceSessions);
+  });
   res.json(hostedSessions);
 })
 
@@ -207,18 +196,18 @@ const makeNewSession = (hostName) => {
     host: null,
     hostName,
   }
-  activeYTSessions[hostName] = sessionInfo;
+  activeSessions.youtube[hostName] = sessionInfo;
 }
 
 const deleteClosedSession = (hostName) => {
-  let closingSession = activeYTSessions[hostName];
+  let closingSession = activeSessions.youtube[hostName];
   if (closingSession) {
     Object.keys(closingSession.activeSockets).forEach(socketId => {
       let socket = closingSession.activeSockets[socketId];
       socket.emit('sessionDeleting');
       socket.disconnect();
     });
-    delete activeYTSessions[hostName];
+    delete activeSessions.youtube[hostName];
     //console.log('Deleting session hosted by ' + hostName);
   }
 }
@@ -248,7 +237,7 @@ const isNiceAscii = (ascii) => {
 to this implementation later
 const setNamespaceActions = (socket, hostName, nsp) => {
   console.log('namespace actions being set for ' + hostName)
-  let session = activeYTSessions[hostName];
+  let session = activeSessions.youtube[hostName];
   if(!session) {
     socket.emit('invalidSession');
     socket.close();
@@ -260,7 +249,7 @@ const setNamespaceActions = (socket, hostName, nsp) => {
       let hostingName = event;
       console.log('New host claimed');
       try {
-        activeYTSessions[hostingName].host = socket;
+        activeSessions.youtube[hostingName].host = socket;
         setHostActions(socket, hostingName, nsp);
       } catch (err) {
         console.log('host error', err)
