@@ -115,7 +115,7 @@ io.on('connection', socket => {
       }
       activeSessions[data.host].host = socket;
       if (data.service === 'youtube'){
-        ytSocketActions.setYTSocketHost(socket, data.host, activeSessions.youtube, io, deleteClosedSession);
+        ytSocketActions.setYTSocketHost(socket, data.host, activeSessions, io, deleteClosedSession);
       }
       //console.log('starts session in object');
       //console.log('gets host actions');
@@ -153,7 +153,7 @@ app.post('/host', (req, res) => {
   //console.log('requested host name: ', req.body.hostingName);
 
   // default service is youtube for backwards compatibility
-  //let service = req.body.service || 'youtube';
+  let service = req.body.service || 'youtube';
 
   console.log(`${req.body.hostingName} attempting to host with ${service}`);
 

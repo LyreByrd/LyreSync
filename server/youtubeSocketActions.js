@@ -12,7 +12,7 @@ module.exports.setYTSocketHost = (socket, hostName, activeSessions, io, deleteCl
   socket.on('sendInitStatus', data => {
     let target;
     if (data) {
-      target = activeSessions.activeSockets[data.socketId];
+      target = activeSessions[hostName].activeSockets[data.socketId];
     }
     if (target) {
       target.emit('initState', data);
