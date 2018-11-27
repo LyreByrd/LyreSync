@@ -12,6 +12,8 @@ try {
   SOCKET_PORT = 9001;
 }
 
+let loadSpotify;
+
 class SpotifyHost extends React.Component {
   constructor(props) {
     super(props);
@@ -22,6 +24,7 @@ class SpotifyHost extends React.Component {
     this.loadDefaultMusic = this.loadVideo.bind(this);
     this.logPlayer = this.logPlayer.bind(this);
     this.onIdValChange = this.onIdValChange.bind(this);
+    this.onSpotifyReady = this.onSpotifyReady.bind(this);
   }
 
   componentDidMount () {
@@ -51,14 +54,14 @@ class SpotifyHost extends React.Component {
         const firstScriptTag = document.getElementsByTagName('script')[0]
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
         this.SpotifyScript = tag;
-        window.onSpotifyWebPlaybackSDKReady = () => undefined;
+        window.onSpotifyWebPlaybackSDKReady = this.onSpotifyReady;
       })
     }
 
     loadSpotify.then(() => {
       //console.log('loadYT\'s .then fired in host')
       console.log('loadSpotify\'s .then fired in host');
-      this.token = ''; //will need frequent updating
+      this.token = 'BQD-sXQM_NMwGA5s9PuE0cB5OHYrWC-OFlLvR1kSVFxrVMHIOHzzrZ8PLskdcSr-dNtDWkOYJ20RrbqrfZtVmdyM8iSH9LUygO09KA5EBjLyVblwGfaBh0myOlB39VbpXd1RYK3BjqoRoAjni3QOhTRGqL2tGttHqVDafciaCm2XzYzUJQ14hkJ8f1Uc'; //will need frequent updating
       this.player = new Spotify.Player({
         name: 'Web Playback SDK Quick Start Player',
         getOAuthToken: cb => { cb(this.token); }
@@ -85,6 +88,38 @@ class SpotifyHost extends React.Component {
       // Connect to the player!
       player.connect();
     })
+  }
+
+  onSpotifyReady() {
+    console.log('onSpotifyReady fired');
+    console.log(Spotify);
+    console.log('loadSpotify\'s .then fired in host');
+      this.token = 'BQD-sXQM_NMwGA5s9PuE0cB5OHYrWC-OFlLvR1kSVFxrVMHIOHzzrZ8PLskdcSr-dNtDWkOYJ20RrbqrfZtVmdyM8iSH9LUygO09KA5EBjLyVblwGfaBh0myOlB39VbpXd1RYK3BjqoRoAjni3QOhTRGqL2tGttHqVDafciaCm2XzYzUJQ14hkJ8f1Uc'; //will need frequent updating
+      this.player = new Spotify.Player({
+        name: 'Web Playback SDK Quick Start Player',
+        getOAuthToken: cb => { cb(this.token); }
+      })
+
+      this.player.addListener('initialization_error', ({ message }) => { console.error(message); });
+      this.player.addListener('authentication_error', ({ message }) => { console.error(message); });
+      this.player.addListener('account_error', ({ message }) => { console.error(message); });
+      this.player.addListener('playback_error', ({ message }) => { console.error(message); });
+    
+      // Playback status updates
+      this.player.addListener('player_state_changed', state => { console.log(state); });
+    
+      // Ready
+      this.player.addListener('ready', ({ device_id }) => {
+        console.log('Ready with Device ID', device_id);
+      });
+    
+      // Not Ready
+      this.player.addListener('not_ready', ({ device_id }) => {
+        console.log('Device ID has gone offline', device_id);
+      });
+    
+      // Connect to the player!
+      this.player.connect();
   }
 
   onPlayerReady() {
