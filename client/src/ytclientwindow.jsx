@@ -3,7 +3,7 @@ import React from 'react';
 import YTPlayer from './components/YTPlayer.jsx';
 
 
-class ClientWindow extends React.Component {
+class YTClientWindow extends React.Component {
   constructor(props) {
     super(props)
     this.state= {
@@ -24,5 +24,5 @@ class ClientWindow extends React.Component {
 //ReactDOM.render(<ClientWindow />, document.getElementById('player-window'));
 if(window.hasClientComponent) {
   // console.log('client window gets defined')
-  window.hasClientComponent(ClientWindow);
+  window.hasClientComponent(YTClientWindow);
 }

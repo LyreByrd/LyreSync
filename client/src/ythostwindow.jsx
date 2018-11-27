@@ -3,7 +3,7 @@ import React from 'react';
 import YTHost from './components/YTHost.jsx';
 
 
-class HostWindow extends React.Component {
+class YTHostWindow extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -24,5 +24,5 @@ class HostWindow extends React.Component {
 //ReactDOM.render(<HostWindow />, document.getElementById('player-window'));
 if(window.hasHostComponent) {
   //console.log('host window gets defined')
-  window.hasHostComponent(HostWindow);
+  window.hasHostComponent(YTHostWindow);
 }

@@ -62,7 +62,7 @@ app.get('/duplex', (req, res) => {
 })
 app.get('/api/player/host/', (req, res) => {
   //console.log('host player request to ' + req.url);
-  const scriptPath = path.resolve(__dirname, '..', 'client', 'dist', 'hostwindow-bundle.js');
+  const scriptPath = path.resolve(__dirname, '..', 'client', 'dist', 'ythostwindow-bundle.js');
 
   fs.readFile(scriptPath, 'utf8', (err, js) => {
     res.send(js);
@@ -71,7 +71,7 @@ app.get('/api/player/host/', (req, res) => {
 
 app.get('/api/player/client/', (req, res) => {
   //console.log('client player request to ' + req.url);
-  const scriptPath = path.resolve(__dirname, '..', 'client', 'dist', 'clientwindow-bundle.js');
+  const scriptPath = path.resolve(__dirname, '..', 'client', 'dist', 'ytclientwindow-bundle.js');
   //console.log('client script path: ' + scriptPath);
   fs.readFile(scriptPath, 'utf8', (err, js) => {
     if (err) {
