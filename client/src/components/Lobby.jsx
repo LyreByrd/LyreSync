@@ -9,7 +9,7 @@ const Lobby = (props) => {
     return <div>{props.isHost ? <YTHost resetToLobby={props.resetToLobby} hostingName={props.hostingName}/> : <YTPlayer resetToLobby={props.resetToLobby} sessionHost={props.sessionHost}/>}</div>
   }
   if (props.inSession && props.service === 'spotify') {
-    return <SpotifyHost />
+    return <SpotifyHost {...props}/>
   }
   let sessionButtons = <div>No known sessions.</div>;
   if (props.knownSessions.length) {

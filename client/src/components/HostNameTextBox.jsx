@@ -5,16 +5,21 @@ class HostNameTextBox extends React.Component {
     super(props);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
-  handleSubmit(event) {
-    event.preventDefault();
-    this.props.tryClaimHost();
+  handleSubmit(event, service) {
+    if (event) {
+      event.preventDefault();
+      this.props.tryClaimHost('youtube');
+    } else {
+      this.props.tryClaimHost(service);
+    }
   }
   render() {
     return (<div>
       <form onSubmit={this.handleSubmit}>
         <input type='text' placeholder='Name to host with' value={this.props.hostingName} onChange={this.props.hostNameTextChange} />
-        <button type='submit' >Claim host if available</button>
+        <button type='submit'>Claim host if available (YouTube)</button>
       </form >
+      <button onClick={() => this.handleSubmit(null, 'spotify')}>Host with Spotify</button>
     </div>)
   }
 }

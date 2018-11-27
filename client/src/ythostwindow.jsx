@@ -16,7 +16,7 @@ class YTHostWindow extends React.Component {
   render() {
     return (<div>
       {this.state.mounted ? <YTHost {...this.props} /> : 'Loading...'}
-    </div>)
+    </div>) 
   }
 }
 

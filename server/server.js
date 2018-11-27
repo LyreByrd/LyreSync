@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const url = require('url');
 const ytSocketActions = require('./youtubeSocketActions.js');
+const spotifySocketActions = require('./spotifySocketActions.js');
 // const React = require('react');
 // const { renderToString } = require('react-dom/server');
 // const ClientWindow = require('./../client/ranspiled/clientwindow.js').default;
@@ -16,7 +17,7 @@ try {
   config = {};
 }
 
-
+const DEV_TOKEN = process.env.DEV_TOKEN;
 
 const app = express();
 const http = require('http').Server(app);
@@ -24,7 +25,7 @@ const io = require('socket.io')(http);
 const socketPort = config.SOCKET_PORT || 9001;
 const apiPort = config.PORT_NUM || 1234;
 
-const services = ['youtube'];
+const services = ['youtube', 'spotify'];
 const validServices = {};
 const activeSessions = {};
 
@@ -101,6 +102,12 @@ io.on('connection', socket => {
       activeSessions[data.host].host = socket;
       if (data.service === 'youtube'){
         ytSocketActions.setYTSocketHost(socket, data.host, activeSessions, io, deleteClosedSession);
+      } else if (data.service === 'spotify') {
+        socket.emit('devToken', DEV_TOKEN)
+        spotifySocketActions.setSpotifySocket(socket, data.host, activeSessions, io);
+        console.log('general actions set');
+        spotifySocketActions.setSpotifyHostSocket(socket, data.host, activeSessions, io, deleteClosedSession);
+        console.log('host actions set');
       }
       //console.log('starts session in object');
       //console.log('gets host actions');

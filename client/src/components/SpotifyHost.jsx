@@ -12,12 +12,17 @@ try {
   SOCKET_PORT = 9001;
 }
 
+let DEV_TOKEN = 'BQCJFg7ZCoXlLEEAIaeILckMqq7Lb0INIeH_nLjaPXnfqErBqXldSpGFLbYfv64TKx_6I7Zs3TMwZPw0oaw2MgOobN7f4y_OQdF03t340bUPGywMvwlypzouqQfJfWRm_EHRf8RkKoFNCgLhtZu75n78oKD59gKKIe6nnGWtSxCd2oy2MsOC9jxmO3jY';
+//will need frequent updating
+
 let loadSpotify;
 
 class SpotifyHost extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      playerId: null,
+      authToken: null,
     }
     this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
     this.onPlaybackRateChange = this.onPlaybackRateChange.bind(this);
@@ -30,21 +35,29 @@ class SpotifyHost extends React.Component {
   componentDidMount () {
     let props = this.props
     //console.log(this.props)
+    console.log('props: ', this.props);
 
-    //this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`); //io(`/${this.props.hostingName}`); namespace implementation
-    //this.socket.on('initPing', () => {
-    //  //console.log('claiming host, name: ' + props.hostingName);
-    //  this.socket.emit('claimHost', {host: props.hostingName, service:'spotify'});
-    //})
-    //this.socket.on('findInitStatus', (socketId) => {
-    //  //return current state for newly joining audience
-    //})
-    //this.socket.on('hostingError', (err) => {
-    //  //console.log('got host error');
-    //  this.setState({hasErrored: true}, () => {
-    //    setTimeout(() => this.props.resetToLobby(err), 5000);
-    //  });
-    //})
+    this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`); //io(`/${this.props.hostingName}`); namespace implementation
+    this.socket.on('initPing', () => {
+      //console.log('claiming host, name: ' + props.hostingName);
+      this.socket.emit('claimHost', {host: props.hostingName, service:'spotify'});
+    });
+    this.socket.on('devToken', (token) => {
+      console.log('dev token recieved');
+      this.setState({authToken: token}, () => {
+        this.onSpotifyReady();
+      });
+    });
+    this.socket.on('findInitStatus', (socketId) => {
+      //return current state for newly joining audience
+    })
+    this.socket.on('hostingError', (err) => {
+      //console.log('got host error');
+      console.log('host error: ', err)
+      this.setState({hasErrored: true}, () => {
+        setTimeout(() => this.props.resetToLobby(err), 5000);
+      });
+    })
 
     if (!loadSpotify) {
       loadSpotify = new Promise((resolve) => {
@@ -57,69 +70,48 @@ class SpotifyHost extends React.Component {
         window.onSpotifyWebPlaybackSDKReady = this.onSpotifyReady;
       })
     }
-
-    loadSpotify.then(() => {
-      //console.log('loadYT\'s .then fired in host')
-      console.log('loadSpotify\'s .then fired in host');
-      this.token = 'BQD-sXQM_NMwGA5s9PuE0cB5OHYrWC-OFlLvR1kSVFxrVMHIOHzzrZ8PLskdcSr-dNtDWkOYJ20RrbqrfZtVmdyM8iSH9LUygO09KA5EBjLyVblwGfaBh0myOlB39VbpXd1RYK3BjqoRoAjni3QOhTRGqL2tGttHqVDafciaCm2XzYzUJQ14hkJ8f1Uc'; //will need frequent updating
-      this.player = new Spotify.Player({
-        name: 'Web Playback SDK Quick Start Player',
-        getOAuthToken: cb => { cb(this.token); }
-      })
-
-      player.addListener('initialization_error', ({ message }) => { console.error(message); });
-      player.addListener('authentication_error', ({ message }) => { console.error(message); });
-      player.addListener('account_error', ({ message }) => { console.error(message); });
-      player.addListener('playback_error', ({ message }) => { console.error(message); });
-    
-      // Playback status updates
-      player.addListener('player_state_changed', state => { console.log(state); });
-    
-      // Ready
-      player.addListener('ready', ({ device_id }) => {
-        console.log('Ready with Device ID', device_id);
-      });
-    
-      // Not Ready
-      player.addListener('not_ready', ({ device_id }) => {
-        console.log('Device ID has gone offline', device_id);
-      });
-    
-      // Connect to the player!
-      player.connect();
-    })
   }
 
   onSpotifyReady() {
+    if (this.state.authToken === null || !Spotify) {
+      console.log('tried to ready spotify too early');
+      return;
+    }
+
     console.log('onSpotifyReady fired');
     console.log(Spotify);
-    console.log('loadSpotify\'s .then fired in host');
-      this.token = 'BQD-sXQM_NMwGA5s9PuE0cB5OHYrWC-OFlLvR1kSVFxrVMHIOHzzrZ8PLskdcSr-dNtDWkOYJ20RrbqrfZtVmdyM8iSH9LUygO09KA5EBjLyVblwGfaBh0myOlB39VbpXd1RYK3BjqoRoAjni3QOhTRGqL2tGttHqVDafciaCm2XzYzUJQ14hkJ8f1Uc'; //will need frequent updating
-      this.player = new Spotify.Player({
-        name: 'Web Playback SDK Quick Start Player',
-        getOAuthToken: cb => { cb(this.token); }
-      })
 
-      this.player.addListener('initialization_error', ({ message }) => { console.error(message); });
-      this.player.addListener('authentication_error', ({ message }) => { console.error(message); });
-      this.player.addListener('account_error', ({ message }) => { console.error(message); });
-      this.player.addListener('playback_error', ({ message }) => { console.error(message); });
-    
-      // Playback status updates
-      this.player.addListener('player_state_changed', state => { console.log(state); });
-    
-      // Ready
-      this.player.addListener('ready', ({ device_id }) => {
-        console.log('Ready with Device ID', device_id);
+    this.player = new Spotify.Player({
+      name: 'Web Playback SDK Quick Start Player',
+      getOAuthToken: cb => { cb(this.state.authToken); }
+    })
+    this.player.addListener('initialization_error', ({ message }) => { console.error(message); });
+    this.player.addListener('authentication_error', ({ message }) => { console.error(message); });
+    this.player.addListener('account_error', ({ message }) => { console.error(message); });
+    this.player.addListener('playback_error', ({ message }) => { console.error(message); });
+  
+    // Playback status updates
+    this.player.addListener('player_state_changed', state => { console.log(state); });
+  
+    // Ready
+    this.player.addListener('ready', (({ device_id }) => {
+      this.setState({playerId: device_id}, () => {
+        console.log('player id state set');
+        if (this.socket) {
+          console.log('informing server of player info');
+          this.socket.emit('spotifyPlayerDetails', {playerId: this.state.playerId, playerAuthToken: this.state.authToken});
+        }
       });
-    
-      // Not Ready
-      this.player.addListener('not_ready', ({ device_id }) => {
-        console.log('Device ID has gone offline', device_id);
-      });
-    
-      // Connect to the player!
-      this.player.connect();
+      console.log('Ready with Device ID', device_id);
+    }).bind(this));
+  
+    // Not Ready
+    this.player.addListener('not_ready', ({ device_id }) => {
+      console.log('Device ID has gone offline', device_id);
+    });
+  
+    // Connect to the player!
+    this.player.connect();
   }
 
   onPlayerReady() {
@@ -137,6 +129,9 @@ class SpotifyHost extends React.Component {
   componentWillUnmount() {
     if(this.socket) {
       this.socket.close();
+    }
+    if(this.player) {
+      this.player.disconnect();
     }
   }
 
