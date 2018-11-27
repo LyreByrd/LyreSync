@@ -29,7 +29,6 @@ const validServices = {};
 const activeSessions = {};
 
 services.forEach(service => { 
-  activeSessions[service] = {}; 
   validServices[service] = true;
 })
 
@@ -107,11 +106,16 @@ io.on('connection', socket => {
     try {
       socket.join(data.host);
       //console.log('joins room')
-      if (data.service === 'youtube') {
-        activeSessions.youtube[data.host].host = socket;
+      let target = activeSessions[data.host];
+      if (!target) {
+        throw new Error('no such session');
+      }
+      if (target.service !== data.service) {
+        throw new Error('service type mismatch');
+      }
+      activeSessions[data.host].host = socket;
+      if (data.service === 'youtube'){
         ytSocketActions.setYTSocketHost(socket, data.host, activeSessions.youtube, io, deleteClosedSession);
-      } else {
-        throw new Error('no such service')
       }
       //console.log('starts session in object');
       //console.log('gets host actions');
@@ -121,11 +125,8 @@ io.on('connection', socket => {
     }
   })
   socket.on('getClientStart', ({sessionHost, service}) => {
-    let target; 
-    if (service === 'youtube') {
-      target = activeSessions.youtube[sessionHost];
-    }
-    if(target) {
+    let target = activeSessions[sessionHost];
+    if(target && target.service === service) {
       socket.hostName = sessionHost;
       socket.join(sessionHost);
       target.activeSockets[socket.id] = socket;
@@ -140,54 +141,46 @@ io.on('connection', socket => {
     }
   })
   socket.on('disconnect', () => {
-    let targetSession = activeSessions.youtube[socket.hostName];
+    let targetSession = activeSessions[socket.hostName];
     if(targetSession) {
-      delete targetSession.activeSockets[socket.id]
+      delete targetSession.activeSockets[socket.id];
     }
   })
 });
 
-
-app.post('/host/:service', (req, res) => {
-  handleMakeSession(req, res, req.params.service);
-})
-
 //no-params route uses youtube, for backwards compatibility
 app.post('/host', (req, res) => {
-  handleMakeSession(req, res, 'youtube');
-})
+  //console.log('requested host name: ', req.body.hostingName);
 
-const handleMakeSession = (req, res, service) => {
-    //console.log('requested host name: ', req.body.hostingName);
-    if(validServices[service] !== true) {
-      res.status(400).send(`Service "${service}" not supported`);
-    } else if (!req.body.hostingName || isInvalidName(req.body.hostingName) || activeSessions[service][req.body.hostingName]) {
-      res.sendStatus(403);
-    } else {
-      try {
-        let hostName = req.body.hostingName;
-        makeNewSession(hostName, service);
-        setTimeout(() => {
-          if(activeSessions[service][hostName] && activeSessions[service][hostName].host === null) {
-            deleteClosedSession(hostName, service);
-          }
-        }, 5000);
-        res.status(201).send({hostName});
-      } catch (err) {
-        res.status(500).send();
-      }
+  // default service is youtube for backwards compatibility
+  let service = req.body.service || 'youtube';
+
+  if(validServices[service] !== true) {
+    res.status(400).send(`Service "${service}" not supported`);
+  } else if (!req.body.hostingName || isInvalidName(req.body.hostingName) || !activeSessions[req.body.hostingName]) {
+    res.sendStatus(403);
+  } else {
+    try {
+      let hostName = req.body.hostingName;
+      makeNewSession(hostName, service);
+      setTimeout(() => {
+        if(activeSessions[hostName] && activeSessions[hostName].host === null) {
+          deleteClosedSession(hostName);
+        }
+      }, 5000);
+      res.status(201).send({hostName});
+    } catch (err) {
+      res.status(500).send();
     }
-}
+  }
+})
 
 
 app.get('/api/sessions', (req, res) => {
   let hostedSessions = [];
-  services.forEach(service => {
-    let serviceSessions = Object.keys(activeSessions[service]).map(sessionHost => {
-      return {sessionHost, service};
-    });
-    //console.log(`${service} sessions: `, serviceSessions);
-    hostedSessions = hostedSessions.concat(serviceSessions);
+  let hosts = Object.keys(activeSessions);
+  hosts.forEach(sessionHost => {
+    hostedSessions.push({sessionHost, service: activeSessions[sessionHost].service})
   });
   res.json(hostedSessions);
 })
@@ -217,21 +210,20 @@ const makeNewSession = (hostName, service) => {
     hostName,
     service,
   }
-  activeSessions[service][hostName] = sessionInfo;
+  activeSessions[hostName] = sessionInfo;
 }
 
 const deleteClosedSession = (hostName, service) => {
-  if (activeSessions[service]) {
-    let closingSession = activeSessions[service][hostName];
-    if (closingSession) {
-      Object.keys(closingSession.activeSockets).forEach(socketId => {
-        let socket = closingSession.activeSockets[socketId];
-        socket.emit('sessionDeleting');
-        socket.disconnect();
-      });
-      delete activeSessions.youtube[hostName];
-      //console.log('Deleting session hosted by ' + hostName);
-    }
+
+  let closingSession = activeSessions[hostName];
+  if (closingSession) {
+    Object.keys(closingSession.activeSockets).forEach(socketId => {
+      let socket = closingSession.activeSockets[socketId];
+      socket.emit('sessionDeleting');
+      socket.disconnect();
+    });
+    delete activeSessions[hostName];
+    //console.log('Deleting session hosted by ' + hostName);
   }
 }
 

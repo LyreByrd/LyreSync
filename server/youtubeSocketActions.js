@@ -1,16 +1,19 @@
-module.exports.setYTSocketHost = (socket, hostName, ytSessions, io, deleteClosedSession) => {
+module.exports.setYTSocketHost = (socket, hostName, activeSessions, io, deleteClosedSession) => {
   socket.on('hostAction', event => {
     io.to(hostName).emit('hostAction', event);
   });
   socket.on('disconnect', () => {
     setTimeout(() => {
       if(socket.disconnected) {
-        deleteClosedSession(hostName, 'youtube');
+        deleteClosedSession(hostName);
       }
     }, 10000);
   })
   socket.on('sendInitStatus', data => {
-    let target = ytSessions[hostName].activeSockets[data.socketId];
+    let target 
+    if (data) {
+      target = activeSessions.activeSockets[data.socketId];
+    }
     if (target) {
       target.emit('initState', data);
     }
@@ -18,4 +21,5 @@ module.exports.setYTSocketHost = (socket, hostName, ytSessions, io, deleteClosed
 }
 
 module.exports.setYTSocketClient = (socket, hostName, sessionStorage) => {
+  //nothing special yet
 }
