@@ -25,9 +25,13 @@ const socketPort = config.SOCKET_PORT || 9001;
 const apiPort = config.PORT_NUM || 1234;
 
 const services = ['youtube'];
+const validServices = {};
 const activeSessions = {};
 
-services.forEach(service => { activeSessions[service] = {}; })
+services.forEach(service => { 
+  activeSessions[service] = {}; 
+  validServices[service] = true;
+})
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json())
@@ -105,7 +109,7 @@ io.on('connection', socket => {
       //console.log('joins room')
       if (data.service === 'youtube') {
         activeSessions.youtube[data.host].host = socket;
-        ytSocketActions.setYTSocketHost(socket, data.host, activeSessions.youtube, io);
+        ytSocketActions.setYTSocketHost(socket, data.host, activeSessions.youtube, io, deleteClosedSession);
       } else {
         throw new Error('no such service')
       }
@@ -144,21 +148,37 @@ io.on('connection', socket => {
 });
 
 
-app.post('/host', (req, res) => {
-  //console.log('requested host name: ', req.body.hostingName);
-  if(isInvalidName(req.body.hostingName) || activeSessions.youtube[req.body.hostingName] || !req.body.hostingName) {
-    res.sendStatus(403);
-  } else {
-    let hostName = req.body.hostingName;
-    makeNewSession(hostName);
-    setTimeout(() => {
-      if(activeSessions.youtube[hostName] && activeSessions.youtube[hostName].host === null) {
-        deleteClosedSession(hostName);
-      }
-    }, 5000);
-    res.status(201).send({hostName});
-  }
+app.post('/host/:service', (req, res) => {
+  handleMakeSession(req, res, req.params.service);
 })
+
+//no-params route uses youtube, for backwards compatibility
+app.post('/host', (req, res) => {
+  handleMakeSession(req, res, 'youtube');
+})
+
+const handleMakeSession = (req, res, service) => {
+    //console.log('requested host name: ', req.body.hostingName);
+    if(validServices[service] !== true) {
+      res.status(400).send(`Service "${service}" not supported`);
+    } else if (!req.body.hostingName || isInvalidName(req.body.hostingName) || activeSessions[service][req.body.hostingName]) {
+      res.sendStatus(403);
+    } else {
+      try {
+        let hostName = req.body.hostingName;
+        makeNewSession(hostName, service);
+        setTimeout(() => {
+          if(activeSessions[service][hostName] && activeSessions[service][hostName].host === null) {
+            deleteClosedSession(hostName, service);
+          }
+        }, 5000);
+        res.status(201).send({hostName});
+      } catch (err) {
+        res.status(500).send();
+      }
+    }
+}
+
 
 app.get('/api/sessions', (req, res) => {
   let hostedSessions = [];
@@ -184,7 +204,7 @@ http.listen(socketPort, function() {
   console.log(`Listening on port ${socketPort}`);
 })
 
-const makeNewSession = (hostName) => {
+const makeNewSession = (hostName, service) => {
   //let nsp = io.of(`/${hostName}`);
   //nsp.on('connection', socket => {
   //  console.log(`namespace ${hostName} being connected`);
@@ -195,25 +215,31 @@ const makeNewSession = (hostName) => {
     activeSockets: {},
     host: null,
     hostName,
+    service,
   }
-  activeSessions.youtube[hostName] = sessionInfo;
+  activeSessions[service][hostName] = sessionInfo;
 }
 
-const deleteClosedSession = (hostName) => {
-  let closingSession = activeSessions.youtube[hostName];
-  if (closingSession) {
-    Object.keys(closingSession.activeSockets).forEach(socketId => {
-      let socket = closingSession.activeSockets[socketId];
-      socket.emit('sessionDeleting');
-      socket.disconnect();
-    });
-    delete activeSessions.youtube[hostName];
-    //console.log('Deleting session hosted by ' + hostName);
+const deleteClosedSession = (hostName, service) => {
+  if (activeSessions[service]) {
+    let closingSession = activeSessions[service][hostName];
+    if (closingSession) {
+      Object.keys(closingSession.activeSockets).forEach(socketId => {
+        let socket = closingSession.activeSockets[socketId];
+        socket.emit('sessionDeleting');
+        socket.disconnect();
+      });
+      delete activeSessions.youtube[hostName];
+      //console.log('Deleting session hosted by ' + hostName);
+    }
   }
 }
 
 const isInvalidName = (string) => {
   //console.log('checking name');
+  if (!string) {
+    return true;
+  }
   for(let i = 0; i < string.length; i++) {
     let asciiNum = string.charCodeAt(i);
     //console.log(typeof asciiNum, asciiNum);
