@@ -75,27 +75,12 @@ app.get('/api/player/client/', (req, res) => {
   //console.log('client script path: ' + scriptPath);
   fs.readFile(scriptPath, 'utf8', (err, js) => {
     if (err) {
-      res.send(err)
+      res.status(500).send(err);
     } else {
       res.send(js);
     }
   });
 });
-
-//app.get('/api/player/host/:hostName', (req, res) => {
-//  const htmlPath = path.resolve(__dirname, '..', 'client', 'dist', 'fakeplayerwindow.html');
-//
-//  fs.readFile(htmlPath, 'utf8', (err, html) => {
-//    const rootElem = '<div id="player-window">';
-//    const renderedApp = renderToString(
-//      React.createElement(HostWindow, {
-//        resetToLobby: () => {console.log('would boot from lobby')},
-//        hostingName: req.params.hostName,
-//      }));
-//    //res.send(html)
-//    res.send(html.replace(rootElem, rootElem + renderedApp));
-//  });
-//})
 
 io.on('connection', socket => {
   //console.log('New socket connection');
@@ -148,30 +133,29 @@ io.on('connection', socket => {
   })
 });
 
-//no-params route uses youtube, for backwards compatibility
 app.post('/host', (req, res) => {
   //console.log('requested host name: ', req.body.hostingName);
 
   // default service is youtube for backwards compatibility
   let service = req.body.service || 'youtube';
+  let hostName = req.body.hostingName;
 
-  console.log(`${req.body.hostingName} attempting to host with ${service}`);
+  //console.log(`${req.body.hostingName} attempting to host with ${service}`);
 
   if(validServices[service] !== true) {
-    console.log('invalid service');
+    //console.log('invalid service');
     res.status(400).send(`Service "${service}" not supported`);
-  } else if (!req.body.hostingName || isInvalidName(req.body.hostingName) || activeSessions[req.body.hostingName]) {
+  } else if (!hostName || isInvalidName(hostName) || activeSessions[hostName]) {
     res.sendStatus(403);
   } else {
     try {
-      let hostName = req.body.hostingName;
       makeNewSession(hostName, service);
       setTimeout(() => {
         if(activeSessions[hostName] && activeSessions[hostName].host === null) {
           deleteClosedSession(hostName);
         }
       }, 5000);
-      res.status(201).send({hostName});
+      res.status(201).send({hostName, service});
     } catch (err) {
       res.status(500).send();
     }
@@ -201,13 +185,7 @@ http.listen(socketPort, function() {
 })
 
 const makeNewSession = (hostName, service) => {
-  //let nsp = io.of(`/${hostName}`);
-  //nsp.on('connection', socket => {
-  //  console.log(`namespace ${hostName} being connected`);
-  //  setNamespaceActions(socket, hostName, nsp);
-  //})
   let sessionInfo = {
-    //sessionSpace: nsp, 
     activeSockets: {},
     host: null,
     hostName,
