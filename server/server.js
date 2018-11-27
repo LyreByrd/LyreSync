@@ -22,7 +22,7 @@ const io = require('socket.io')(http);
 const socketPort = config.SOCKET_PORT || 9001;
 const apiPort = config.PORT_NUM || 1234;
 
-let activeSessions = {};
+let activeYTSessions = {};
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json())
@@ -93,22 +93,28 @@ io.on('connection', socket => {
   //console.log('New socket connection');
   
   socket.emit('initPing');
-  socket.on('claimHost', (hostingName) => {
+  socket.on('claimHost', data => {
     //console.log('New host claimed: ' + hostingName);
     try {
-      socket.join(hostingName);
+      socket.join(data.host);
       //console.log('joins room')
-      activeSessions[hostingName].host = socket;
+      if (data.service !== 'youtube') {
+        throw new Error('no such service')
+      }
+      activeYTSessions[data.host].host = socket;
       //console.log('starts session in object');
-      setHostActions(socket, hostingName);
+      setHostActions(socket, data.host);
       //console.log('gets host actions');
     } catch (err) {
       socket.emit('hostingError', err);
       socket.disconnect();
     }
   })
-  socket.on('getClientStart', (sessionHost) => {
-    let target = activeSessions[sessionHost];
+  socket.on('getClientStart', ({sessionHost, service}) => {
+    let target 
+    if (service === 'youtube') {
+      target = activeYTSessions[sessionHost];
+    }
     if(target) {
       socket.hostName = sessionHost;
       socket.join(sessionHost);
@@ -119,10 +125,12 @@ io.on('connection', socket => {
       } catch(err) {
         socket.emit('clientError');
       }
+    } else {
+      socket.emit('clientError');
     }
   })
   socket.on('disconnect', () => {
-    let targetSession = activeSessions[socket.hostName];
+    let targetSession = activeYTSessions[socket.hostName];
     if(targetSession) {
       delete targetSession.activeSockets[socket.id]
     }
@@ -142,7 +150,7 @@ const setHostActions = (newHost, hostName) => {
     }, 10000);
   })
   newHost.on('sendInitStatus', data => {
-    let target = activeSessions[hostName].activeSockets[data.socketId];
+    let target = activeYTSessions[hostName].activeSockets[data.socketId];
     if (target) {
       target.emit('initState', data);
     }
@@ -151,13 +159,13 @@ const setHostActions = (newHost, hostName) => {
 
 app.post('/host', (req, res) => {
   //console.log('requested host name: ', req.body.hostingName);
-  if(isInvalidName(req.body.hostingName) || activeSessions[req.body.hostingName] || !req.body.hostingName) {
+  if(isInvalidName(req.body.hostingName) || activeYTSessions[req.body.hostingName] || !req.body.hostingName) {
     res.sendStatus(403);
   } else {
     let hostName = req.body.hostingName;
     makeNewSession(hostName);
     setTimeout(() => {
-      if(activeSessions[hostName] && activeSessions[hostName].host === null) {
+      if(activeYTSessions[hostName] && activeYTSessions[hostName].host === null) {
         deleteClosedSession(hostName);
       }
     }, 5000);
@@ -166,7 +174,7 @@ app.post('/host', (req, res) => {
 })
 
 app.get('/api/sessions', (req, res) => {
-  let hostedSessions = Object.keys(activeSessions);
+  let hostedSessions = Object.keys(activeYTSessions);
   if(hostedSessions) {
     hostedSessions = hostedSessions.map(key => ({sessionHost: key}));
   } else {
@@ -199,18 +207,18 @@ const makeNewSession = (hostName) => {
     host: null,
     hostName,
   }
-  activeSessions[hostName] = sessionInfo;
+  activeYTSessions[hostName] = sessionInfo;
 }
 
 const deleteClosedSession = (hostName) => {
-  let closingSession = activeSessions[hostName];
+  let closingSession = activeYTSessions[hostName];
   if (closingSession) {
     Object.keys(closingSession.activeSockets).forEach(socketId => {
       let socket = closingSession.activeSockets[socketId];
       socket.emit('sessionDeleting');
       socket.disconnect();
     });
-    delete activeSessions[hostName];
+    delete activeYTSessions[hostName];
     //console.log('Deleting session hosted by ' + hostName);
   }
 }
@@ -240,7 +248,7 @@ const isNiceAscii = (ascii) => {
 to this implementation later
 const setNamespaceActions = (socket, hostName, nsp) => {
   console.log('namespace actions being set for ' + hostName)
-  let session = activeSessions[hostName];
+  let session = activeYTSessions[hostName];
   if(!session) {
     socket.emit('invalidSession');
     socket.close();
@@ -252,7 +260,7 @@ const setNamespaceActions = (socket, hostName, nsp) => {
       let hostingName = event;
       console.log('New host claimed');
       try {
-        activeSessions[hostingName].host = socket;
+        activeYTSessions[hostingName].host = socket;
         setHostActions(socket, hostingName, nsp);
       } catch (err) {
         console.log('host error', err)
