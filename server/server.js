@@ -153,11 +153,14 @@ app.post('/host', (req, res) => {
   //console.log('requested host name: ', req.body.hostingName);
 
   // default service is youtube for backwards compatibility
-  let service = req.body.service || 'youtube';
+  //let service = req.body.service || 'youtube';
+
+  console.log(`${req.body.hostingName} attempting to host with ${service}`);
 
   if(validServices[service] !== true) {
+    console.log('invalid service');
     res.status(400).send(`Service "${service}" not supported`);
-  } else if (!req.body.hostingName || isInvalidName(req.body.hostingName) || !activeSessions[req.body.hostingName]) {
+  } else if (!req.body.hostingName || isInvalidName(req.body.hostingName) || activeSessions[req.body.hostingName]) {
     res.sendStatus(403);
   } else {
     try {

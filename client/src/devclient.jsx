@@ -59,8 +59,8 @@ class Test extends React.Component {
       });
   }
 
-  joinSession(hostName, service) {
-    this.setState({inSession: true, isHost: false, sessionHost: hostName, service: service});
+  joinSession({sessionHost, service}) {
+    this.setState({inSession: true, isHost: false, sessionHost, service});
   }
 
   fetchActiveSessions() {
