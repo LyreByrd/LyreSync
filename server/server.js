@@ -213,8 +213,7 @@ const makeNewSession = (hostName, service) => {
   activeSessions[hostName] = sessionInfo;
 }
 
-const deleteClosedSession = (hostName, service) => {
-
+const deleteClosedSession = (hostName) => {
   let closingSession = activeSessions[hostName];
   if (closingSession) {
     Object.keys(closingSession.activeSockets).forEach(socketId => {
