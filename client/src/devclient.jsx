@@ -107,6 +107,7 @@ class Test extends React.Component {
           hostingName={this.state.hostingName}
           hostNameTextChange={this.hostNameTextChange}
           resetToLobby={this.resetToLobby}
+          service={this.state.service}
         />
       )
     } else {
