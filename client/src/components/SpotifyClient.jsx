@@ -34,6 +34,7 @@ class SpotifyClient extends React.Component {
     }
     this.logPlayer = this.logPlayer.bind(this);
     this.onSpotifyReady = this.onSpotifyReady.bind(this);
+    this.syncIfNeeded = this.syncIfNeeded.bind(this);
   }
 
   componentDidMount () {
@@ -44,7 +45,7 @@ class SpotifyClient extends React.Component {
     this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`); //io(`/${this.props.hostingName}`); namespace implementation
     this.socket.on('initPing', () => {
       //console.log('claiming host, name: ' + props.hostingName);
-      this.socket.emit('getClientStart', {host: this.props.sessionHost, service: 'spotify', env: this.props.env});
+      this.socket.emit('getClientActions', {host: this.props.sessionHost, service: 'spotify', env: this.props.env});
     });
     this.socket.on('giveAuthToken', (token) => {
       console.log('auth token recieved');
@@ -62,6 +63,13 @@ class SpotifyClient extends React.Component {
     })
     this.socket.on('spotifyResponse', object => {
       console.log('Spotify response: ', object);
+    })
+    this.socket.on('hostStateUpdate', hostState => {
+      if(hostState && this.player && this.state.playerId) {
+        this.player.getCurrentState().then(audienceState => {
+          this.syncIfNeeded(hostState, audienceState);
+        })
+      }
     })
 
     if (!loadSpotify) {
@@ -132,6 +140,76 @@ class SpotifyClient extends React.Component {
   logPlayer() {
     console.log(this.player)
     window.player = this.player;
+  }
+
+  syncIfNeeded(hostState, playerState) {
+    let lateness = hostState.timestamp - Date.now();
+    console.log('time diff: ', lateness);
+    let projectedTime = hostState.position + lateness;
+    if(!playerState) {
+      this.loadTrack({uri: hostState.track_window.uri, time: projectedTime});
+    } else {
+      if(playerState.paused !== hostState.paused) {
+        if(hostState.paused) {
+          this.player.pause();
+        } else {
+          this.player.resume();
+        }
+      }
+      if(playerState.track_window.uri !== hostState.track_window.uri) {
+        this.loadTrack({uri: hostState.track_window.uri, time:projectedTime})
+      } else if (Math.abs(playerState.position - projectedTime) > 1000) {
+        this.player.seek(projectedTime);
+      }
+    }
+    // if(event.type === 'stateChange') {
+    //   let newVideo = event.newVideo;
+    //   let currVideo = this.player.getVideoData().video_id
+    //   //console.log(`Playing id ${currVideo}, directive to look for ${newVideo}`);
+    //   if(newVideo !== currVideo) {
+    //     this.player.loadVideoById({videoId: event.newVideo, startSeconds: event.newTime});
+    //   } else if (Math.abs(event.newTime - this.player.getCurrentTime()) > 1) {
+    //     //console.log('time is wrong');
+    //     if(this.player.getPlayerState() === 5 && this.player.cuedTime && (Math.abs(event.newTime - this.player.cuedTime) <= 1)) {
+    //      this.player.playVideo();
+    //     } else {
+    //       if(event.newState === 1 && this.player.getPlayerState() !== 5) {
+    //         //console.log('ensuring player is playing');
+    //         this.player.playVideo();
+    //       }
+    //       //console.log('seeking, time: ' + event.newTime);
+    //       this.player.seekTo(event.newTime, true);
+    //     }
+    //   }
+    //   if(event.newState === 2) {
+    //     this.player.pauseVideo();
+    //   } else if (event.newState === 1) {
+    //     this.player.playVideo();
+    //   }
+    // } else if (event.type === 'rateChange') {
+    //   this.player.setPlaybackRate(event.newSpeed);
+    // }
+  }
+
+  loadTrack(loadInfo) {
+    let body = {uris: [loadInfo.uri]};
+    if(loadInfo.time) {
+      body.position_ms = loadInfo.time;
+    }
+    axios.put(`https://api.spotify.com/v1/me/player/play?device_id=${this.state.playerId}`,
+        body,
+        {headers: {
+          'Content-Type': 'application.json',
+          'Authorization': 'Bearer ' + this.state.authToken,
+        }}
+      )
+      .then(response => {
+        console.log(response.data)
+      })
+      .catch(error => {
+        //console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||\nERROR:\n', error.response)
+        console.log('spotifyResponse', error.response);
+      })
   }
 
   onIdValChange(e) {

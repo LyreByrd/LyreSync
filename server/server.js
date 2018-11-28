@@ -123,12 +123,15 @@ io.on('connection', socket => {
       //console.log('service match');
       if (data.service === 'youtube') {
         ytSocketActions.setYTSocketClient(socket, data.host, target, io, data);
+      } else if (data.service === 'spotify') {
+        console.log('making spotify audience session');
+        spotifySocketActions.setSpotifySocket(socket, data.host, activeSessions, io, data)
       }
     } else {
       socket.emit('clientError');
     }
   })
-  
+
   socket.on('disconnect', () => {
     let targetSession = activeSessions[socket.hostName];
     if(targetSession) {

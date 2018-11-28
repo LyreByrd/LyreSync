@@ -107,7 +107,10 @@ class SpotifyHost extends React.Component {
     this.player.addListener('playback_error', ({ message }) => { console.error(message); });
   
     // Playback status updates
-    this.player.addListener('player_state_changed', state => { console.log(state); });
+    this.player.addListener('player_state_changed', state => {
+       console.log(state); 
+       this.socket.emit('hostStateUpdate', state);
+      });
   
     // Ready
     this.player.addListener('ready', ({ device_id }) => {
@@ -168,8 +171,8 @@ class SpotifyHost extends React.Component {
   //spotify:album:5frKFvB263lUvjSrrJ1sQ8
 
   loadDefaultFromClient() {
-    let body = JSON.stringify({context_uri: 'spotify:album:5frKFvB263lUvjSrrJ1sQ8'});
-    
+    let body = JSON.stringify({uris: ['spotify:track:4wGCusPRszIZYxbwtgISjD']});
+    //spotify:track:4wGCusPRszIZYxbwtgISjD
     console.log('sending axios call from client');
     axios.put(`https://api.spotify.com/v1/me/player/play?device_id=${this.state.playerId}`,
       body,

@@ -46,6 +46,9 @@ module.exports.setSpotifyHostSocket = (socket, hostName, activeSessions, io, del
       })
     }
   })
+  socket.on('hostStateUpdate', state => {
+    io.to(hostName).emit('hostStateUpdate', state);
+  })
 }
 
 module.exports.setSpotifySocket = (socket, hostName, activeSessions, io, initData) => {
