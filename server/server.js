@@ -85,8 +85,8 @@ app.get('/api/player/client/', (req, res) => {
 
 io.on('connection', socket => {
   //console.log('New socket connection');
-  
   socket.emit('initPing');
+
   socket.on('claimHost', data => {
     //console.log('New host claimed: ' + hostingName);
     try {
@@ -103,7 +103,7 @@ io.on('connection', socket => {
       if (data.service === 'youtube'){
         ytSocketActions.setYTSocketHost(socket, data.host, activeSessions, io, deleteClosedSession);
       } else if (data.service === 'spotify') {
-        socket.emit('devToken', DEV_TOKEN)
+        //socket.emit('devToken', DEV_TOKEN)
         spotifySocketActions.setSpotifySocket(socket, data.host, activeSessions, io, data);
         console.log('general actions set');
         spotifySocketActions.setSpotifyHostSocket(socket, data.host, activeSessions, io, deleteClosedSession, data);
@@ -116,22 +116,19 @@ io.on('connection', socket => {
       socket.disconnect();
     }
   })
-  socket.on('getClientStart', ({sessionHost, service}) => {
-    let target = activeSessions[sessionHost];
-    if(target && target.service === service) {
-      socket.hostName = sessionHost;
-      socket.join(sessionHost);
-      target.activeSockets[socket.id] = socket;
-      //console.log('Client attempting to initialize');
-      try {
-        target.host.emit('findInitStatus', socket.id);
-      } catch(err) {
-        socket.emit('clientError');
+
+  socket.on('getClientActions', data => { //host: (hostname) service: (service) env: 'dev'/undefined
+    let target = activeSessions[data.host];
+    if(target && target.service === data.service) {
+      //console.log('service match');
+      if (data.service === 'youtube') {
+        ytSocketActions.setYTSocketClient(socket, data.host, target, io, data);
       }
     } else {
       socket.emit('clientError');
     }
   })
+  
   socket.on('disconnect', () => {
     let targetSession = activeSessions[socket.hostName];
     if(targetSession) {

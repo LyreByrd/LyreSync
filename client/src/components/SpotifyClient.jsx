@@ -13,7 +13,7 @@ try {
 
 let loadSpotify;
 
-class SpotifyHost extends React.Component {
+class SpotifyClient extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -34,12 +34,12 @@ class SpotifyHost extends React.Component {
   componentDidMount () {
     //let props = this.props
     //console.log(this.props)
-    console.log('props: ', this.props);
+    //console.log('props: ', this.props);
 
     this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`); //io(`/${this.props.hostingName}`); namespace implementation
     this.socket.on('initPing', () => {
       //console.log('claiming host, name: ' + props.hostingName);
-      this.socket.emit('claimHost', {host: this.props.hostingName, service: 'spotify', env: this.props.env});
+      this.socket.emit('getClientStart', {host: this.props.sessionHost, service: 'spotify', env: this.props.env});
     });
     this.socket.on('giveAuthToken', (token) => {
       console.log('auth token recieved');
@@ -190,4 +190,4 @@ class SpotifyHost extends React.Component {
 //  onStateChange: PropTypes.func
 //}
 
-export default SpotifyHost;
+export default SpotifyClient;

@@ -20,6 +20,16 @@ module.exports.setYTSocketHost = (socket, hostName, activeSessions, io, deleteCl
   })
 }
 
-module.exports.setYTSocketClient = (socket, hostName, sessionStorage) => {
+module.exports.setYTSocketClient = (socket, hostName, targetSession, io, data) => {
   //nothing special yet
+  console.log('new youtube ')
+  socket.hostName = hostName;
+  socket.join(hostName);
+  targetSession.activeSockets[socket.id] = socket;
+  //console.log('Client attempting to initialize');
+  try {
+    targetSession.host.emit('findInitStatus', socket.id);
+  } catch(err) {
+    socket.emit('clientError');
+  }
 }

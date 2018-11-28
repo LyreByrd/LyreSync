@@ -2,7 +2,7 @@ require('dotenv').config();
 const axios = require('axios');
 
 const DEV_TOKEN = process.env.DEV_TOKEN;
-const IS_DEV = process.env.IS_DEV;
+const IS_DEV = process.env.IS_DEV === 'true';
 
 module.exports.setSpotifyHostSocket = (socket, hostName, activeSessions, io, deleteClosedSession, initData) => {
   //console.log('socket hosting Spotify at ' + hostName);
@@ -40,7 +40,9 @@ module.exports.setSpotifyHostSocket = (socket, hostName, activeSessions, io, del
 }
 
 module.exports.setSpotifySocket = (socket, hostName, activeSessions, io, initData) => {
+  console.log('new spotify socket. init data: ', initData);
   if(initData.env === 'dev' && IS_DEV && !socket.spotifyAuthToken) {
+    console.log('setting token for spotify socket');
     socket.spotifyAuthToken = DEV_TOKEN;
     socket.emit('giveAuthToken', socket.spotifyAuthToken);
   } else {
