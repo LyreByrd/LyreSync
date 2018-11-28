@@ -1,7 +1,6 @@
 require('dotenv').config();
 const axios = require('axios');
 
-const SPOTIFY_API_KEY = process.env.SPOTIFY_API_KEY;
 const DEV_TOKEN = process.env.DEV_TOKEN;
 const IS_DEV = process.env.IS_DEV;
 
@@ -14,22 +13,27 @@ module.exports.setSpotifyHostSocket = (socket, hostName, activeSessions, io, del
       }
     }, 10000);
   })
-  socket.on('loadFromSpotify', uri => {
+  socket.on('loadFromSpotify', loadData => {
     console.log('load from spotify ready');
     if(socket.spotifyPlayerId && socket.spotifyAuthToken) {
+      let body;
+      if(loadData.mode === 'context') {
+        body = JSON.stringify({context_uri: loadData.target});
+      }
       console.log('past first hurdle');
       axios.put(`https://api.spotify.com/v1/me/player/play?device_id=${socket.spotifyPlayerId}`,
-        JSON.stringify({uris: [uri]}),
+        body,
         {headers: {
           'Content-Type': 'application.json',
           'Authorization': 'Bearer ' + socket.spotifyAuthToken,
         }}
       )
-      .then(data => {
-        socket.emit('spotifyResponse', {data})
+      .then(response => {
+        socket.emit('spotifyResponse', response.data)
       })
       .catch(error => {
-        socket.emit('spotifyResponse', {error});
+        console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||\nERROR:\n', error.response)
+        socket.emit('spotifyResponse', error.response.data);
       })
     }
   })
@@ -42,10 +46,8 @@ module.exports.setSpotifySocket = (socket, hostName, activeSessions, io, initDat
   } else {
     //get auth token from frontend server
   }
-  socket.on('spotifyPlayerDetails', ({playerId, playerAuthToken}) => {
+  socket.on('spotifyPlayerDetails', ({playerId}) => {
     socket.spotifyPlayerId = playerId;
-    socket.spotifyAuthToken = playerAuthToken;
-    socket.emit('playerConfirm', {playerId, playerAuthToken});
   })
   //console.log('general spotify socket actions added');
 }

@@ -68,7 +68,7 @@ class Test extends React.Component {
   fetchActiveSessions() {
     axios.get('/api/sessions')
       .then(res => {
-        console.log('sessions:', res.data)
+        //console.log('sessions:', res.data)
         this.setState({knownSessions: res.data});
       })
       .catch(err => {

@@ -41,7 +41,7 @@ class SpotifyHost extends React.Component {
     this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`); //io(`/${this.props.hostingName}`); namespace implementation
     this.socket.on('initPing', () => {
       //console.log('claiming host, name: ' + props.hostingName);
-      this.socket.emit('claimHost', {host: props.hostingName, service:'spotify', env: this.player.env});
+      this.socket.emit('claimHost', {host: props.hostingName, service:'spotify', env: this.props.env});
     });
     this.socket.on('giveAuthToken', (token) => {
       console.log('auth token recieved');
@@ -152,9 +152,11 @@ class SpotifyHost extends React.Component {
     console.log('checking player status');
     if(this.state.playerReady) {
       console.log('attempting to get music');
-      this.socket.emit('loadFromSpotify', 'spotify:track:7xGfFoTpQ2E7fRF5lN10tr')
+      this.socket.emit('loadFromSpotify', {mode: 'context', target:'spotify:album:5frKFvB263lUvjSrrJ1sQ8'});
     }
   }
+  
+  //spotify:album:5frKFvB263lUvjSrrJ1sQ8
 
   logPlayer() {
     console.log(this.player)
