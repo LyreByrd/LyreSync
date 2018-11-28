@@ -23,10 +23,11 @@ class SpotifyHost extends React.Component {
     this.state = {
       playerId: null,
       authToken: null,
+      playerReady: false,
     }
     this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
     this.onPlaybackRateChange = this.onPlaybackRateChange.bind(this);
-    this.loadDefaultMusic = this.loadVideo.bind(this);
+    this.loadDefaultMusic = this.loadDefaultMusic.bind(this);
     this.logPlayer = this.logPlayer.bind(this);
     this.onIdValChange = this.onIdValChange.bind(this);
     this.onSpotifyReady = this.onSpotifyReady.bind(this);
@@ -60,6 +61,9 @@ class SpotifyHost extends React.Component {
     })
     this.socket.on('playerConfirm', (confirmData) => {
       console.log(this.state, confirmData);
+    })
+    this.socket.on('spotifyResponse', object => {
+      console.log('Spotify response: ', object);
     })
 
     if (!loadSpotify) {
@@ -102,6 +106,7 @@ class SpotifyHost extends React.Component {
         console.log('player id state set');
         if (this.socket) {
           console.log('informing server of player info');
+          this.setState({playerReady: true});
           this.socket.emit('spotifyPlayerDetails', {playerId: this.state.playerId, playerAuthToken: this.state.authToken});
         }
       });
@@ -143,6 +148,13 @@ class SpotifyHost extends React.Component {
     
   }
 
+  loadDefaultMusic() {
+    console.log('checking player status');
+    if(this.state.playerReady) {
+      console.log('attempting to get music');
+      this.socket.emit('loadFromSpotify', 'spotify:track:7xGfFoTpQ2E7fRF5lN10tr')
+    }
+  }
 
   logPlayer() {
     console.log(this.player)
@@ -157,6 +169,7 @@ class SpotifyHost extends React.Component {
     return (
       <div>
         Spotify Component
+        <button onClick={this.loadDefaultMusic}>Start Default Music</button>
         <button onClick={this.logPlayer}>Log Player</button>
       </div>
     )
