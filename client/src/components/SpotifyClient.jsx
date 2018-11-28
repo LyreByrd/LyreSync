@@ -1,3 +1,12 @@
+/*
+ * NOTA BENE:
+ * 
+ * This is the quick-and-dirty version which is easy to code
+ * and suitable for demonstration but runs into rate-limiting
+ * barriers very quickly when it scales up. 
+ * 
+ */
+
 import React from 'react'
 import io from 'socket.io-client';
 
@@ -23,11 +32,7 @@ class SpotifyClient extends React.Component {
       currentPlaylist: [],
       playlistPosition: null,
     }
-    this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
-    this.onPlaybackRateChange = this.onPlaybackRateChange.bind(this);
-    this.loadDefaultMusic = this.loadDefaultMusic.bind(this);
     this.logPlayer = this.logPlayer.bind(this);
-    this.onIdValChange = this.onIdValChange.bind(this);
     this.onSpotifyReady = this.onSpotifyReady.bind(this);
   }
 
@@ -47,18 +52,13 @@ class SpotifyClient extends React.Component {
         this.onSpotifyReady();
       });
     });
-    this.socket.on('findInitStatus', (socketId) => {
-      //return current state for newly joining audience
-    })
-    this.socket.on('hostingError', (err) => {
-      //console.log('got host error');
-      console.log('host error: ', err)
+    this.socket.on('clientError', () => {
       this.setState({hasErrored: true}, () => {
-        setTimeout(() => this.props.resetToLobby(err), 5000);
+        setTimeout(() => this.props.resetToLobby(), 5000);
       });
-    })
+    });
     this.socket.on('playerConfirm', (confirmData) => {
-      console.log(this.state, confirmData);
+      this.socket.emit('getPlayerInit');
     })
     this.socket.on('spotifyResponse', object => {
       console.log('Spotify response: ', object);
@@ -87,7 +87,7 @@ class SpotifyClient extends React.Component {
     //console.log(Spotify);
 
     this.player = new Spotify.Player({
-      name: 'Web Playback SDK Quick Start Player',
+      name: `LyreByrd Spotify Audience Player with ${this.props.hostingName}`,
       getOAuthToken: cb => { cb(this.state.authToken); }
     })
     this.player.addListener('initialization_error', ({ message }) => { console.error(message); });
@@ -120,18 +120,6 @@ class SpotifyClient extends React.Component {
     this.player.connect();
   }
 
-  onPlayerReady() {
-
-  }
-
-  onPlaybackRateChange() {
-
-  }
-
-  onPlayerStateChange(e) {
-
-  }
-
   componentWillUnmount() {
     if(this.socket) {
       this.socket.close();
@@ -140,21 +128,6 @@ class SpotifyClient extends React.Component {
       this.player.disconnect();
     }
   }
-
-
-  loadVideo(event) {
-    
-  }
-
-  loadDefaultMusic() {
-    console.log('checking player status');
-    if(this.state.playerReady) {
-      console.log('attempting to get music');
-      this.socket.emit('loadFromSpotify', {mode: 'context', target:'spotify:album:5frKFvB263lUvjSrrJ1sQ8'});
-    }
-  }
-  
-  //spotify:album:5frKFvB263lUvjSrrJ1sQ8
 
   logPlayer() {
     console.log(this.player)
@@ -168,7 +141,7 @@ class SpotifyClient extends React.Component {
   render () {
     return (
       <div>
-        Spotify Component
+        Spotify Audience Component
         <button onClick={this.loadDefaultMusic}>Start Default Music</button>
         <button onClick={this.logPlayer}>Log Player</button>
       </div>

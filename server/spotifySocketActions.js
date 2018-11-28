@@ -1,3 +1,12 @@
+/*
+ * NOTA BENE:
+ * 
+ * This is the quick-and-dirty version which is easy to code
+ * and suitable for demonstration but runs into rate-limiting
+ * barriers very quickly when it scales up. 
+ * 
+ */
+
 require('dotenv').config();
 const axios = require('axios');
 
@@ -32,7 +41,7 @@ module.exports.setSpotifyHostSocket = (socket, hostName, activeSessions, io, del
         socket.emit('spotifyResponse', response.data)
       })
       .catch(error => {
-        console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||\nERROR:\n', error.response)
+        //console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||\nERROR:\n', error.response)
         socket.emit('spotifyResponse', error.response.data);
       })
     }
@@ -40,9 +49,9 @@ module.exports.setSpotifyHostSocket = (socket, hostName, activeSessions, io, del
 }
 
 module.exports.setSpotifySocket = (socket, hostName, activeSessions, io, initData) => {
-  console.log('new spotify socket. init data: ', initData);
+  //console.log('new spotify socket. init data: ', initData);
   if(initData.env === 'dev' && IS_DEV && !socket.spotifyAuthToken) {
-    console.log('setting token for spotify socket');
+    //console.log('setting token for spotify socket');
     socket.spotifyAuthToken = DEV_TOKEN;
     socket.emit('giveAuthToken', socket.spotifyAuthToken);
   } else {
@@ -50,6 +59,11 @@ module.exports.setSpotifySocket = (socket, hostName, activeSessions, io, initDat
   }
   socket.on('spotifyPlayerDetails', ({playerId}) => {
     socket.spotifyPlayerId = playerId;
+  })
+  socket.on('getPlayerInit', () => {
+    if(activeSessions[hostName] && activeSessions[hostName].host) {
+      activeSessions[hostName].host.emit('getPlayerInit', socket.id);
+    }
   })
   //console.log('general spotify socket actions added');
 }

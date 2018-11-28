@@ -1,5 +1,15 @@
+/*
+ * NOTA BENE:
+ * 
+ * This is the quick-and-dirty version which is easy to code
+ * and suitable for demonstration but runs into rate-limiting
+ * barriers very quickly when it scales up. 
+ * 
+ */
+
 import React from 'react'
 import io from 'socket.io-client';
+import axios from 'axios';
 
 let HOME_URL, SOCKET_PORT;
 try {
@@ -29,6 +39,7 @@ class SpotifyHost extends React.Component {
     this.logPlayer = this.logPlayer.bind(this);
     this.onIdValChange = this.onIdValChange.bind(this);
     this.onSpotifyReady = this.onSpotifyReady.bind(this);
+    this.loadDefaultFromClient = this.loadDefaultFromClient.bind(this);
   }
 
   componentDidMount () {
@@ -87,7 +98,7 @@ class SpotifyHost extends React.Component {
     //console.log(Spotify);
 
     this.player = new Spotify.Player({
-      name: 'Web Playback SDK Quick Start Player',
+      name: `LyreByrd Spotify Host Player ${this.props.hostingName}`,
       getOAuthToken: cb => { cb(this.state.authToken); }
     })
     this.player.addListener('initialization_error', ({ message }) => { console.error(message); });
@@ -156,6 +167,26 @@ class SpotifyHost extends React.Component {
   
   //spotify:album:5frKFvB263lUvjSrrJ1sQ8
 
+  loadDefaultFromClient() {
+    let body = JSON.stringify({context_uri: 'spotify:album:5frKFvB263lUvjSrrJ1sQ8'});
+    
+    console.log('sending axios call from client');
+    axios.put(`https://api.spotify.com/v1/me/player/play?device_id=${this.state.playerId}`,
+      body,
+      {headers: {
+        'Content-Type': 'application.json',
+        'Authorization': 'Bearer ' + this.state.authToken,
+      }}
+    )
+    .then(response => {
+      console.log(response.data)
+    })
+    .catch(error => {
+      //console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||\nERROR:\n', error.response)
+      console.log('spotifyResponse', error.response);
+    })
+  }
+
   logPlayer() {
     console.log(this.player)
     window.player = this.player;
@@ -170,6 +201,8 @@ class SpotifyHost extends React.Component {
       <div>
         Spotify Component
         <button onClick={this.loadDefaultMusic}>Start Default Music</button>
+        <br />
+        <button onClick={this.loadDefaultFromClient}>Load-from-client test</button>
         <button onClick={this.logPlayer}>Log Player</button>
       </div>
     )
