@@ -9,6 +9,7 @@
 
 import React from 'react'
 import io from 'socket.io-client';
+import axios from 'axios';
 
 let HOME_URL, SOCKET_PORT;
 try {
@@ -65,6 +66,7 @@ class SpotifyClient extends React.Component {
       console.log('Spotify response: ', object);
     })
     this.socket.on('hostStateUpdate', hostState => {
+      console.log('Host has a state update!');
       if(hostState && this.player && this.state.playerId) {
         this.player.getCurrentState().then(audienceState => {
           this.syncIfNeeded(hostState, audienceState);
@@ -143,7 +145,7 @@ class SpotifyClient extends React.Component {
   }
 
   syncIfNeeded(hostState, playerState) {
-    let lateness = hostState.timestamp - Date.now();
+    let lateness = Date.now() - hostState.timestamp;
     console.log('time diff: ', lateness);
     let projectedTime = hostState.position + lateness;
     if(!playerState) {

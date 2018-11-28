@@ -47,12 +47,14 @@ module.exports.setSpotifyHostSocket = (socket, hostName, activeSessions, io, del
     }
   })
   socket.on('hostStateUpdate', state => {
+    console.log('passing host state');
     io.to(hostName).emit('hostStateUpdate', state);
   })
 }
 
 module.exports.setSpotifySocket = (socket, hostName, activeSessions, io, initData) => {
   //console.log('new spotify socket. init data: ', initData);
+  socket.join(hostName);
   if(initData.env === 'dev' && IS_DEV && !socket.spotifyAuthToken) {
     //console.log('setting token for spotify socket');
     socket.spotifyAuthToken = DEV_TOKEN;

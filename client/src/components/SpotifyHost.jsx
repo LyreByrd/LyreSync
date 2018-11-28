@@ -40,6 +40,7 @@ class SpotifyHost extends React.Component {
     this.onIdValChange = this.onIdValChange.bind(this);
     this.onSpotifyReady = this.onSpotifyReady.bind(this);
     this.loadDefaultFromClient = this.loadDefaultFromClient.bind(this);
+    this.spoofHostAction = this.spoofHostAction.bind(this);
   }
 
   componentDidMount () {
@@ -195,6 +196,22 @@ class SpotifyHost extends React.Component {
     window.player = this.player;
   }
 
+  spoofHostAction(track, time) {
+    let spoofTracks = {
+      wreckingBad: 'spotify:track:4wGCusPRszIZYxbwtgISjD',
+      cygnus: 'spotify:track:2INatKLWUQJW3iItomRwZ4',
+    }
+    let spoofTime = time * 1000;
+    let spoofState = {
+      paused: false,
+      timestamp: Date.now(),
+      position: spoofTime,
+      track_window: {uri: spoofTracks[track]},
+    }
+    console.log('Spoofing action with object:', spoofState);
+    this.socket.emit('hostStateUpdate', spoofState);
+  }
+
   onIdValChange(e) {
     
   }
@@ -207,6 +224,12 @@ class SpotifyHost extends React.Component {
         <br />
         <button onClick={this.loadDefaultFromClient}>Load-from-client test</button>
         <button onClick={this.logPlayer}>Log Player</button>
+        <br />
+        <button onClick={() => this.spoofHostAction('wreckingBad', 30)}>Wrecking Bad 0:30</button>
+        <button onClick={() => this.spoofHostAction('wreckingBad', 60)}>Wrecking Bad 1:00</button>
+        <br />
+        <button onClick={() => this.spoofHostAction('cygnus', 30)}>Cygnus 0:30</button>
+        <button onClick={() => this.spoofHostAction('cygnus', 60)}>Cygnus 1:00</button>
       </div>
     )
   }
