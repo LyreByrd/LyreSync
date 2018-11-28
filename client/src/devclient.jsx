@@ -110,6 +110,7 @@ class Test extends React.Component {
           hostNameTextChange={this.hostNameTextChange}
           resetToLobby={this.resetToLobby}
           service={this.state.service}
+          env={'dev'}
         />
       )
     } else {

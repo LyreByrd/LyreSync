@@ -3,8 +3,9 @@ const axios = require('axios');
 
 const SPOTIFY_API_KEY = process.env.SPOTIFY_API_KEY;
 const DEV_TOKEN = process.env.DEV_TOKEN;
+const IS_DEV = process.env.IS_DEV;
 
-module.exports.setSpotifyHostSocket = (socket, hostName, activeSessions, io, deleteClosedSession) => {
+module.exports.setSpotifyHostSocket = (socket, hostName, activeSessions, io, deleteClosedSession, initData) => {
   //console.log('socket hosting Spotify at ' + hostName);
   socket.on('disconnect', () => {
     setTimeout(() => {
@@ -34,7 +35,13 @@ module.exports.setSpotifyHostSocket = (socket, hostName, activeSessions, io, del
   })
 }
 
-module.exports.setSpotifySocket = (socket, hostName, activeSessions, io) => {
+module.exports.setSpotifySocket = (socket, hostName, activeSessions, io, initData) => {
+  if(initData.env === 'dev' && IS_DEV && !socket.spotifyAuthToken) {
+    socket.spotifyAuthToken = DEV_TOKEN;
+    socket.emit('giveAuthToken', socket.spotifyAuthToken);
+  } else {
+    //get auth token from frontend server
+  }
   socket.on('spotifyPlayerDetails', ({playerId, playerAuthToken}) => {
     socket.spotifyPlayerId = playerId;
     socket.spotifyAuthToken = playerAuthToken;

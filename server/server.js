@@ -43,7 +43,7 @@ app.use(express.static(__dirname + '/../client/dist'));
 // })
 
 app.get('/test*', (req, res) => {
-  if (process.env.ALLOW_TEST) {
+  if (process.env.ALLOW_TEST === 'true') {
     res.sendFile(path.join(__dirname + '/../client/dist/devclient.html'));
   } else {
     res.sendFile(path.join(__dirname + '/../client/dist/index.html'));
@@ -55,7 +55,7 @@ app.get('/secret', (req, res) => {
 });
 
 app.get('/duplex', (req, res) => {
-  if (process.env.ALLOW_DUPLEX) {
+  if (process.env.ALLOW_DUPLEX === 'true') {
     res.sendFile(path.join(__dirname + '/../client/dist/fakeplayerwindow.html'))
   } else {
     res.sendFile(path.join(__dirname + '/../client/dist/index.html'));
@@ -104,9 +104,9 @@ io.on('connection', socket => {
         ytSocketActions.setYTSocketHost(socket, data.host, activeSessions, io, deleteClosedSession);
       } else if (data.service === 'spotify') {
         socket.emit('devToken', DEV_TOKEN)
-        spotifySocketActions.setSpotifySocket(socket, data.host, activeSessions, io);
+        spotifySocketActions.setSpotifySocket(socket, data.host, activeSessions, io, data);
         console.log('general actions set');
-        spotifySocketActions.setSpotifyHostSocket(socket, data.host, activeSessions, io, deleteClosedSession);
+        spotifySocketActions.setSpotifyHostSocket(socket, data.host, activeSessions, io, deleteClosedSession, data);
         console.log('host actions set');
       }
       //console.log('starts session in object');
