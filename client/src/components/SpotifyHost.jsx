@@ -58,6 +58,9 @@ class SpotifyHost extends React.Component {
         setTimeout(() => this.props.resetToLobby(err), 5000);
       });
     })
+    this.socket.on('playerConfirm', (confirmData) => {
+      console.log(this.state, confirmData);
+    })
 
     if (!loadSpotify) {
       loadSpotify = new Promise((resolve) => {
@@ -73,7 +76,7 @@ class SpotifyHost extends React.Component {
   }
 
   onSpotifyReady() {
-    if (this.state.authToken === null || !Spotify) {
+    if (this.state.authToken === null || !window.Spotify) {
       console.log('tried to ready spotify too early');
       return;
     }
@@ -94,7 +97,7 @@ class SpotifyHost extends React.Component {
     this.player.addListener('player_state_changed', state => { console.log(state); });
   
     // Ready
-    this.player.addListener('ready', (({ device_id }) => {
+    this.player.addListener('ready', ({ device_id }) => {
       this.setState({playerId: device_id}, () => {
         console.log('player id state set');
         if (this.socket) {
@@ -103,7 +106,7 @@ class SpotifyHost extends React.Component {
         }
       });
       console.log('Ready with Device ID', device_id);
-    }).bind(this));
+    });
   
     // Not Ready
     this.player.addListener('not_ready', ({ device_id }) => {
@@ -159,6 +162,13 @@ class SpotifyHost extends React.Component {
     )
   }
 }
+
+//player:
+//play/pause button
+//click-and-drag seek bar
+//skip-to-next, jump-to-previous
+//playlist entries
+
 //
 //YTPlayer.propTypes = {
 //  YTid: PropTypes.string.required,
