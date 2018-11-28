@@ -10,6 +10,7 @@
 import React from 'react'
 import io from 'socket.io-client';
 import axios from 'axios';
+import SpotifyHostControls from './SpotifyHostControls.jsx';
 
 let HOME_URL, SOCKET_PORT;
 try {
@@ -30,8 +31,10 @@ class SpotifyHost extends React.Component {
       playerId: null,
       authToken: null,
       playerReady: false,
+      hostPlaylists: [],
       currentPlaylist: [],
       playlistPosition: null,
+      playerState: 'inactive',
     }
     this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
     this.onPlaybackRateChange = this.onPlaybackRateChange.bind(this);
@@ -42,6 +45,8 @@ class SpotifyHost extends React.Component {
     this.loadDefaultFromClient = this.loadDefaultFromClient.bind(this);
     this.spoofHostAction = this.spoofHostAction.bind(this);
     this.spoofTimedSync.bind(this);
+    this.togglePause = this.togglePause.bind(this);
+    this.skipTo = this.skipTo.bind(this);
   }
 
   componentDidMount () {
@@ -110,7 +115,7 @@ class SpotifyHost extends React.Component {
   
     // Playback status updates
     this.player.addListener('player_state_changed', state => {
-       console.log(state); 
+       //console.log(state); 
        this.socket.emit('hostStateUpdate', state);
       });
   
@@ -185,6 +190,7 @@ class SpotifyHost extends React.Component {
     )
     .then(response => {
       console.log(response.data)
+      this.setState({playerState: 'playing'})
     })
     .catch(error => {
       //console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||\nERROR:\n', error.response)
@@ -240,10 +246,32 @@ class SpotifyHost extends React.Component {
     
   }
 
+  togglePause() {
+    console.log('Should pause/resume');
+    this.player.togglePlay()
+      .then(() => {
+        this.setState({
+          playerState: (this.state.playerState === 'playing' ? 'paused' : 'playing')
+        })
+      });
+  }
+
+  skipTo(targetData) {
+    if(targetData.mode === 'rel') {
+      //relative movement through playlist
+      if(targetData.target === 1) {
+        this.player.nextTrack();
+      } else if (targetData.target === -1) {
+        this.player.previousTrack();
+      }
+    }
+  }
+
   render () {
     return (
       <div>
         Spotify Component
+        <SpotifyHostControls togglePause={this.togglePause} skipTo={this.skipTo} playerState={this.state.playerState} />
         <button onClick={this.loadDefaultMusic}>Start Default Music</button>
         <br />
         <button onClick={this.loadDefaultFromClient}>Load-from-client test</button>

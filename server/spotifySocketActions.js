@@ -10,6 +10,7 @@
 require('dotenv').config();
 const axios = require('axios');
 
+let dev_playlists;
 const DEV_TOKEN = process.env.DEV_TOKEN;
 const IS_DEV = process.env.IS_DEV === 'true';
 
@@ -61,6 +62,8 @@ module.exports.setSpotifySocket = (socket, hostName, activeSessions, io, initDat
     socket.emit('giveAuthToken', socket.spotifyAuthToken);
   } else {
     //get auth token from frontend server
+    //get playlists from spotify
+    //send both
   }
   socket.on('spotifyPlayerDetails', ({playerId}) => {
     socket.spotifyPlayerId = playerId;
