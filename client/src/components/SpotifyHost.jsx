@@ -41,6 +41,7 @@ class SpotifyHost extends React.Component {
     this.onSpotifyReady = this.onSpotifyReady.bind(this);
     this.loadDefaultFromClient = this.loadDefaultFromClient.bind(this);
     this.spoofHostAction = this.spoofHostAction.bind(this);
+    this.spoofTimedSync.bind(this);
   }
 
   componentDidMount () {
@@ -206,10 +207,33 @@ class SpotifyHost extends React.Component {
       paused: false,
       timestamp: Date.now(),
       position: spoofTime,
-      track_window: {uri: spoofTracks[track]},
+      track_window: {current_track: {uri: spoofTracks[track]}},
     }
     console.log('Spoofing action with object:', spoofState);
     this.socket.emit('hostStateUpdate', spoofState);
+  }
+
+  spoofTimedSync(track, start) {
+    let spoofTracks = {
+      wreckingBad: 'spotify:track:4wGCusPRszIZYxbwtgISjD',
+      cygnus: 'spotify:track:2INatKLWUQJW3iItomRwZ4',
+    }
+    let spoofTime = start * 1000;
+    let spoofState = {
+      paused: false,
+      timestamp: Date.now(),
+      position: spoofTime,
+      track_window: {current_track: {uri: spoofTracks[track]}},
+    }
+    this.socket.emit('hostStateUpdate', spoofState);
+    for(let i = 1; i < 20; i++) {
+      setTimeout(() => {
+        let diff = Date.now() - spoofState.timestamp;
+        spoofState.timestamp += diff;
+        spoofState.position += diff;
+        this.socket.emit('hostStateUpdate', spoofState);
+      }, i * 1000);
+    }
   }
 
   onIdValChange(e) {
@@ -230,6 +254,8 @@ class SpotifyHost extends React.Component {
         <br />
         <button onClick={() => this.spoofHostAction('cygnus', 30)}>Cygnus 0:30</button>
         <button onClick={() => this.spoofHostAction('cygnus', 60)}>Cygnus 1:00</button>
+        <br />
+        <button onClick={() => this.spoofTimedSync('cygnus', 30)}>Check long-term sync</button>
       </div>
     )
   }

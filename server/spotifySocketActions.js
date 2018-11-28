@@ -47,7 +47,7 @@ module.exports.setSpotifyHostSocket = (socket, hostName, activeSessions, io, del
     }
   })
   socket.on('hostStateUpdate', state => {
-    console.log('passing host state');
+    //console.log('passing host state');
     io.to(hostName).emit('hostStateUpdate', state);
   })
 }

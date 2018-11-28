@@ -146,10 +146,11 @@ class SpotifyClient extends React.Component {
 
   syncIfNeeded(hostState, playerState) {
     let lateness = Date.now() - hostState.timestamp;
-    console.log('time diff: ', lateness);
+    console.log('lag: ', lateness);
     let projectedTime = hostState.position + lateness;
+    console.log('host state:', hostState, 'player state:', playerState);
     if(!playerState) {
-      this.loadTrack({uri: hostState.track_window.uri, time: projectedTime});
+      this.loadTrack({uri: hostState.track_window.current_track.uri, time: projectedTime});
     } else {
       if(playerState.paused !== hostState.paused) {
         if(hostState.paused) {
@@ -158,8 +159,8 @@ class SpotifyClient extends React.Component {
           this.player.resume();
         }
       }
-      if(playerState.track_window.uri !== hostState.track_window.uri) {
-        this.loadTrack({uri: hostState.track_window.uri, time:projectedTime})
+      if(playerState.track_window.current_track.uri !== hostState.track_window.current_track.uri) {
+        this.loadTrack({uri: hostState.track_window.current_track.uri, time:projectedTime})
       } else if (Math.abs(playerState.position - projectedTime) > 1000) {
         this.player.seek(projectedTime);
       }
@@ -194,6 +195,7 @@ class SpotifyClient extends React.Component {
   }
 
   loadTrack(loadInfo) {
+    console.log('new track load');
     let body = {uris: [loadInfo.uri]};
     if(loadInfo.time) {
       body.position_ms = loadInfo.time;
