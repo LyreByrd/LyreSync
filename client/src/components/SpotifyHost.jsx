@@ -10,7 +10,7 @@
 import React from 'react'
 import io from 'socket.io-client';
 import axios from 'axios';
-import SpotifyHostControls from './SpotifyHostControls.jsx';
+import SpotifyGUI from './SpotifyGUI.jsx';
 
 let HOME_URL, SOCKET_PORT;
 try {
@@ -35,6 +35,8 @@ class SpotifyHost extends React.Component {
       currentPlaylist: [],
       playlistPosition: null,
       playerState: 'inactive',
+      playerTime: 0,
+      currentPlayingInfo: {},
     }
     this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
     this.onPlaybackRateChange = this.onPlaybackRateChange.bind(this);
@@ -80,7 +82,15 @@ class SpotifyHost extends React.Component {
     })
     this.socket.on('spotifyResponse', object => {
       console.log('Spotify response: ', object);
-    })
+      this.player.getCurrentState()
+        .then(state => {
+          if(state) {
+            this.setState({
+              playerState: (state.paused ? 'paused' : 'playing'),
+            });
+          }
+        });
+    });
 
     if (!loadSpotify) {
       loadSpotify = new Promise((resolve) => {
@@ -271,7 +281,7 @@ class SpotifyHost extends React.Component {
     return (
       <div>
         Spotify Component
-        <SpotifyHostControls togglePause={this.togglePause} skipTo={this.skipTo} playerState={this.state.playerState} />
+        <SpotifyGUI isHost={true} togglePause={this.togglePause} skipTo={this.skipTo} playerState={this.state.playerState} />
         <button onClick={this.loadDefaultMusic}>Start Default Music</button>
         <br />
         <button onClick={this.loadDefaultFromClient}>Load-from-client test</button>

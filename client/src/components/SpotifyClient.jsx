@@ -10,6 +10,7 @@
 import React from 'react'
 import io from 'socket.io-client';
 import axios from 'axios';
+import SpotifyGUI from './SpotifyGUI.jsx';
 
 let HOME_URL, SOCKET_PORT;
 try {
@@ -32,6 +33,9 @@ class SpotifyClient extends React.Component {
       playerReady: false,
       currentPlaylist: [],
       playlistPosition: null,
+      playerState: 'inactive',
+      playerTime: 0,
+      currentPlayingInfo: {},
     }
     this.logPlayer = this.logPlayer.bind(this);
     this.onSpotifyReady = this.onSpotifyReady.bind(this);
@@ -224,6 +228,8 @@ class SpotifyClient extends React.Component {
     return (
       <div>
         Spotify Audience Component
+        <br />
+        <SpotifyGUI isHost={false} />
         <button onClick={this.loadDefaultMusic}>Start Default Music</button>
         <button onClick={this.logPlayer}>Log Player</button>
       </div>
