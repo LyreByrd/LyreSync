@@ -10,6 +10,7 @@
 import React from 'react'
 import io from 'socket.io-client';
 import axios from 'axios';
+import debounce from 'debounce';
 import SpotifyGUI from './SpotifyGUI.jsx';
 
 let HOME_URL, SOCKET_PORT;
@@ -36,10 +37,17 @@ class SpotifyClient extends React.Component {
       playerState: 'inactive',
       playerTime: 0,
       currentPlayingInfo: {},
-    }
+      currentPlayingDuration: 0,
+      isMuted: false,
+      volume: 100,
+    } 
     this.logPlayer = this.logPlayer.bind(this);
     this.onSpotifyReady = this.onSpotifyReady.bind(this);
     this.syncIfNeeded = this.syncIfNeeded.bind(this);
+    this.toggleMute = this.toggleMute.bind(this);
+    this.setVolume = this.setVolume.bind(this);
+    this.sendVolumeRequest = debounce(this.sendVolumeRequest.bind(this), 100);
+    this.handlePlayerStateChange = debounce(this.handlePlayerStateChange.bind(this), 50);
   }
 
   componentDidMount () {
@@ -110,7 +118,9 @@ class SpotifyClient extends React.Component {
     this.player.addListener('playback_error', ({ message }) => { console.error(message); });
   
     // Playback status updates
-    this.player.addListener('player_state_changed', state => { console.log(state); });
+    this.player.addListener('player_state_changed', playerState => { 
+      this.handlePlayerStateChange(playerState);
+    });
   
     // Ready
     this.player.addListener('ready', ({ device_id }) => {
@@ -169,33 +179,6 @@ class SpotifyClient extends React.Component {
         this.player.seek(projectedTime);
       }
     }
-    // if(event.type === 'stateChange') {
-    //   let newVideo = event.newVideo;
-    //   let currVideo = this.player.getVideoData().video_id
-    //   //console.log(`Playing id ${currVideo}, directive to look for ${newVideo}`);
-    //   if(newVideo !== currVideo) {
-    //     this.player.loadVideoById({videoId: event.newVideo, startSeconds: event.newTime});
-    //   } else if (Math.abs(event.newTime - this.player.getCurrentTime()) > 1) {
-    //     //console.log('time is wrong');
-    //     if(this.player.getPlayerState() === 5 && this.player.cuedTime && (Math.abs(event.newTime - this.player.cuedTime) <= 1)) {
-    //      this.player.playVideo();
-    //     } else {
-    //       if(event.newState === 1 && this.player.getPlayerState() !== 5) {
-    //         //console.log('ensuring player is playing');
-    //         this.player.playVideo();
-    //       }
-    //       //console.log('seeking, time: ' + event.newTime);
-    //       this.player.seekTo(event.newTime, true);
-    //     }
-    //   }
-    //   if(event.newState === 2) {
-    //     this.player.pauseVideo();
-    //   } else if (event.newState === 1) {
-    //     this.player.playVideo();
-    //   }
-    // } else if (event.type === 'rateChange') {
-    //   this.player.setPlaybackRate(event.newSpeed);
-    // }
   }
 
   loadTrack(loadInfo) {
@@ -212,7 +195,7 @@ class SpotifyClient extends React.Component {
         }}
       )
       .then(response => {
-        console.log(response.data)
+        //do nothing atm
       })
       .catch(error => {
         //console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||\nERROR:\n', error.response)
@@ -220,8 +203,58 @@ class SpotifyClient extends React.Component {
       })
   }
 
-  onIdValChange(e) {
-    
+  handlePlayerStateChange(playerState) {
+    let edited = false;
+    let neededUpdates = {};
+    if (this.state.currentPlayingInfo.uri !== playerState.track_window.current_track.uri) {
+      neededUpdates.currentPlayingDuration = playerState.duration;
+      neededUpdates.currentPlayingInfo = playerState.track_window.current_track;
+      edited = true;
+    }
+    if (Math.abs(this.state.playerTime - playerState.position) > 500) {
+      neededUpdates.playerTime = playerState.position;
+      edited = true;
+    }
+    if(edited) {
+      console.log('New information: ', neededUpdates)
+      this.setState(neededUpdates);
+    }
+  }
+
+  toggleMute() {
+    if(this.state.isMuted) {
+      let spotifyVol = this.state.volume/100;
+      if(this.state.playerReady) {
+        this.player.setVolume(spotifyVol)
+          .then(() => {
+            this.setState({isMuted: false});
+          })
+        } else {
+          this.setState({isMuted: false});
+        }
+    } else {
+      if(this.state.playerReady) {
+        this.player.setVolume(0)
+          .then(() => {
+            this.setState({isMuted: true});
+          })
+      } else {
+        this.setState({isMuted: true});
+      }
+    }
+  }
+
+  setVolume(event) {
+    this.setState({volume: event.target.value}, () => {
+        this.sendVolumeRequest();
+      })
+  }
+
+  sendVolumeRequest() {
+    console.log('send volume request');
+    if(this.state.playerReady && this.state.isMuted === false) {
+      this.player.setVolume(this.state.volume/100);
+    }
   }
 
   render () {
@@ -229,13 +262,36 @@ class SpotifyClient extends React.Component {
       <div>
         Spotify Audience Component
         <br />
-        <SpotifyGUI isHost={false} />
+        <SpotifyGUI 
+          isHost={false} 
+          currentPlayingInfo={this.state.currentPlayingInfo} 
+          currentPlayingDuration={this.state.currentPlayingDuration}
+          playerTime={this.state.playerTime}
+          setTime={() => undefined}
+          toggleMute={this.toggleMute}
+          setVolume={this.setVolume}
+          currentVolume={this.state.volume}
+          isMuted={this.state.isMuted}
+        />
         <button onClick={this.loadDefaultMusic}>Start Default Music</button>
         <button onClick={this.logPlayer}>Log Player</button>
       </div>
     )
   }
 }
+
+// isHost={true} 
+//           togglePause={this.togglePause} 
+//           skipTo={this.skipTo} 
+//           playerState={this.state.playerState} 
+//           isMuted={this.state.isMuted}
+//           currentVolume={this.state.volume}
+//           toggleMute={this.toggleMute}
+//           setVolume={this.setVolume}
+//           currentPlayingDuration={this.state.currentPlayingDuration}
+//           currentPlayingInfo={this.state.currentPlayingInfo}
+//           playerTime={this.state.playerTime}
+//           setTime={this.state.setTime}
 
 //player:
 //play/pause button

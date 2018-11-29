@@ -375,7 +375,7 @@ class SpotifyHost extends React.Component {
           currentVolume={this.state.volume}
           toggleMute={this.toggleMute}
           setVolume={this.setVolume}
-          currentPlayingDuration={this.currentPlayingDuration}
+          currentPlayingDuration={this.state.currentPlayingDuration}
           currentPlayingInfo={this.state.currentPlayingInfo}
           playerTime={this.state.playerTime}
           setTime={this.state.setTime}
