@@ -10,6 +10,8 @@
 import React from 'react'
 import io from 'socket.io-client';
 import axios from 'axios';
+import { debounce } from 'debounce';
+
 import SpotifyGUI from './SpotifyGUI.jsx';
 
 let HOME_URL, SOCKET_PORT;
@@ -37,6 +39,9 @@ class SpotifyHost extends React.Component {
       playerState: 'inactive',
       playerTime: 0,
       currentPlayingInfo: {},
+      volume: 100,
+      isMuted: false,
+      currentPlayingDuration: null,
     }
     this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
     this.onPlaybackRateChange = this.onPlaybackRateChange.bind(this);
@@ -49,6 +54,11 @@ class SpotifyHost extends React.Component {
     this.spoofTimedSync.bind(this);
     this.togglePause = this.togglePause.bind(this);
     this.skipTo = this.skipTo.bind(this);
+    this.toggleMute = this.toggleMute.bind(this);
+    this.setVolume = this.setVolume.bind(this);
+    this.sendVolumeRequest = debounce(this.sendVolumeRequest.bind(this), 100);
+    this.handlePlayerStateChange = debounce(this.handlePlayerStateChange.bind(this), 50);
+    this.setTime = debounce(this.setTime.bind(this), 100);
   }
 
   componentDidMount () {
@@ -116,7 +126,8 @@ class SpotifyHost extends React.Component {
 
     this.player = new Spotify.Player({
       name: `LyreByrd Spotify Host Player ${this.props.hostingName}`,
-      getOAuthToken: cb => { cb(this.state.authToken); }
+      getOAuthToken: cb => { cb(this.state.authToken); },
+      volume: this.state.isMuted ? 0 : (this.state.volume / 100),
     })
     this.player.addListener('initialization_error', ({ message }) => { console.error(message); });
     this.player.addListener('authentication_error', ({ message }) => { console.error(message); });
@@ -124,9 +135,9 @@ class SpotifyHost extends React.Component {
     this.player.addListener('playback_error', ({ message }) => { console.error(message); });
   
     // Playback status updates
-    this.player.addListener('player_state_changed', state => {
+    this.player.addListener('player_state_changed', playerState => {
        //console.log(state); 
-       this.socket.emit('hostStateUpdate', state);
+       this.handlePlayerStateChange(playerState);
       });
   
     // Ready
@@ -258,12 +269,14 @@ class SpotifyHost extends React.Component {
 
   togglePause() {
     console.log('Should pause/resume');
-    this.player.togglePlay()
-      .then(() => {
-        this.setState({
-          playerState: (this.state.playerState === 'playing' ? 'paused' : 'playing')
-        })
-      });
+    if(this.state.playerReady && this.state.playerState !== 'inactive') {
+      this.player.togglePlay()
+        .then(() => {
+          this.setState({
+            playerState: (this.state.playerState === 'playing' ? 'paused' : 'playing')
+          })
+        });
+    }
   }
 
   skipTo(targetData) {
@@ -277,15 +290,69 @@ class SpotifyHost extends React.Component {
     }
   }
 
+  toggleMute() {
+    if(this.state.isMuted) {
+      let spotifyVol = this.state.volume/100;
+      if(this.state.playerReady) {
+        this.player.setVolume(spotifyVol)
+          .then(() => {
+            this.setState({isMuted: false});
+          })
+        } else {
+          this.setState({isMuted: false});
+        }
+    } else {
+      if(this.state.playerReady) {
+        this.player.setVolume(0)
+          .then(() => {
+            this.setState({isMuted: true});
+          })
+      } else {
+        this.setState({isMuted: true});
+      }
+    }
+  }
+
+  setVolume(event) {
+    this.setState({volume: event.target.value}, () => {
+        this.sendVolumeRequest();
+      })
+  }
+
+  sendVolumeRequest() {
+    console.log('send volume request');
+    if(this.state.playerReady && this.state.isMuted === false) {
+      this.player.setVolume(this.state.volume/100);
+    }
+  }
+
+  handlePlayerStateChange(playerState) {
+    this.socket.emit('hostStateUpdate', playerState);
+    let edited = false;
+    let neededUpdates = {};
+    if (this.state.currentPlayingInfo.uri !== playerState.track_window.current_track.uri) {
+      neededUpdates.currentPlayingDuration = playerState.duration;
+      neededUpdates.currentPlayingInfo = playerState.track_window.current_track;
+      edited = true;
+    }
+    if (Math.abs(this.state.playerTime - playerState.position) > 500) {
+      neededUpdates.playerTime = playerState.position;
+      edited = true;
+    }
+    if(edited) {
+      console.log('New information: ', neededUpdates)
+      this.setState(neededUpdates);
+    }
+  }
+
+  setTime(newTime) {
+    console.log('plan to set time to ' + newTime);
+  }
+
   render () {
-    return (
-      <div>
-        Spotify Component
-        <SpotifyGUI isHost={true} togglePause={this.togglePause} skipTo={this.skipTo} playerState={this.state.playerState} />
-        <button onClick={this.loadDefaultMusic}>Start Default Music</button>
-        <br />
-        <button onClick={this.loadDefaultFromClient}>Load-from-client test</button>
-        <button onClick={this.logPlayer}>Log Player</button>
+    let spoofButtons = this.props.env === 'dev' ?
+      (<div>
+        Spoof Buttons:
         <br />
         <button onClick={() => this.spoofHostAction('wreckingBad', 30)}>Wrecking Bad 0:30</button>
         <button onClick={() => this.spoofHostAction('wreckingBad', 60)}>Wrecking Bad 1:00</button>
@@ -294,6 +361,31 @@ class SpotifyHost extends React.Component {
         <button onClick={() => this.spoofHostAction('cygnus', 60)}>Cygnus 1:00</button>
         <br />
         <button onClick={() => this.spoofTimedSync('cygnus', 30)}>Check long-term sync</button>
+      </div>)
+      : '';
+    return (
+      <div>
+        Spotify Component
+        <SpotifyGUI 
+          isHost={true} 
+          togglePause={this.togglePause} 
+          skipTo={this.skipTo} 
+          playerState={this.state.playerState} 
+          isMuted={this.state.isMuted}
+          currentVolume={this.state.volume}
+          toggleMute={this.toggleMute}
+          setVolume={this.setVolume}
+          currentPlayingDuration={this.currentPlayingDuration}
+          currentPlayingInfo={this.state.currentPlayingInfo}
+          playerTime={this.state.playerTime}
+          setTime={this.state.setTime}
+        />
+        <button onClick={this.loadDefaultMusic}>Start Default Music</button>
+        <br />
+        <button onClick={this.loadDefaultFromClient}>Load-from-client test</button>
+        <button onClick={this.logPlayer}>Log Player</button>
+        <br />
+        {spoofButtons}
       </div>
     )
   }

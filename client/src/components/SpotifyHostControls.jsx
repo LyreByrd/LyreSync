@@ -1,10 +1,11 @@
 import React from 'react';
 
 const SpotifyHostControls = (props) => {
+  let shouldShowPause = props.playerState === 'playing';
   let plauseButton = (<button 
     onClick={props.togglePause} 
-    className={props.playerState !== 'paused' ? 'play-btn' : 'pause-btn'}>
-      {props.playerState !== 'paused' ? 'Play' : 'Pause'}
+    className={shouldShowPause ? 'pause-btn' : 'play-btn'}>
+      {shouldShowPause ? 'Pause' : 'Play'}
     </button>)
   return (<div className='spotify host-controls'>
 
