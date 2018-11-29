@@ -59,6 +59,8 @@ class SpotifyHost extends React.Component {
     this.sendVolumeRequest = debounce(this.sendVolumeRequest.bind(this), 100);
     this.handlePlayerStateChange = debounce(this.handlePlayerStateChange.bind(this), 50);
     this.setTime = debounce(this.setTime.bind(this), 100);
+    this.startTimer = this.startTimer.bind(this);
+    this.componentWillUnmount = this.componentWillUnmount.bind(this);
   }
 
   componentDidMount () {
@@ -146,7 +148,9 @@ class SpotifyHost extends React.Component {
         console.log('player id state set');
         if (this.socket) {
           console.log('informing server of player info');
-          this.setState({playerReady: true});
+          this.setState({playerReady: true}, () => {
+            this.startTimer();
+          });
           this.socket.emit('spotifyPlayerDetails', {playerId: this.state.playerId, playerAuthToken: this.state.authToken});
         }
       });
@@ -180,6 +184,9 @@ class SpotifyHost extends React.Component {
     }
     if(this.player) {
       this.player.disconnect();
+    }
+    if(this.timerInterval) {
+      clearInterval(this.timerInterval);
     }
   }
 
@@ -335,7 +342,7 @@ class SpotifyHost extends React.Component {
       neededUpdates.currentPlayingInfo = playerState.track_window.current_track;
       edited = true;
     }
-    if (Math.abs(this.state.playerTime - playerState.position) > 500) {
+    if (Math.abs(this.state.playerTime - playerState.position) > 1000) {
       neededUpdates.playerTime = playerState.position;
       edited = true;
     }
@@ -343,6 +350,14 @@ class SpotifyHost extends React.Component {
       console.log('New information: ', neededUpdates)
       this.setState(neededUpdates);
     }
+  }
+
+  startTimer() {
+    this.timerInterval = setInterval(() => {
+      if(this.state.playerState === 'playing') {
+        this.setState({playerTime: this.state.playerTime + 250})
+      }
+    }, 250);
   }
 
   setTime(newTime) {

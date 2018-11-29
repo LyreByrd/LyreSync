@@ -128,7 +128,9 @@ class SpotifyClient extends React.Component {
         console.log('player id state set');
         if (this.socket) {
           console.log('informing server of player info');
-          this.setState({playerReady: true});
+          this.setState({playerReady: true}, () => {
+            this.startTimer();
+          });
           this.socket.emit('spotifyPlayerDetails', {playerId: this.state.playerId, playerAuthToken: this.state.authToken});
         }
       });
@@ -159,18 +161,35 @@ class SpotifyClient extends React.Component {
   }
 
   syncIfNeeded(hostState, playerState) {
+    if (!hostState && this.state.playerState !== 'inactive') {
+      this.player.pause()
+        .then(() => {
+          this.setState({
+            playerState: 'inactive', 
+            currentPlayingInfo: {},
+            playerTime: 0,
+            currentPlayingDuration: 0,
+          })
+        })
+    }
     let lateness = Date.now() - hostState.timestamp;
-    console.log('lag: ', lateness);
+    //console.log('lag: ', lateness);
     let projectedTime = hostState.position + lateness;
-    console.log('host state:', hostState, 'player state:', playerState);
+    //console.log('host state:', hostState, 'player state:', playerState);
     if(!playerState) {
       this.loadTrack({uri: hostState.track_window.current_track.uri, time: projectedTime});
     } else {
       if(playerState.paused !== hostState.paused) {
         if(hostState.paused) {
-          this.player.pause();
+          this.player.pause()
+            .then(() => {
+              this.setState({playerState: 'paused'});
+            });
         } else {
-          this.player.resume();
+          this.player.resume()
+            .then(() => {
+              this.setState({playerState: 'playing'})
+            });
         }
       }
       if(playerState.track_window.current_track.uri !== hostState.track_window.current_track.uri) {
@@ -215,6 +234,10 @@ class SpotifyClient extends React.Component {
       neededUpdates.playerTime = playerState.position;
       edited = true;
     }
+    let playerMode = playerState.paused ? 'paused' : 'playing';
+    if (playerMode !== this.state.playerState) {
+      neededUpdates.playerState = playerMode;
+    }
     if(edited) {
       console.log('New information: ', neededUpdates)
       this.setState(neededUpdates);
@@ -255,6 +278,14 @@ class SpotifyClient extends React.Component {
     if(this.state.playerReady && this.state.isMuted === false) {
       this.player.setVolume(this.state.volume/100);
     }
+  }
+
+  startTimer() {
+    this.timerInterval = setInterval(() => {
+      if(this.state.playerState === 'playing') {
+        this.setState({playerTime: this.state.playerTime + 250})
+      }
+    }, 250);
   }
 
   render () {
