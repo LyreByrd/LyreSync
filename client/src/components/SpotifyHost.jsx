@@ -361,7 +361,10 @@ class SpotifyHost extends React.Component {
   }
 
   setTime(newTime) {
-    console.log('plan to set time to ' + newTime);
+    console.log('plan to set time to ' + newTime + 'ms');
+    if (0 <= newTime && newTime * 1000 <= this.state.currentPlayingDuration) {
+      this.player.seek(newTime * 1000);
+    }
   }
 
   render () {
@@ -393,7 +396,7 @@ class SpotifyHost extends React.Component {
           currentPlayingDuration={this.state.currentPlayingDuration}
           currentPlayingInfo={this.state.currentPlayingInfo}
           playerTime={this.state.playerTime}
-          setTime={this.state.setTime}
+          setTime={this.setTime}
         />
         <button onClick={this.loadDefaultMusic}>Start Default Music</button>
         <br />
