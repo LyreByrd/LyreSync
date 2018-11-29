@@ -1,5 +1,7 @@
 import React from 'react';
 
+// this is going to need to be replaced, but it works enough for internal use
+
 class TimeDisplay extends React.Component {
   constructor(props) {
     super(props);
