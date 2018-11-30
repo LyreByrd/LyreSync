@@ -13,6 +13,8 @@ const axios = require('axios');
 let dev_playlists; 
 const DEV_TOKEN = process.env.DEV_TOKEN;
 const IS_DEV = process.env.IS_DEV === 'true';
+const PROXY_URL = process.env.PROXY_URL;
+const PROXY_PORT = process.env.PROXY_PORT;
 
 module.exports.setSpotifyHostSocket = (socket, hostName, activeSessions, io, deleteClosedSession, initData) => {
   //console.log('socket hosting Spotify at ' + hostName);
@@ -53,7 +55,7 @@ module.exports.setSpotifyHostSocket = (socket, hostName, activeSessions, io, del
   })
 }
 
-module.exports.setSpotifySocket = (socket, hostName, activeSessions, io, initData) => {
+module.exports.setSpotifySocket = (socket, hostName, activeSessions, io, initData, User) => {
   //console.log('new spotify socket. init data: ', initData);
   socket.join(hostName);
   if(initData.env === 'dev' && IS_DEV && !socket.spotifyAuthToken) {
@@ -61,6 +63,29 @@ module.exports.setSpotifySocket = (socket, hostName, activeSessions, io, initDat
     socket.spotifyAuthToken = DEV_TOKEN;
     socket.emit('giveAuthToken', socket.spotifyAuthToken);
   } else {
+    try {
+      let cookie = socket.handshake.headers.cookie;
+      if (cookie) {
+        axios.get(`http://${PROXY_URL}:${PROXY_PORT}/api/player/usertoken/spotify`, {
+          headers: {
+            'Cookie': cookie,
+          },
+        })
+          .then(response => {
+            //console.log('Token: ', response.data.userToken)
+            socket.spotifyAuthToken = response.data.userToken;
+            socket.emit('giveAuthToken', socket.spotifyAuthToken);
+          })
+          .catch(err => {
+            console.log('Errored in proxy get');
+          })
+      }
+    } catch (err) {
+      console.log('Error in cookie stuff');
+      socket.emit('hostError');
+      socket.emit('clientError');
+      socket.disconnect();
+    }
     //get auth token from frontend server
     //get playlists from spotify
     //send both

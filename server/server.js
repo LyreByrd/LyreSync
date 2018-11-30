@@ -5,10 +5,9 @@ const fs = require('fs');
 const url = require('url');
 const ytSocketActions = require('./youtubeSocketActions.js');
 const spotifySocketActions = require('./spotifySocketActions.js');
-// const React = require('react');
-// const { renderToString } = require('react-dom/server');
-// const ClientWindow = require('./../client/ranspiled/clientwindow.js').default;
-// const HostWindow = require('./../client/transpiled/hostwindow.js').default;
+const mongoose = require('mongoose');
+const { User } = require('../db/userdb.js');
+
 require('dotenv').config();
 let config;
 try {
@@ -17,13 +16,13 @@ try {
   config = {};
 }
 
-const DEV_TOKEN = process.env.DEV_TOKEN;
-
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const socketPort = config.SOCKET_PORT || 9001;
 const apiPort = config.PORT_NUM || 1234;
+const USER_DB_LOCATION = process.env.USER_DB_LOCATION;
+let dbConnected = false;
 
 const services = ['youtube', 'spotify'];
 const validServices = {};
@@ -32,6 +31,10 @@ const activeSessions = {};
 services.forEach(service => { 
   validServices[service] = true;
 })
+
+mongoose.connect(USER_DB_LOCATION, { useNewUrlParser: true })
+  .then(() => console.log('connection to db succesful'))
+  .catch((err) => console.log(err));
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json())
@@ -113,6 +116,7 @@ app.get('/api/player/client/', (req, res) => {
 io.on('connection', socket => {
   //console.log('New socket connection');
   socket.emit('initPing');
+  //console.log('socket headers: ', socket.handshake.headers);
 
   socket.on('claimHost', data => {
     //console.log('New host claimed: ' + hostingName);
@@ -131,7 +135,7 @@ io.on('connection', socket => {
         ytSocketActions.setYTSocketHost(socket, data.host, activeSessions, io, deleteClosedSession);
       } else if (data.service === 'spotify') {
         //socket.emit('devToken', DEV_TOKEN)
-        spotifySocketActions.setSpotifySocket(socket, data.host, activeSessions, io, data);
+        spotifySocketActions.setSpotifySocket(socket, data.host, activeSessions, io, data, User);
         console.log('general actions set');
         spotifySocketActions.setSpotifyHostSocket(socket, data.host, activeSessions, io, deleteClosedSession, data);
         console.log('host actions set');
