@@ -13,6 +13,8 @@ const axios = require('axios');
 let dev_playlists; 
 const DEV_TOKEN = process.env.DEV_TOKEN;
 const IS_DEV = process.env.IS_DEV === 'true';
+const USER_DB_LOCATION = process.env.USER_DB_LOCATION;
+const USER_DB_LOGIN = process.env.USER_DB_LOGIN;
 
 module.exports.setSpotifyHostSocket = (socket, hostName, activeSessions, io, deleteClosedSession, initData) => {
   //console.log('socket hosting Spotify at ' + hostName);
@@ -61,6 +63,17 @@ module.exports.setSpotifySocket = (socket, hostName, activeSessions, io, initDat
     socket.spotifyAuthToken = DEV_TOKEN;
     socket.emit('giveAuthToken', socket.spotifyAuthToken);
   } else {
+    try {
+      let cookie = parseCookie(socket.handshake.headers.cookie);
+      if (cookie.session) {
+        
+      }
+    } catch (err) {
+      console.log('Error in cookie stuff');
+      socket.emit('hostError');
+      socket.emit('clientError');
+      socket.disconnect();
+    }
     //get auth token from frontend server
     //get playlists from spotify
     //send both
@@ -74,4 +87,16 @@ module.exports.setSpotifySocket = (socket, hostName, activeSessions, io, initDat
     }
   })
   //console.log('general spotify socket actions added');
+}
+
+const parseCookie = (cookie) => {
+  if (!cookie) {
+    return null;
+  }
+  let parsedCookie = {};
+  cookie.split('; ')
+    .map(pair => pair.split('='))
+    .forEach(tuple => parsedCookie[tuple[0]] = tuple[1]);
+  //console.log('parsed cookie: ', parsedCookie);
+  return parsedCookie;
 }

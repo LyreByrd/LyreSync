@@ -17,8 +17,6 @@ try {
   config = {};
 }
 
-const DEV_TOKEN = process.env.DEV_TOKEN;
-
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
@@ -113,6 +111,7 @@ app.get('/api/player/client/', (req, res) => {
 io.on('connection', socket => {
   //console.log('New socket connection');
   socket.emit('initPing');
+  console.log('socket headers: ', socket.handshake.headers);
 
   socket.on('claimHost', data => {
     //console.log('New host claimed: ' + hostingName);
