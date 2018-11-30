@@ -72,6 +72,7 @@ module.exports.setSpotifySocket = (socket, hostName, activeSessions, io, initDat
           },
         })
           .then(response => {
+            //console.log('Token: ', response.data.userToken)
             socket.spotifyAuthToken = response.data.userToken;
             socket.emit('giveAuthToken', socket.spotifyAuthToken);
           })
