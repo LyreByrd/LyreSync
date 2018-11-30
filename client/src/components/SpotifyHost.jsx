@@ -43,11 +43,8 @@ class SpotifyHost extends React.Component {
       isMuted: false,
       currentPlayingDuration: null,
     }
-    this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
-    this.onPlaybackRateChange = this.onPlaybackRateChange.bind(this);
     this.loadDefaultMusic = this.loadDefaultMusic.bind(this);
     this.logPlayer = this.logPlayer.bind(this);
-    this.onIdValChange = this.onIdValChange.bind(this);
     this.onSpotifyReady = this.onSpotifyReady.bind(this);
     this.loadDefaultFromClient = this.loadDefaultFromClient.bind(this);
     this.spoofHostAction = this.spoofHostAction.bind(this);
@@ -166,18 +163,6 @@ class SpotifyHost extends React.Component {
     this.player.connect();
   }
 
-  onPlayerReady() {
-
-  }
-
-  onPlaybackRateChange() {
-
-  }
-
-  onPlayerStateChange(e) {
-
-  }
-
   componentWillUnmount() {
     if(this.socket) {
       this.socket.close();
@@ -188,11 +173,6 @@ class SpotifyHost extends React.Component {
     if(this.timerInterval) {
       clearInterval(this.timerInterval);
     }
-  }
-
-
-  loadVideo(event) {
-    
   }
 
   loadDefaultMusic() {
@@ -268,10 +248,6 @@ class SpotifyHost extends React.Component {
         this.socket.emit('hostStateUpdate', spoofState);
       }, i * 1000);
     }
-  }
-
-  onIdValChange(e) {
-    
   }
 
   togglePause() {
