@@ -6,7 +6,7 @@ class TimeDisplay extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      newTime: '',
+      newTime: 0,
     }
     this.onTimeInputChange = this.onTimeInputChange.bind(this);
   }
@@ -29,7 +29,7 @@ class TimeDisplay extends React.Component {
             this.props.setTime(this.state.newTime);
           }
         })}>
-          <input type='text' name='time' min='0' max='playingLength' onChange={this.onTimeInputChange}></input>
+          <input type='number' name='time' min='0' max='playingLength' value={this.state.newTime} onChange={this.onTimeInputChange}></input>
           <button>New Time</button>
         </form>
       )

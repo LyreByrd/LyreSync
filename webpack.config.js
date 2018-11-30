@@ -8,7 +8,9 @@ module.exports = {
     devclient: `${SRC_DIR}/devclient.jsx`,
     ythostwindow: `${SRC_DIR}/ythostwindow.jsx`,
     duplex: `${SRC_DIR}/duplexloader.jsx`,
-    ytclientwindow: `${SRC_DIR}/ytclientwindow.jsx`
+    ytclientwindow: `${SRC_DIR}/ytclientwindow.jsx`,
+    spothostwindow: `${SRC_DIR}/spothostwindow.jsx`,
+    spotclientwindow: `${SRC_DIR}/spotclientwindow.jsx`
   },
   output: {
     filename: '[name]-bundle.js',

@@ -109,7 +109,7 @@ class SpotifyClient extends React.Component {
     //console.log(Spotify);
 
     this.player = new Spotify.Player({
-      name: `LyreByrd Spotify Audience Player with ${this.props.hostingName}`,
+      name: `LyreByrd Spotify Audience Player with ${this.props.sessionHost}`,
       getOAuthToken: cb => { cb(this.state.authToken); }
     })
     this.player.addListener('initialization_error', ({ message }) => { console.error(message); });
@@ -311,31 +311,10 @@ class SpotifyClient extends React.Component {
   }
 }
 
-// isHost={true} 
-//           togglePause={this.togglePause} 
-//           skipTo={this.skipTo} 
-//           playerState={this.state.playerState} 
-//           isMuted={this.state.isMuted}
-//           currentVolume={this.state.volume}
-//           toggleMute={this.toggleMute}
-//           setVolume={this.setVolume}
-//           currentPlayingDuration={this.state.currentPlayingDuration}
-//           currentPlayingInfo={this.state.currentPlayingInfo}
-//           playerTime={this.state.playerTime}
-//           setTime={this.state.setTime}
-
-//player:
-//play/pause button
-//click-and-drag seek bar
-//skip-to-next, jump-to-previous
-//playlist entries
-
 //
-//YTPlayer.propTypes = {
-//  YTid: PropTypes.string.required,
-//  width: PropTypes.number,
-//  height: PropTypes.number,
-//  onStateChange: PropTypes.func
-//}
+//props:
+//  env
+//  sessionHost
+//  resetToLobby
 
 export default SpotifyClient;

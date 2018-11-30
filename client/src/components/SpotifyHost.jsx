@@ -361,7 +361,7 @@ class SpotifyHost extends React.Component {
   }
 
   setTime(newTime) {
-    console.log('plan to set time to ' + newTime + 'ms');
+    console.log('plan to set time to ' + newTime + 's');
     if (0 <= newTime && newTime * 1000 <= this.state.currentPlayingDuration) {
       this.player.seek(newTime * 1000);
     }
@@ -416,11 +416,10 @@ class SpotifyHost extends React.Component {
 //playlist entries
 
 //
-//YTPlayer.propTypes = {
-//  YTid: PropTypes.string.required,
-//  width: PropTypes.number,
-//  height: PropTypes.number,
-//  onStateChange: PropTypes.func
-//}
+//required props: 
+//  env ('dev' required for certain testing things)
+//  resetToLobby
+//  hostingName
+//  
 
 export default SpotifyHost;
