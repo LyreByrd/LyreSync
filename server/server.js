@@ -61,6 +61,20 @@ app.get('/duplex', (req, res) => {
     res.sendFile(path.join(__dirname + '/../client/dist/index.html'));
   }
 })
+
+app.get('/api/player/host/:service', (req, res) => {
+  const hostFilenames = {
+    'youtube': 'ythostwindow-bundle.js',
+    'spotify': 'spothostwindow-bundle.js',
+  }
+  let targetFile = hostFilenames[req.params.service];
+  if(targetFile) {
+    const scriptPath = path.resolve(__dirname, '..', 'client', 'dist', targetFile);
+    res.sendFile(scriptPath);
+  } else {
+    res.sendStatus(404);
+  }
+})
 app.get('/api/player/host/', (req, res) => {
   //console.log('host player request to ' + req.url);
   const scriptPath = path.resolve(__dirname, '..', 'client', 'dist', 'ythostwindow-bundle.js');
@@ -70,6 +84,19 @@ app.get('/api/player/host/', (req, res) => {
   });
 });
 
+app.get('/api/player/client/:service', (req, res) => {
+  const clientFilenames = {
+    'youtube': 'ytclientwindow-bundle.js',
+    'spotify': 'spotclientwindow-bundle.js',
+  }
+  let targetFile = clientFilenames[req.params.service];
+  if(targetFile) {
+    const scriptPath = path.resolve(__dirname, '..', 'client', 'dist', targetFile);
+    res.sendFile(scriptPath);
+  } else {
+    res.sendStatus(404);
+  }
+})
 app.get('/api/player/client/', (req, res) => {
   //console.log('client player request to ' + req.url);
   const scriptPath = path.resolve(__dirname, '..', 'client', 'dist', 'ytclientwindow-bundle.js');
