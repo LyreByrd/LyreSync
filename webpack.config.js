@@ -6,9 +6,11 @@ module.exports = {
   entry: {
     front: `${SRC_DIR}/index.jsx`,
     devclient: `${SRC_DIR}/devclient.jsx`,
-    hostwindow: `${SRC_DIR}/hostwindow.jsx`,
+    ythostwindow: `${SRC_DIR}/ythostwindow.jsx`,
     duplex: `${SRC_DIR}/duplexloader.jsx`,
-    clientwindow: `${SRC_DIR}/clientwindow.jsx`
+    ytclientwindow: `${SRC_DIR}/ytclientwindow.jsx`,
+    spothostwindow: `${SRC_DIR}/spothostwindow.jsx`,
+    spotclientwindow: `${SRC_DIR}/spotclientwindow.jsx`
   },
   output: {
     filename: '[name]-bundle.js',

@@ -2,13 +2,18 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
 
-let loadHost, loadClient;
+let ActiveComponent = () => <div></div>;
 
-let HostComponent = () => <div></div>;
-HostComponent.loaded = false;
-
-let ClientComponent = () => <div></div>;
-ClientComponent.loaded = false;
+let components = {
+  spotify: {
+    host: {loaded: false},
+    client: {loaded: false},
+  },
+  youtube: {
+    host: {loaded: false},
+    client: {loaded: false},
+  }
+}
 
 class Loader extends React.Component {
   constructor(props) {
@@ -18,17 +23,21 @@ class Loader extends React.Component {
           resetToLobby: this.resetToLobby.bind(this), 
           hostingName: 'LNB',
           sessionHost: 'LNB',
+          env: 'dev',
         },
       hostLoaded: false,
       clientLoaded: false,
       inSession: false,
       isHosting: false,
+      service: 'youtube',
+      activeLoaded: false,
+      isLoading: false,
     }
     this.onClick = this.onClick.bind(this);
-    this.hostComponentReady = this.hostComponentReady.bind(this);
-    this.clientComponentReady = this.clientComponentReady.bind(this);
     this.tryClaimHost = this.tryClaimHost.bind(this);
     this.joinSession = this.joinSession.bind(this);
+    this.newComponentReady = this.newComponentReady.bind(this);
+
   }
 
   resetToLobby(err) {
@@ -36,57 +45,53 @@ class Loader extends React.Component {
     this.setState({inSession: false, isHosting: false});
   }
 
-  onClick(type) {
-    //console.log('clicked ' + type)
-    if(type === 'host') {
-      if(HostComponent.loaded === false) {
-        //console.log('fetching host component');
-        loadHost = new Promise((resolve) => {
-          //console.log('getting script');
-          const tag = document.createElement('script')
-          tag.src = '/api/player/host/'
-          const firstScriptTag = document.getElementsByTagName('script')[0]
-          firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
-          this.hostScript = tag;
-          window.hasHostComponent = (HostComponent) => this.hostComponentReady(HostComponent);
-        })
-      } else {
-        this.hostComponentReady();
+  onClick(type, service) {
+    this.setState({inSession: false, isHosting: false}, () => {
+      if (components[service][type].loaded !== false) {
+        this.setState({activeLoaded: true, service: service, isHosting: (type === 'host')}, () => {
+          this.newComponentReady(null, type, service);
+        });
+      } else if (this.state.isLoading === false) {
+        this.setState({isLoading: true}, () => {
+          components[service][type].loadFile = new Promise((resolve) => {
+            const tag = document.createElement('script')
+            let src = `api/player/${type}/${service}`;
+            console.log('src: ' + src);
+            tag.src = src;
+            const firstScriptTag = document.getElementsByTagName('script')[0]
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
+            if(type === 'host') {
+              window.hasHostComponent = (NewComponent) => this.newComponentReady(NewComponent, type, service);
+            } else if (type === 'client') {
+              window.hasClientComponent = (NewComponent) => this.newComponentReady(NewComponent, type, service);
+            }
+          });
+        });
       }
+    })
+  }
+
+  newComponentReady(NewComponent, userType, service) {
+    if (NewComponent) {
+      console.log(components);
+      console.log(`usertype: ${userType}, service: ${service}`);
+      console.log(components[service])
+      components[service][userType] = NewComponent;
     }
-    if (type === 'client') {
-      if(ClientComponent.loaded === false) {
-        //console.log('fetching client component');
-        loadHost = new Promise((resolve) => {
-          //console.log('getting script');
-          const tag = document.createElement('script')
-          tag.src = '/api/player/client/'
-          const firstScriptTag = document.getElementsByTagName('script')[0]
-          firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
-          this.clientScript = tag;
-          window.hasClientComponent = (ClientComponent) => this.clientComponentReady(ClientComponent);
-        })
+    this.setState({activeLoaded: true, isLoading: false}, () => {
+      ActiveComponent = components[service][userType];
+      console.log('usertype: ', userType)
+      if (userType === 'host') {
+        console.log('claiming host in newComponentReady');
+        this.tryClaimHost();
       } else {
-        this.ClientComponentReady();
+        this.joinSession();
       }
-    }
+    })
   }
-  clientComponentReady(newComponent) {
-    window.hasClientComponent = () => undefined;
-    if (newComponent) {
-      ClientComponent = newComponent;
-    }
-    this.setState({clientLoaded: true}, this.joinSession);
-  }
-  hostComponentReady(newComponent) {
-    window.hasHostComponent = () => undefined;
-    if (newComponent) {
-      HostComponent = newComponent;
-    }
-    this.setState({hostLoaded: true}, this.tryClaimHost);
-  }
+
   tryClaimHost() {
-    axios.post('/host', {hostingName: 'LNB'})
+    axios.post('/host', {hostingName: 'LNB', service: this.state.service, env: 'dev'})
       .then((res) => {
         //console.log('host claim response: ', res);
         if(res.data.hostName === this.state.subProps.hostingName) {
@@ -109,12 +114,12 @@ class Loader extends React.Component {
   }
   render() {
     return <div>
-      <button onClick={() => this.onClick('host')}>Load Host</button>
-      <button onClick={() => this.onClick('client')}>Load Client</button>
+      <button onClick={() => this.onClick('host', 'youtube')}>Load Host (YT)</button>
+      <button onClick={() => this.onClick('client', 'youtube')}>Load Client (YT)</button>
+      <button onClick={() => this.onClick('host', 'spotify')}>Load Host (Spot)</button>
+      <button onClick={() => this.onClick('client', 'spotify')}>Load Client (Spot)</button>
       {this.state.inSession ? 
-        this.state.isHosting ? 
-          <HostComponent {...this.state.subProps} /> : 
-          <ClientComponent {...this.state.subProps} /> :
+        <ActiveComponent {...this.state.subProps} /> :
         <div id='player-window'></div>}
     </div>
   }

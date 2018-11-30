@@ -27,6 +27,7 @@
     "axios": "^0.18.0",
     "babel": "^6.23.0",
     "body-parser": "^1.18.3",
+    "debounce": "^1.2.0",
     "dotenv": "^6.1.0",
     "express": "^4.16.4",
     "get-video-id": "^3.1.0",

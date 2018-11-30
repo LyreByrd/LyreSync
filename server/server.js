@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const url = require('url');
 const ytSocketActions = require('./youtubeSocketActions.js');
+const spotifySocketActions = require('./spotifySocketActions.js');
 // const React = require('react');
 // const { renderToString } = require('react-dom/server');
 // const ClientWindow = require('./../client/ranspiled/clientwindow.js').default;
@@ -16,7 +17,7 @@ try {
   config = {};
 }
 
-
+const DEV_TOKEN = process.env.DEV_TOKEN;
 
 const app = express();
 const http = require('http').Server(app);
@@ -24,7 +25,7 @@ const io = require('socket.io')(http);
 const socketPort = config.SOCKET_PORT || 9001;
 const apiPort = config.PORT_NUM || 1234;
 
-const services = ['youtube'];
+const services = ['youtube', 'spotify'];
 const validServices = {};
 const activeSessions = {};
 
@@ -42,7 +43,7 @@ app.use(express.static(__dirname + '/../client/dist'));
 // })
 
 app.get('/test*', (req, res) => {
-  if (process.env.ALLOW_TEST) {
+  if (process.env.ALLOW_TEST === 'true') {
     res.sendFile(path.join(__dirname + '/../client/dist/devclient.html'));
   } else {
     res.sendFile(path.join(__dirname + '/../client/dist/index.html'));
@@ -54,24 +55,51 @@ app.get('/secret', (req, res) => {
 });
 
 app.get('/duplex', (req, res) => {
-  if (process.env.ALLOW_DUPLEX) {
+  if (process.env.ALLOW_DUPLEX === 'true') {
     res.sendFile(path.join(__dirname + '/../client/dist/fakeplayerwindow.html'))
   } else {
     res.sendFile(path.join(__dirname + '/../client/dist/index.html'));
   }
 })
+
+app.get('/api/player/host/:service', (req, res) => {
+  const hostFilenames = {
+    'youtube': 'ythostwindow-bundle.js',
+    'spotify': 'spothostwindow-bundle.js',
+  }
+  let targetFile = hostFilenames[req.params.service];
+  if(targetFile) {
+    const scriptPath = path.resolve(__dirname, '..', 'client', 'dist', targetFile);
+    res.sendFile(scriptPath);
+  } else {
+    res.sendStatus(404);
+  }
+})
 app.get('/api/player/host/', (req, res) => {
   //console.log('host player request to ' + req.url);
-  const scriptPath = path.resolve(__dirname, '..', 'client', 'dist', 'hostwindow-bundle.js');
+  const scriptPath = path.resolve(__dirname, '..', 'client', 'dist', 'ythostwindow-bundle.js');
 
   fs.readFile(scriptPath, 'utf8', (err, js) => {
     res.send(js);
   });
 });
 
+app.get('/api/player/client/:service', (req, res) => {
+  const clientFilenames = {
+    'youtube': 'ytclientwindow-bundle.js',
+    'spotify': 'spotclientwindow-bundle.js',
+  }
+  let targetFile = clientFilenames[req.params.service];
+  if(targetFile) {
+    const scriptPath = path.resolve(__dirname, '..', 'client', 'dist', targetFile);
+    res.sendFile(scriptPath);
+  } else {
+    res.sendStatus(404);
+  }
+})
 app.get('/api/player/client/', (req, res) => {
   //console.log('client player request to ' + req.url);
-  const scriptPath = path.resolve(__dirname, '..', 'client', 'dist', 'clientwindow-bundle.js');
+  const scriptPath = path.resolve(__dirname, '..', 'client', 'dist', 'ytclientwindow-bundle.js');
   //console.log('client script path: ' + scriptPath);
   fs.readFile(scriptPath, 'utf8', (err, js) => {
     if (err) {
@@ -84,8 +112,8 @@ app.get('/api/player/client/', (req, res) => {
 
 io.on('connection', socket => {
   //console.log('New socket connection');
-  
   socket.emit('initPing');
+
   socket.on('claimHost', data => {
     //console.log('New host claimed: ' + hostingName);
     try {
@@ -101,6 +129,12 @@ io.on('connection', socket => {
       activeSessions[data.host].host = socket;
       if (data.service === 'youtube'){
         ytSocketActions.setYTSocketHost(socket, data.host, activeSessions, io, deleteClosedSession);
+      } else if (data.service === 'spotify') {
+        //socket.emit('devToken', DEV_TOKEN)
+        spotifySocketActions.setSpotifySocket(socket, data.host, activeSessions, io, data);
+        console.log('general actions set');
+        spotifySocketActions.setSpotifyHostSocket(socket, data.host, activeSessions, io, deleteClosedSession, data);
+        console.log('host actions set');
       }
       //console.log('starts session in object');
       //console.log('gets host actions');
@@ -109,22 +143,31 @@ io.on('connection', socket => {
       socket.disconnect();
     }
   })
-  socket.on('getClientStart', ({sessionHost, service}) => {
-    let target = activeSessions[sessionHost];
-    if(target && target.service === service) {
-      socket.hostName = sessionHost;
-      socket.join(sessionHost);
-      target.activeSockets[socket.id] = socket;
-      //console.log('Client attempting to initialize');
-      try {
-        target.host.emit('findInitStatus', socket.id);
-      } catch(err) {
-        socket.emit('clientError');
+
+  socket.on('getClientActions', data => { //host: (hostname) service: (service) env: 'dev'/undefined
+    let target = activeSessions[data.host];
+    if(target && target.service === data.service) {
+      //console.log('service match');
+      if (data.service === 'youtube') {
+        ytSocketActions.setYTSocketClient(socket, data.host, target, io, data);
+      } else if (data.service === 'spotify') {
+        console.log('making spotify audience session');
+        spotifySocketActions.setSpotifySocket(socket, data.host, activeSessions, io, data)
       }
     } else {
-      socket.emit('clientError');
+      let errorType;
+      if (!target) {
+        errorType = new Error('no such session');
+      } else if (target.service !== data.service) {
+        errorType = new Error('service type mismatch');
+      } else {
+        errorType = new Error('unknown error');
+      }
+      socket.emit('clientError', errorType);
+      socket.disconnect();
     }
   })
+
   socket.on('disconnect', () => {
     let targetSession = activeSessions[socket.hostName];
     if(targetSession) {

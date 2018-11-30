@@ -41,13 +41,13 @@ class Test extends React.Component {
     })
   }
 
-  tryClaimHost() {
+  tryClaimHost(service) {
     //console.log('attempting to host as ' + this.state.hostingName)
-    axios.post('/host', {hostingName: this.state.hostingName})
+    axios.post('/host', {hostingName: this.state.hostingName, service})
       .then((res) => {
         //console.log('host claim response: ', res);
         if(res.data.hostName === this.state.hostingName) {
-          this.setState({inSession: true, isHost: true});
+          this.setState({inSession: true, isHost: true, service});
         }
       })
       .catch((err) => {
@@ -60,13 +60,15 @@ class Test extends React.Component {
   }
 
   joinSession({sessionHost, service}) {
-    this.setState({inSession: true, isHost: false, sessionHost, service});
+    this.setState({inSession: true, isHost: false, sessionHost, service}, () => {
+      console.log('service: ', this.state.service);
+    });
   }
 
   fetchActiveSessions() {
     axios.get('/api/sessions')
       .then(res => {
-        console.log('sessions:', res.data)
+        //console.log('sessions:', res.data)
         this.setState({knownSessions: res.data});
       })
       .catch(err => {
@@ -107,6 +109,8 @@ class Test extends React.Component {
           hostingName={this.state.hostingName}
           hostNameTextChange={this.hostNameTextChange}
           resetToLobby={this.resetToLobby}
+          service={this.state.service}
+          env={'dev'}
         />
       )
     } else {
