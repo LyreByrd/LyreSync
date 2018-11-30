@@ -155,7 +155,16 @@ io.on('connection', socket => {
         spotifySocketActions.setSpotifySocket(socket, data.host, activeSessions, io, data)
       }
     } else {
-      socket.emit('clientError');
+      let errorType;
+      if (!target) {
+        errorType = new Error('no such session');
+      } else if (target.service !== data.service) {
+        errorType = new Error('service type mismatch');
+      } else {
+        errorType = new Error('unknown error');
+      }
+      socket.emit('clientError', errorType);
+      socket.disconnect();
     }
   })
 

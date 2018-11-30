@@ -2,14 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
 
-let loadHost, loadClient, loadFile;
-
-let HostComponent = () => <div></div>;
-HostComponent.loaded = false;
-
-let ClientComponent = () => <div></div>;
-ClientComponent.loaded = false;
-
 let ActiveComponent = () => <div></div>;
 
 let components = {
@@ -42,8 +34,6 @@ class Loader extends React.Component {
       isLoading: false,
     }
     this.onClick = this.onClick.bind(this);
-    //this.hostComponentReady = this.hostComponentReady.bind(this);
-    //this.clientComponentReady = this.clientComponentReady.bind(this);
     this.tryClaimHost = this.tryClaimHost.bind(this);
     this.joinSession = this.joinSession.bind(this);
     this.newComponentReady = this.newComponentReady.bind(this);
