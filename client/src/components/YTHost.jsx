@@ -1,6 +1,7 @@
 import React from 'react'
 import io from 'socket.io-client';
 import getVideoId from 'get-video-id';
+import YTVideoQueue from './YTVideoQueue.jsx';
 
 let HOME_URL, SOCKET_PORT;
 try {
@@ -178,9 +179,7 @@ class YTHost extends React.Component {
   }
 
   render () {
-    let queue = this.state.videoQueue.map((id, index) => {
-      return <div key={id + index}>{id}</div>
-    })
+    
     return (
       <div>
         <section className='youtubeComponent-wrapper'>
@@ -193,9 +192,7 @@ class YTHost extends React.Component {
           <input type='text' name='YTLocation' value={this.state.idVal} onChange={this.onIdValChange}></input>
           <button>Add to Queue</button>
         </form>
-        <div>Queued Videos:
-          {queue}
-        </div>
+        <YTVideoQueue videoQueue={this.state.videoQueue} />
         <button onClick={this.logPlayer}>log</button>
         <span> {this.state.hasErrored ? 'Error connecting to session. Attempting to refresh' : 'Now Hosting'} </span>
       </div>
