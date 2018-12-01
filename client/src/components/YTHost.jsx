@@ -27,6 +27,7 @@ class YTHost extends React.Component {
     this.loadVideo = this.loadVideo.bind(this);
     this.logPlayer = this.logPlayer.bind(this);
     this.onIdValChange = this.onIdValChange.bind(this);
+    this.addToQueue = this.addToQueue.bind(this);
   }
   componentDidMount () {
     let props = this.props
@@ -96,14 +97,15 @@ class YTHost extends React.Component {
   }
 
   onPlayerStateChange(e) {
-    this.socket.emit('hostAction', {
-        type:'stateChange', 
-        newState: e.data, 
-        newVideo: this.player.getVideoData().video_id, 
-        newTime: this.player.getCurrentTime(),
-      })
-    if (typeof this.props.onStateChange === 'function') {
-      this.props.onStateChange(e)
+    if(e.data === 0 && this.state.videoQueue[0]) {
+      this.loadVideo()
+    } else {
+      this.socket.emit('hostAction', {
+          type:'stateChange', 
+          newState: e.data, 
+          newVideo: this.player.getVideoData().video_id, 
+          newTime: this.player.getCurrentTime(),
+        })
     }
   }
 
@@ -114,21 +116,12 @@ class YTHost extends React.Component {
   }
 
 
-  loadVideo(event) {
-    event.preventDefault();
-    if (this.state.idVal && this.player) {
-      if(this.state.idVal.length === 11) {
-        this.player.loadVideoById(this.state.idVal);
-      } else {
-        let {id, service} = getVideoId(this.state.idVal);
-        if(service === 'youtube' && id) {
-          this.player.loadVideoById(id);
-        } else {
-          this.gotInvalidIdPattern();
-        }
-      }
-    } else if (this.player) {
-      this.player.loadVideoById('QLOpdWMbebI')
+  loadVideo(id) {
+    if(id) {
+      this.player.loadVideoById(id);
+    } else {
+      this.player.loadVideoById(this.state.videoQueue[0]);
+      this.setState({videoQueue: this.state.videoQueue.slice(1)});
     }
   }
 
@@ -145,19 +138,52 @@ class YTHost extends React.Component {
     this.setState({idVal: e.target.value});
   }
 
+  addToQueue(event) {
+    event.preventDefault();
+    console.log('Hit Queue Button');
+    let newId;
+    if (this.state.idVal) {
+      if(this.state.idVal.length === 11) {
+        newId = this.state.idVal;
+      } else {
+        let {id, service} = getVideoId(this.state.idVal);
+        if(service === 'youtube' && id) {
+          newId = id;
+        } else {
+          newId = 'Invalid pattern';
+        }
+      }
+    }  else { 
+      newId = 'QLOpdWMbebI';
+    }
+    let state = this.player.getPlayerState();
+    console.log('player state: ', state)
+    if (this.player && (state === 0 || state === -1 || state === 5)) {
+      this.loadVideo(newId);
+    } else {
+      this.setState({videoQueue: this.state.videoQueue.concat([newId])})
+    }
+  }
+
   render () {
+    let queue = this.state.videoQueue.map((id, index) => {
+      return <div key={id + index}>{id}</div>
+    })
     return (
       <div>
         <section className='youtubeComponent-wrapper'>
           <div style={{width:'640px', height:'390px', display:'inline-block'}} ref={(r) => { this.youtubePlayerAnchorHost = r }}></div>
           <br />
         </section>
-        <form onSubmit={this.loadVideo}>
+        <form onSubmit={this.addToQueue}>
           <label htmlFor='YTLocation'>YouTube link, embed code, or video ID:</label>
           <br />
           <input type='text' name='YTLocation' value={this.state.idVal} onChange={this.onIdValChange}></input>
-          <button>Load Video</button>
+          <button>Add to Queue</button>
         </form>
+        <div>Queued Videos:
+          {queue}
+        </div>
         <span> {this.state.hasErrored ? 'Error connecting to session. Attempting to refresh' : 'Now Hosting'} </span>
       </div>
     )
