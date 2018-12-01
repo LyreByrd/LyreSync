@@ -103,6 +103,12 @@ class YTHost extends React.Component {
       } else {
         //video ended, no video in queue - no action needed
       }
+    } else if (e.data === -1) {
+      if(this.state.videoQueue[0]) {
+        this.loadVideo();
+      } else {
+        //see above
+      }
     } else {
       this.socket.emit('hostAction', {
           type:'stateChange', 
@@ -134,8 +140,8 @@ class YTHost extends React.Component {
   }
 
   logPlayer() {
-    //console.log(this.player)
-    //window.player = this.player;
+    console.log(this.player)
+    window.player = this.player;
   }
 
   onIdValChange(e) {
@@ -187,6 +193,7 @@ class YTHost extends React.Component {
         <div>Queued Videos:
           {queue}
         </div>
+        <button onClick={this.logPlayer}>log</button>
         <span> {this.state.hasErrored ? 'Error connecting to session. Attempting to refresh' : 'Now Hosting'} </span>
       </div>
     )
