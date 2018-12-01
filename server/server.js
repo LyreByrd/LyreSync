@@ -7,8 +7,15 @@ const ytSocketActions = require('./youtubeSocketActions.js');
 const spotifySocketActions = require('./spotifySocketActions.js');
 const mongoose = require('mongoose');
 const { User } = require('../db/userdb.js');
-
 require('dotenv').config();
+
+let samplePlaylists; 
+try {
+  samplePlaylists = require('../samples/sampleSpotifyPlaylists');
+} catch(err) {
+  samplePlaylists = null;
+}
+
 let config;
 try {
   config = require('../config.js');
@@ -130,6 +137,14 @@ app.get('/api/player/client/', (req, res) => {
   });
 });
 
+app.get('/user/getspotify', (req, res) => {
+  if(IS_DEV) {
+    res.json(samplePlaylists);
+  } else {
+    res.sendStatus(404);
+  }
+})
+
 io.on('connection', socket => {
   //console.log('New socket connection');
   socket.emit('initPing');
@@ -164,6 +179,7 @@ io.on('connection', socket => {
       socket.disconnect();
     }
   })
+
 
   socket.on('getClientActions', data => { //host: (hostname) service: (service) env: 'dev'/undefined
     let target = activeSessions[data.host];

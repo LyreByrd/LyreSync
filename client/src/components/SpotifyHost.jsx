@@ -13,6 +13,7 @@ import axios from 'axios';
 import { debounce } from 'debounce';
 
 import SpotifyGUI from './SpotifyGUI.jsx';
+import KnownSpotifyPlaylists from './KnownSpotifyPlaylists.jsx';
 
 let HOME_URL, SOCKET_PORT;
 try {
@@ -59,6 +60,8 @@ class SpotifyHost extends React.Component {
     this.startTimer = this.startTimer.bind(this);
     this.componentWillUnmount = this.componentWillUnmount.bind(this);
     this.loadKnownTracks = this.loadKnownTracks.bind(this);
+    this.loadCurrentUserPlaylists = this.loadCurrentUserPlaylists.bind(this);
+    this.loadPlaylistFromKnown = this.loadPlaylistFromKnown.bind(this);
   }
 
   componentDidMount () {
@@ -378,6 +381,20 @@ class SpotifyHost extends React.Component {
     })
   }
 
+  loadCurrentUserPlaylists() {
+    axios.get('/user/getspotify')
+      .then(response => {
+        this.setState({hostPlaylists: response.data.items})
+      })
+      .catch(error => {
+        console.error(error);
+      })
+  }
+
+  loadPlaylistFromKnown(playlist) {
+    this.loadKnownTracks(playlist.uri);
+  }
+
   render () {
     let spoofButtons = this.props.env === 'dev' ?
       (<div>
@@ -413,7 +430,14 @@ class SpotifyHost extends React.Component {
         <br />
         <button onClick={this.loadDefaultFromClient}>Load-from-client test</button>
         <button onClick={this.logPlayer}>Log Player</button>
+        <button onClick={this.loadCurrentUserPlaylists}>Load Playlists</button>
         <br />
+        <div className={'spotify-playlist-handlers'}>
+          <KnownSpotifyPlaylists 
+            hostPlaylists={this.state.hostPlaylists} 
+            loadPlaylistFromKnown={this.loadPlaylistFromKnown}
+          />
+        </div>
         {spoofButtons}
       </div>
     )
