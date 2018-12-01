@@ -32,6 +32,9 @@ class YTHost extends React.Component {
     let props = this.props
     //console.log(this.props)
     this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`); //io(`/${this.props.hostingName}`); namespace implementation
+    
+    this.feedSocket = io(`http://${HOME_URL}:8080`);
+
     this.socket.on('initPing', () => {
       //console.log('claiming host, name: ' + props.hostingName);
       this.socket.emit('claimHost', {host: props.hostingName, service:'youtube'});
@@ -101,7 +104,7 @@ class YTHost extends React.Component {
         newState: e.data, 
         newVideo: this.player.getVideoData().video_id, 
         newTime: this.player.getCurrentTime(),
-      })
+    })
     if (typeof this.props.onStateChange === 'function') {
       this.props.onStateChange(e)
     }
@@ -116,6 +119,12 @@ class YTHost extends React.Component {
 
   loadVideo(event) {
     event.preventDefault();
+    console.log('this.props.hostingName :', this.props.hostingName);
+    let videoData = {
+      host: this.props.hostingName,
+      id: this.state.idVal
+    }
+    this.feedSocket.emit('video data', videoData)
     if (this.state.idVal && this.player) {
       if(this.state.idVal.length === 11) {
         this.player.loadVideoById(this.state.idVal);

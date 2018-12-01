@@ -32,9 +32,9 @@ services.forEach(service => {
   validServices[service] = true;
 })
 
-mongoose.connect(USER_DB_LOCATION, { useNewUrlParser: true })
-  .then(() => console.log('connection to db succesful'))
-  .catch((err) => console.log(err));
+// mongoose.connect(USER_DB_LOCATION, { useNewUrlParser: true })
+//   .then(() => console.log('connection to db succesful'))
+//   .catch((err) => console.log(err));
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json())
