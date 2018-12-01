@@ -157,7 +157,6 @@ class YTHost extends React.Component {
       newId = 'QLOpdWMbebI';
     }
     let state = this.player.getPlayerState();
-    console.log('player state: ', state)
     if (this.player && (state === 0 || state === -1 || state === 5)) {
       this.loadVideo(newId);
     } else {
