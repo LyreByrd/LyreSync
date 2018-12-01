@@ -1,11 +1,4 @@
-/*
- * NOTA BENE:
- * 
- * This is the quick-and-dirty version which is easy to code
- * and suitable for demonstration but runs into rate-limiting
- * barriers very quickly when it scales up. 
- * 
- */
+//possible rate-limiting problems as it scales - should ideally load a whole playlist
 
 import React from 'react'
 import io from 'socket.io-client';
@@ -39,7 +32,7 @@ class SpotifyClient extends React.Component {
       currentPlayingInfo: {},
       currentPlayingDuration: 0,
       isMuted: false,
-      volume: 100,
+      volume: 50,
     } 
     this.logPlayer = this.logPlayer.bind(this);
     this.onSpotifyReady = this.onSpotifyReady.bind(this);

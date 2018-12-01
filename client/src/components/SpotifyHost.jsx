@@ -1,11 +1,3 @@
-/*
- * NOTA BENE:
- * 
- * This is the quick-and-dirty version which is easy to code
- * and suitable for demonstration but runs into rate-limiting
- * barriers very quickly when it scales up. 
- * 
- */
 
 import React from 'react'
 import io from 'socket.io-client';
@@ -41,7 +33,7 @@ class SpotifyHost extends React.Component {
       playerState: 'inactive',
       playerTime: 0,
       currentPlayingInfo: {},
-      volume: 100,
+      volume: 50,
       isMuted: false,
       currentPlayingDuration: null,
     }
@@ -80,14 +72,23 @@ class SpotifyHost extends React.Component {
       //console.log('claiming host, name: ' + props.hostingName);
       this.socket.emit('claimHost', {host: this.props.hostingName, service: 'spotify', env: this.props.env});
     });
-    //this.socket.on('giveAuthToken', (token) => {
-    //  console.log('auth token recieved');
-    //  this.setState({authToken: token}, () => {
-    //    this.onSpotifyReady();
-    //  });
-    //});
     this.socket.on('findInitStatus', (socketId) => {
       //return current state for newly joining audience
+      if(this.player) {
+        this.player.getCurrentState()
+          .then(hostState => {
+            this.socket.emit('sendInitStatus', {
+              hostState,
+              socketId,
+            })
+          })
+          .catch(err => console.error(err))
+      } else {
+        this.socket.emit('sendInitStatus', {
+          hostState: null,
+          socketId,
+        })
+      }
     })
     this.socket.on('hostingError', (err) => {
       //console.log('got host error');
@@ -311,6 +312,7 @@ class SpotifyHost extends React.Component {
       if (this.state.currentPlayingInfo.uri !== playerState.track_window.current_track.uri) {
         neededUpdates.currentPlayingDuration = playerState.duration;
         neededUpdates.currentPlayingInfo = playerState.track_window.current_track;
+        neededUpdates.playlistPosition = this.findNewPlaylistPosition(playerState.track_window.current_track.id)
         edited = true;
       }
       if (Math.abs(this.state.playerTime - playerState.position) > 1000) {
@@ -401,13 +403,31 @@ class SpotifyHost extends React.Component {
     })
     .then(response => {
       console.log('Got playlist: ', response.data);
-      this.setState({currentPlaylist: response.data}, () => {
+      this.setState({currentPlaylist: response.data, playlistPosition: 0}, () => {
         this.loadKnownTracks(playlist.uri);
       })
     })
     .catch(err => {
       console.log('ERROR LOADING PLAYLIST');
     })
+  }
+
+  findNewPlaylistPosition(trackId) {
+    let position = this.state.playlistPosition;
+    let tracklist = this.state.currentPlaylist.tracks.items;
+    if(trackId === tracklist[position].track.id) {
+      return position;
+    } else if (trackId === tracklist[position + 1].track.id) {
+      return position + 1;
+    } else {
+      for(let i = 0; i < tracklist.length; i++) {
+        if(tracklist[i].track.id === trackId) {
+          return i;
+        }
+      }
+    }
+
+    return null;
   }
 
   render () {
@@ -450,6 +470,7 @@ class SpotifyHost extends React.Component {
         <div className={'spotify-playlist-handlers'}>
           <ActiveSpotifyPlaylist 
             currentPlaylist={this.state.currentPlaylist}
+            playlistPosition={this.state.playlistPosition}
           />
           <KnownSpotifyPlaylists 
             hostPlaylists={this.state.hostPlaylists} 
