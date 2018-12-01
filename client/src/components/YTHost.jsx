@@ -166,11 +166,14 @@ class YTHost extends React.Component {
     }  else { 
       newId = 'QLOpdWMbebI';
     }
-    let state = this.player.getPlayerState();
-    if (this.player && (state === 0 || state === -1 || state === 5)) {
-      this.loadVideo(newId);
-    } else {
-      this.setState({videoQueue: this.state.videoQueue.concat([newId])})
+
+    if(newId !== 'Invalid pattern') {
+      let state = this.player.getPlayerState();
+      if (this.player && (state === 0 || state === -1 || state === 5)) {
+        this.loadVideo(newId);
+      } else {
+        this.setState({videoQueue: this.state.videoQueue.concat([newId])})
+      }
     }
   }
 
