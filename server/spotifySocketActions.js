@@ -58,38 +58,38 @@ module.exports.setSpotifyHostSocket = (socket, hostName, activeSessions, io, del
 module.exports.setSpotifySocket = (socket, hostName, activeSessions, io, initData, User) => {
   //console.log('new spotify socket. init data: ', initData);
   socket.join(hostName);
-  if(initData.env === 'dev' && IS_DEV && !socket.spotifyAuthToken) {
-    //console.log('setting token for spotify socket');
-    socket.spotifyAuthToken = DEV_TOKEN;
-    socket.emit('giveAuthToken', socket.spotifyAuthToken);
-  } else {
-    try {
-      let cookie = socket.handshake.headers.cookie;
-      if (cookie) {
-        axios.get(`http://${PROXY_URL}:${PROXY_PORT}/api/player/usertoken/spotify`, {
-          headers: {
-            'Cookie': cookie,
-          },
-        })
-          .then(response => {
-            //console.log('Token: ', response.data.userToken)
-            socket.spotifyAuthToken = response.data.userToken;
-            socket.emit('giveAuthToken', socket.spotifyAuthToken);
-          })
-          .catch(err => {
-            console.log('Errored in proxy get: ', err.message);
-          })
-      }
-    } catch (err) {
-      console.log('Error in cookie stuff');
-      socket.emit('hostError');
-      socket.emit('clientError');
-      socket.disconnect();
-    }
+  //if(initData.env === 'dev' && IS_DEV && !socket.spotifyAuthToken) {
+  //  //console.log('setting token for spotify socket');
+  //  socket.spotifyAuthToken = DEV_TOKEN;
+  //  socket.emit('giveAuthToken', socket.spotifyAuthToken);
+  //} else {
+    //try {
+    //  let cookie = socket.handshake.headers.cookie;
+    //  if (cookie) {
+    //    axios.get(`http://${PROXY_URL}:${PROXY_PORT}/api/player/usertoken/spotify`, {
+    //      headers: {
+    //        'Cookie': cookie,
+    //      },
+    //    })
+    //      .then(response => {
+    //        //console.log('Token: ', response.data.userToken)
+    //        socket.spotifyAuthToken = response.data.userToken;
+    //        socket.emit('giveAuthToken', socket.spotifyAuthToken);
+    //      })
+    //      .catch(err => {
+    //        console.log('Errored in proxy get: ', err.message);
+    //      })
+    //  }
+    //} catch (err) {
+    //  console.log('Error in cookie stuff');
+    //  socket.emit('hostError');
+    //  socket.emit('clientError');
+    //  socket.disconnect();
+    //}
     //get auth token from frontend server
     //get playlists from spotify
     //send both
-  }
+  //}
   socket.on('spotifyPlayerDetails', ({playerId}) => {
     socket.spotifyPlayerId = playerId;
   })

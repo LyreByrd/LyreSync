@@ -24,6 +24,10 @@ const apiPort = config.PORT_NUM || 1234;
 const USER_DB_LOCATION = process.env.USER_DB_LOCATION;
 let dbConnected = false;
 
+
+const DEV_TOKEN = process.env.DEV_TOKEN;
+const IS_DEV = process.env.IS_DEV === 'true';
+
 const services = ['youtube', 'spotify'];
 const validServices = {};
 const activeSessions = {};
@@ -49,6 +53,14 @@ app.use(express.static(__dirname + '/../client/dist'));
 //   console.log(req.url);
 //   next();
 // })
+
+app.get('/api/player/usertoken/spotify', (req, res) => {
+  if(IS_DEV) {
+    res.send({userToken: DEV_TOKEN});
+  } else {
+    res.sendStatus(403);
+  }
+})
 
 app.get('/test*', (req, res) => {
   if (process.env.ALLOW_TEST === 'true') {
