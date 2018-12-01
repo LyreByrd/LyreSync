@@ -97,8 +97,12 @@ class YTHost extends React.Component {
   }
 
   onPlayerStateChange(e) {
-    if(e.data === 0 && this.state.videoQueue[0]) {
-      this.loadVideo()
+    if(e.data === 0) {
+      if (this.state.videoQueue[0]) {
+        this.loadVideo()
+      } else {
+        //video ended, no video in queue - no action needed
+      }
     } else {
       this.socket.emit('hostAction', {
           type:'stateChange', 
