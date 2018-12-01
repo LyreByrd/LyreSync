@@ -14,6 +14,7 @@ import { debounce } from 'debounce';
 
 import SpotifyGUI from './SpotifyGUI.jsx';
 import KnownSpotifyPlaylists from './KnownSpotifyPlaylists.jsx';
+import ActiveSpotifyPlaylist from './ActiveSpotifyPlaylist.jsx';
 
 let HOME_URL, SOCKET_PORT;
 try {
@@ -392,7 +393,21 @@ class SpotifyHost extends React.Component {
   }
 
   loadPlaylistFromKnown(playlist) {
-    this.loadKnownTracks(playlist.uri);
+    axios.get(playlist.href,
+      {headers: {
+        'Content-Type': 'application.json',
+        'Authorization': 'Bearer ' + this.state.authToken,
+      }
+    })
+    .then(response => {
+      console.log('Got playlist: ', response.data);
+      this.setState({currentPlaylist: response.data}, () => {
+        this.loadKnownTracks(playlist.uri);
+      })
+    })
+    .catch(err => {
+      console.log('ERROR LOADING PLAYLIST');
+    })
   }
 
   render () {
@@ -433,6 +448,9 @@ class SpotifyHost extends React.Component {
         <button onClick={this.loadCurrentUserPlaylists}>Load Playlists</button>
         <br />
         <div className={'spotify-playlist-handlers'}>
+          <ActiveSpotifyPlaylist 
+            currentPlaylist={this.state.currentPlaylist}
+          />
           <KnownSpotifyPlaylists 
             hostPlaylists={this.state.hostPlaylists} 
             loadPlaylistFromKnown={this.loadPlaylistFromKnown}
