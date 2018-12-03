@@ -63,19 +63,24 @@ class SpotifyHost extends React.Component {
   componentDidMount () {
     //let props = this.props
     //console.log(this.props)
-    console.log('props: ', this.props);
-
+    //console.log('props: ', this.props);
+    axios.get('/api/player/usertoken/spotify')
+      .then(response => {
+        this.setState({authToken: response.data.userToken}, () => {
+          this.onSpotifyReady();
+        })
+      })
     this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`); //io(`/${this.props.hostingName}`); namespace implementation
     this.socket.on('initPing', () => {
       //console.log('claiming host, name: ' + props.hostingName);
       this.socket.emit('claimHost', {host: this.props.hostingName, service: 'spotify', env: this.props.env});
     });
-    this.socket.on('giveAuthToken', (token) => {
-      console.log('auth token recieved');
-      this.setState({authToken: token}, () => {
-        this.onSpotifyReady();
-      });
-    });
+    //this.socket.on('giveAuthToken', (token) => {
+    //  console.log('auth token recieved');
+    //  this.setState({authToken: token}, () => {
+    //    this.onSpotifyReady();
+    //  });
+    //});
     this.socket.on('findInitStatus', (socketId) => {
       //return current state for newly joining audience
     })

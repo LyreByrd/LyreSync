@@ -13,8 +13,8 @@ const axios = require('axios');
 let dev_playlists; 
 const DEV_TOKEN = process.env.DEV_TOKEN;
 const IS_DEV = process.env.IS_DEV === 'true';
-const PROXY_URL = process.env.PROXY_URL;
-const PROXY_PORT = process.env.PROXY_PORT;
+const PROXY_URL = process.env.PROXY_URL || 'localhost';
+const PROXY_PORT = process.env.PROXY_PORT || 3000;
 
 module.exports.setSpotifyHostSocket = (socket, hostName, activeSessions, io, deleteClosedSession, initData) => {
   //console.log('socket hosting Spotify at ' + hostName);
@@ -77,7 +77,7 @@ module.exports.setSpotifySocket = (socket, hostName, activeSessions, io, initDat
             socket.emit('giveAuthToken', socket.spotifyAuthToken);
           })
           .catch(err => {
-            console.log('Errored in proxy get');
+            console.log('Errored in proxy get: ', err.message);
           })
       }
     } catch (err) {
