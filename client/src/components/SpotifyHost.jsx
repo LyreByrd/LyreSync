@@ -469,10 +469,12 @@ class SpotifyHost extends React.Component {
         <br />
         <div className={'spotify-playlist-handlers'}>
           <ActiveSpotifyPlaylist 
+            className='active-playlist spotify-active-playlist'
             currentPlaylist={this.state.currentPlaylist}
             playlistPosition={this.state.playlistPosition}
           />
           <KnownSpotifyPlaylists 
+            className='spotify-known-playlists known-playlists'
             hostPlaylists={this.state.hostPlaylists} 
             loadPlaylistFromKnown={this.loadPlaylistFromKnown}
           />

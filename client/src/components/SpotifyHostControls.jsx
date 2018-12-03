@@ -7,11 +7,11 @@ const SpotifyHostControls = (props) => {
     className={shouldShowPause ? 'pause-btn' : 'play-btn'}>
       {shouldShowPause ? 'Pause' : 'Play'}
     </button>)
-  return (<div className='spotify host-controls'>
+  return (<div className='spotify-player host-controls'>
 
     {plauseButton}
-    <button className={'prevTrack'} onClick={() => props.skipTo({mode: 'rel', target: -1})}>Previous Track</button>
-    <button className={'nextTrack'} onClick={() => props.skipTo({mode: 'rel', target: 1})}>Next Track</button>
+    <button className={'prev-track-btn'} onClick={() => props.skipTo({mode: 'rel', target: -1})}>Previous Track</button>
+    <button className={'next-track-btn'} onClick={() => props.skipTo({mode: 'rel', target: 1})}>Next Track</button>
   </div>)
 }
 

@@ -1,10 +1,10 @@
 import React from 'react';
 
 const ActiveSpotifyPlaylist = (props) => {
-  let title = <div>No playlist selected</div>
+  let title = <div className='playlist-title' >No playlist selected</div>
   let tracks = [];
   if (props.currentPlaylist.name) {
-    title = <div>Currently Playing: {props.currentPlaylist.name}</div>;
+    title = <div className='playlist-title'>Currently Playing: {props.currentPlaylist.name}</div>;
     tracks = props.currentPlaylist.tracks.items.map((item, trackIndex) => {
       let track = item.track;
       let artistList = 'unknown';
@@ -14,15 +14,15 @@ const ActiveSpotifyPlaylist = (props) => {
       }
       let playing = '';
       if(trackIndex === props.playlistPosition) {
-        playing = 'active';
+        playing = 'active-playlist-entry';
       }
-      return (<div key={track.id} id={playing}>
-          <div className='track-name'>{playing ? 'Loc ->' : ''}{track.name}</div>
+      return (<div className='playlist-entry' key={track.id} id={playing}>
+          <div className='track-name ' >{playing ? 'Loc ->' : ''}{track.name}</div>
           <div className='track-artist'> by {artistList}</div>
         </div>)
     })
   }
-  return <span>{title}{tracks}</span>
+  return <span className='active-playlist spotify-active-playlist'>{title}{tracks}</span>
 }
 
 export default ActiveSpotifyPlaylist;
