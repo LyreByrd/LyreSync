@@ -1,11 +1,4 @@
-/*
- * NOTA BENE:
- * 
- * This is the quick-and-dirty version which is easy to code
- * and suitable for demonstration but runs into rate-limiting
- * barriers very quickly when it scales up. 
- * 
- */
+//possible rate-limiting problems as it scales - should ideally load a whole playlist
 
 import React from 'react'
 import io from 'socket.io-client';
@@ -39,7 +32,7 @@ class SpotifyClient extends React.Component {
       currentPlayingInfo: {},
       currentPlayingDuration: 0,
       isMuted: false,
-      volume: 100,
+      volume: 50,
     } 
     this.logPlayer = this.logPlayer.bind(this);
     this.onSpotifyReady = this.onSpotifyReady.bind(this);
@@ -54,18 +47,24 @@ class SpotifyClient extends React.Component {
     //let props = this.props
     //console.log(this.props)
     //console.log('props: ', this.props);
+    axios.get('/api/player/usertoken/spotify')
+    .then(response => {
+      this.setState({authToken: response.data.userToken}, () => {
+        this.onSpotifyReady();
+      })
+    });
 
     this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`); //io(`/${this.props.hostingName}`); namespace implementation
     this.socket.on('initPing', () => {
       //console.log('claiming host, name: ' + props.hostingName);
       this.socket.emit('getClientActions', {host: this.props.sessionHost, service: 'spotify', env: this.props.env});
     });
-    this.socket.on('giveAuthToken', (token) => {
-      console.log('auth token recieved');
-      this.setState({authToken: token}, () => {
-        this.onSpotifyReady();
-      });
-    });
+    //this.socket.on('giveAuthToken', (token) => {
+    //  console.log('auth token recieved');
+    //  this.setState({authToken: token}, () => {
+    //    this.onSpotifyReady();
+    //  });
+    //});
     this.socket.on('clientError', () => {
       this.setState({hasErrored: true}, () => {
         setTimeout(() => this.props.resetToLobby(), 5000);

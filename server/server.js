@@ -7,8 +7,15 @@ const ytSocketActions = require('./youtubeSocketActions.js');
 const spotifySocketActions = require('./spotifySocketActions.js');
 const mongoose = require('mongoose');
 const { User } = require('../db/userdb.js');
-
 require('dotenv').config();
+
+let samplePlaylists; 
+try {
+  samplePlaylists = require('../samples/sampleSpotifyPlaylists');
+} catch(err) {
+  samplePlaylists = null;
+}
+
 let config;
 try {
   config = require('../config.js');
@@ -24,6 +31,10 @@ const apiPort = config.PORT_NUM || 1234;
 const USER_DB_LOCATION = process.env.USER_DB_LOCATION;
 let dbConnected = false;
 
+
+const DEV_TOKEN = process.env.DEV_TOKEN;
+const IS_DEV = process.env.IS_DEV === 'true';
+
 const services = ['youtube', 'spotify'];
 const validServices = {};
 const activeSessions = {};
@@ -32,9 +43,14 @@ services.forEach(service => {
   validServices[service] = true;
 })
 
-// mongoose.connect(USER_DB_LOCATION, { useNewUrlParser: true })
-//   .then(() => console.log('connection to db succesful'))
-//   .catch((err) => console.log(err));
+if (USER_DB_LOCATION) {
+  mongoose.connect(USER_DB_LOCATION, { useNewUrlParser: true })
+    .then(() => {
+      console.log('connection to db succesful')
+      dbConnected = true;
+    })
+    .catch((err) => console.log(err));
+}
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json())
@@ -44,6 +60,14 @@ app.use(express.static(__dirname + '/../client/dist'));
 //   console.log(req.url);
 //   next();
 // })
+
+app.get('/api/player/usertoken/spotify', (req, res) => {
+  if(IS_DEV) {
+    res.send({userToken: DEV_TOKEN});
+  } else {
+    res.sendStatus(403);
+  }
+})
 
 app.get('/test*', (req, res) => {
   if (process.env.ALLOW_TEST === 'true') {
@@ -113,6 +137,14 @@ app.get('/api/player/client/', (req, res) => {
   });
 });
 
+app.get('/user/getspotify', (req, res) => {
+  if(IS_DEV) {
+    res.json(samplePlaylists);
+  } else {
+    res.sendStatus(404);
+  }
+})
+
 io.on('connection', socket => {
   //console.log('New socket connection');
   socket.emit('initPing');
@@ -147,6 +179,7 @@ io.on('connection', socket => {
       socket.disconnect();
     }
   })
+
 
   socket.on('getClientActions', data => { //host: (hostname) service: (service) env: 'dev'/undefined
     let target = activeSessions[data.host];

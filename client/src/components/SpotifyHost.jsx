@@ -1,11 +1,3 @@
-/*
- * NOTA BENE:
- * 
- * This is the quick-and-dirty version which is easy to code
- * and suitable for demonstration but runs into rate-limiting
- * barriers very quickly when it scales up. 
- * 
- */
 
 import React from 'react'
 import io from 'socket.io-client';
@@ -13,6 +5,8 @@ import axios from 'axios';
 import { debounce } from 'debounce';
 
 import SpotifyGUI from './SpotifyGUI.jsx';
+import KnownSpotifyPlaylists from './KnownSpotifyPlaylists.jsx';
+import ActiveSpotifyPlaylist from './ActiveSpotifyPlaylist.jsx';
 
 let HOME_URL, SOCKET_PORT;
 try {
@@ -39,7 +33,7 @@ class SpotifyHost extends React.Component {
       playerState: 'inactive',
       playerTime: 0,
       currentPlayingInfo: {},
-      volume: 100,
+      volume: 50,
       isMuted: false,
       currentPlayingDuration: null,
     }
@@ -58,26 +52,43 @@ class SpotifyHost extends React.Component {
     this.setTime = debounce(this.setTime.bind(this), 100);
     this.startTimer = this.startTimer.bind(this);
     this.componentWillUnmount = this.componentWillUnmount.bind(this);
+    this.loadKnownTracks = this.loadKnownTracks.bind(this);
+    this.loadCurrentUserPlaylists = this.loadCurrentUserPlaylists.bind(this);
+    this.loadPlaylistFromKnown = this.loadPlaylistFromKnown.bind(this);
   }
 
   componentDidMount () {
     //let props = this.props
     //console.log(this.props)
-    console.log('props: ', this.props);
-
+    //console.log('props: ', this.props);
+    axios.get('/api/player/usertoken/spotify')
+      .then(response => {
+        this.setState({authToken: response.data.userToken}, () => {
+          this.onSpotifyReady();
+        })
+      })
     this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`); //io(`/${this.props.hostingName}`); namespace implementation
     this.socket.on('initPing', () => {
       //console.log('claiming host, name: ' + props.hostingName);
       this.socket.emit('claimHost', {host: this.props.hostingName, service: 'spotify', env: this.props.env});
     });
-    this.socket.on('giveAuthToken', (token) => {
-      console.log('auth token recieved');
-      this.setState({authToken: token}, () => {
-        this.onSpotifyReady();
-      });
-    });
     this.socket.on('findInitStatus', (socketId) => {
       //return current state for newly joining audience
+      if(this.player) {
+        this.player.getCurrentState()
+          .then(hostState => {
+            this.socket.emit('sendInitStatus', {
+              hostState,
+              socketId,
+            })
+          })
+          .catch(err => console.error(err))
+      } else {
+        this.socket.emit('sendInitStatus', {
+          hostState: null,
+          socketId,
+        })
+      }
     })
     this.socket.on('hostingError', (err) => {
       //console.log('got host error');
@@ -179,31 +190,14 @@ class SpotifyHost extends React.Component {
     console.log('checking player status');
     if(this.state.playerReady) {
       console.log('attempting to get music');
-      this.socket.emit('loadFromSpotify', {mode: 'context', target:'spotify:album:5frKFvB263lUvjSrrJ1sQ8'});
+      this.loadKnownTracks('spotify:album:5frKFvB263lUvjSrrJ1sQ8');
     }
   }
   
-  //spotify:album:5frKFvB263lUvjSrrJ1sQ8
-
   loadDefaultFromClient() {
-    let body = JSON.stringify({uris: ['spotify:track:4wGCusPRszIZYxbwtgISjD']});
-    //spotify:track:4wGCusPRszIZYxbwtgISjD
-    console.log('sending axios call from client');
-    axios.put(`https://api.spotify.com/v1/me/player/play?device_id=${this.state.playerId}`,
-      body,
-      {headers: {
-        'Content-Type': 'application.json',
-        'Authorization': 'Bearer ' + this.state.authToken,
-      }}
-    )
-    .then(response => {
-      console.log(response.data)
-      this.setState({playerState: 'playing'})
-    })
-    .catch(error => {
-      //console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||\nERROR:\n', error.response)
-      console.log('spotifyResponse', error.response);
-    })
+    if(this.state.playerReady) {
+      this.loadKnownTracks('spotify:track:4wGCusPRszIZYxbwtgISjD', 'track');
+    }
   }
 
   logPlayer() {
@@ -313,14 +307,36 @@ class SpotifyHost extends React.Component {
     this.socket.emit('hostStateUpdate', playerState);
     let edited = false;
     let neededUpdates = {};
-    if (this.state.currentPlayingInfo.uri !== playerState.track_window.current_track.uri) {
-      neededUpdates.currentPlayingDuration = playerState.duration;
-      neededUpdates.currentPlayingInfo = playerState.track_window.current_track;
-      edited = true;
-    }
-    if (Math.abs(this.state.playerTime - playerState.position) > 1000) {
-      neededUpdates.playerTime = playerState.position;
-      edited = true;
+    if (playerState) {
+      console.log('playerState is not null');
+      if (this.state.currentPlayingInfo.uri !== playerState.track_window.current_track.uri) {
+        neededUpdates.currentPlayingDuration = playerState.duration;
+        neededUpdates.currentPlayingInfo = playerState.track_window.current_track;
+        neededUpdates.playlistPosition = this.findNewPlaylistPosition(playerState.track_window.current_track.id)
+        edited = true;
+      }
+      if (Math.abs(this.state.playerTime - playerState.position) > 1000) {
+        neededUpdates.playerTime = playerState.position;
+        edited = true;
+      }
+      if (playerState.paused && this.state.playerState !== 'paused') {
+        edited = true;
+        neededUpdates.playerState = 'paused';
+      }
+      if (playerState.paused === false && this.state.playerState !== 'playing') {
+        edited = true;
+        neededUpdates.playerState = 'playing';
+      }
+    } else {
+      if (this.state.playerState !== 'inactive') {
+        edited = true;
+        neededUpdates = {
+          playerState: 'inactive',
+          currentPlayingDuration: null,
+          playerTime: 0,
+          currentPlayingInfo: {},
+        }
+      }
     }
     if(edited) {
       console.log('New information: ', neededUpdates)
@@ -341,6 +357,77 @@ class SpotifyHost extends React.Component {
     if (0 <= newTime && newTime * 1000 <= this.state.currentPlayingDuration) {
       this.player.seek(newTime * 1000);
     }
+  }
+
+  loadKnownTracks(uri, type) {
+    let body;
+    console.log('loadKnownTracks');
+    if (type === 'track') {
+      body = JSON.stringify({uris: [uri]});
+    } else {
+      body = JSON.stringify({context_uri: uri});
+    }
+    console.log('sending axios call from client');
+    axios.put(`https://api.spotify.com/v1/me/player/play?device_id=${this.state.playerId}`,
+      body,
+      {headers: {
+        'Content-Type': 'application.json',
+        'Authorization': 'Bearer ' + this.state.authToken,
+      }}
+    )
+    .then(response => {
+      console.log(response.data);
+    })
+    .catch(error => {
+      //console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||\nERROR:\n', error.response)
+      console.log('spotifyResponse', error.response);
+    })
+  }
+
+  loadCurrentUserPlaylists() {
+    axios.get('/user/getspotify')
+      .then(response => {
+        this.setState({hostPlaylists: response.data.items})
+      })
+      .catch(error => {
+        console.error(error);
+      })
+  }
+
+  loadPlaylistFromKnown(playlist) {
+    axios.get(playlist.href,
+      {headers: {
+        'Content-Type': 'application.json',
+        'Authorization': 'Bearer ' + this.state.authToken,
+      }
+    })
+    .then(response => {
+      console.log('Got playlist: ', response.data);
+      this.setState({currentPlaylist: response.data, playlistPosition: 0}, () => {
+        this.loadKnownTracks(playlist.uri);
+      })
+    })
+    .catch(err => {
+      console.log('ERROR LOADING PLAYLIST');
+    })
+  }
+
+  findNewPlaylistPosition(trackId) {
+    let position = this.state.playlistPosition;
+    let tracklist = this.state.currentPlaylist.tracks.items;
+    if(trackId === tracklist[position].track.id) {
+      return position;
+    } else if (trackId === tracklist[position + 1].track.id) {
+      return position + 1;
+    } else {
+      for(let i = 0; i < tracklist.length; i++) {
+        if(tracklist[i].track.id === trackId) {
+          return i;
+        }
+      }
+    }
+
+    return null;
   }
 
   render () {
@@ -378,7 +465,18 @@ class SpotifyHost extends React.Component {
         <br />
         <button onClick={this.loadDefaultFromClient}>Load-from-client test</button>
         <button onClick={this.logPlayer}>Log Player</button>
+        <button onClick={this.loadCurrentUserPlaylists}>Load Playlists</button>
         <br />
+        <div className={'spotify-playlist-handlers'}>
+          <ActiveSpotifyPlaylist 
+            currentPlaylist={this.state.currentPlaylist}
+            playlistPosition={this.state.playlistPosition}
+          />
+          <KnownSpotifyPlaylists 
+            hostPlaylists={this.state.hostPlaylists} 
+            loadPlaylistFromKnown={this.loadPlaylistFromKnown}
+          />
+        </div>
         {spoofButtons}
       </div>
     )

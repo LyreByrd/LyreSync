@@ -1,6 +1,7 @@
 import React from 'react'
 import io from 'socket.io-client';
 import getVideoId from 'get-video-id';
+import YTVideoQueue from './YTVideoQueue.jsx';
 
 let HOME_URL, SOCKET_PORT;
 try {
@@ -27,6 +28,7 @@ class YTHost extends React.Component {
     this.loadVideo = this.loadVideo.bind(this);
     this.logPlayer = this.logPlayer.bind(this);
     this.onIdValChange = this.onIdValChange.bind(this);
+    this.addToQueue = this.addToQueue.bind(this);
   }
   componentDidMount () {
     let props = this.props
@@ -99,14 +101,25 @@ class YTHost extends React.Component {
   }
 
   onPlayerStateChange(e) {
-    this.socket.emit('hostAction', {
-        type:'stateChange', 
-        newState: e.data, 
-        newVideo: this.player.getVideoData().video_id, 
-        newTime: this.player.getCurrentTime(),
-    })
-    if (typeof this.props.onStateChange === 'function') {
-      this.props.onStateChange(e)
+    if(e.data === 0) {
+      if (this.state.videoQueue[0]) {
+        this.loadVideo()
+      } else {
+        //video ended, no video in queue - no action needed
+      }
+    } else if (e.data === -1) {
+      if(this.state.videoQueue[0]) {
+        this.loadVideo();
+      } else {
+        //see above
+      }
+    } else {
+      this.socket.emit('hostAction', {
+          type:'stateChange', 
+          newState: e.data, 
+          newVideo: this.player.getVideoData().video_id, 
+          newTime: this.player.getCurrentTime(),
+        })
     }
   }
 
@@ -117,28 +130,18 @@ class YTHost extends React.Component {
   }
 
 
-  loadVideo(event) {
-    event.preventDefault();
-    console.log('this.props.hostingName :', this.props.hostingName);
+  loadVideo(id) {
+    if(id) {
+      this.player.loadVideoById(id);
+    } else {
+      this.player.loadVideoById(this.state.videoQueue[0]);
+      this.setState({videoQueue: this.state.videoQueue.slice(1)});
+    }
     let videoData = {
       host: this.props.hostingName,
-      id: this.state.idVal
+      id: id
     }
     this.feedSocket.emit('video data', videoData)
-    if (this.state.idVal && this.player) {
-      if(this.state.idVal.length === 11) {
-        this.player.loadVideoById(this.state.idVal);
-      } else {
-        let {id, service} = getVideoId(this.state.idVal);
-        if(service === 'youtube' && id) {
-          this.player.loadVideoById(id);
-        } else {
-          this.gotInvalidIdPattern();
-        }
-      }
-    } else if (this.player) {
-      this.player.loadVideoById('QLOpdWMbebI')
-    }
   }
 
   gotInvalidIdPattern() {
@@ -146,27 +149,59 @@ class YTHost extends React.Component {
   }
 
   logPlayer() {
-    //console.log(this.player)
-    //window.player = this.player;
+    console.log(this.player)
+    window.player = this.player;
   }
 
   onIdValChange(e) {
     this.setState({idVal: e.target.value});
   }
 
+  addToQueue(event) {
+    event.preventDefault();
+    console.log('Hit Queue Button');
+    let newId;
+    if (this.state.idVal) {
+      if(this.state.idVal.length === 11) {
+        newId = this.state.idVal;
+      } else {
+        let {id, service} = getVideoId(this.state.idVal);
+        if(service === 'youtube' && id) {
+          newId = id;
+        } else {
+          newId = 'Invalid pattern';
+        }
+      }
+    }  else { 
+      newId = 'QLOpdWMbebI';
+    }
+
+    if(newId !== 'Invalid pattern') {
+      let state = this.player.getPlayerState();
+      if (this.player && (state === 0 || state === -1 || state === 5)) {
+        this.loadVideo(newId);
+      } else {
+        this.setState({videoQueue: this.state.videoQueue.concat([newId])})
+      }
+    }
+  }
+
   render () {
+    
     return (
       <div>
         <section className='youtubeComponent-wrapper'>
           <div style={{width:'640px', height:'390px', display:'inline-block'}} ref={(r) => { this.youtubePlayerAnchorHost = r }}></div>
           <br />
         </section>
-        <form onSubmit={this.loadVideo}>
+        <form onSubmit={this.addToQueue}>
           <label htmlFor='YTLocation'>YouTube link, embed code, or video ID:</label>
           <br />
           <input type='text' name='YTLocation' value={this.state.idVal} onChange={this.onIdValChange}></input>
-          <button>Load Video</button>
+          <button>Add to Queue</button>
         </form>
+        <YTVideoQueue videoQueue={this.state.videoQueue} />
+        <button onClick={this.logPlayer}>log</button>
         <span> {this.state.hasErrored ? 'Error connecting to session. Attempting to refresh' : 'Now Hosting'} </span>
       </div>
     )
