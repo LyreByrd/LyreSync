@@ -99,14 +99,14 @@ class YTHost extends React.Component {
 
   onPlayerStateChange(e) {
     if(e.data === 0) {
-      if (this.state.videoQueue[0]) {
-        this.loadVideo()
+      if (this.state.videoQueue[1]) {
+        this.loadNextVideo()
       } else {
         //video ended, no video in queue - no action needed
       }
     } else if (e.data === -1) {
-      if(this.state.videoQueue[0]) {
-        this.loadVideo();
+      if(this.state.videoQueue[1]) {
+        this.loadNextVideo();
       } else {
         //see above
       }
@@ -136,6 +136,21 @@ class YTHost extends React.Component {
     }
   }
 
+  loadNextVideo() {
+    console.log('loading next from ', this.state.videoQueue)
+    if(this.player) {
+      if(this.state.videoQueue[1]) {
+        console.log('skipping to next')
+        this.setState({videoQueue: this.state.videoQueue.slice(1)}, () => {
+          this.player.loadVideoById(this.state.videoQueue[0].videoId);
+        });
+      } else if (this.state.videoQueue[0]) {
+        console.log('loading first in queue')
+        this.player.loadVideoById(this.state.videoQueue[0].videoId);
+      }
+    }
+  }
+
   gotInvalidIdPattern() {
     console.log('try again buddy');
   }
@@ -150,6 +165,7 @@ class YTHost extends React.Component {
   }
 
   addToQueue(event) {
+    console.log(this.state.videoQueue);
     event.preventDefault();
     console.log('Hit Queue Button');
     let newId;
@@ -171,9 +187,11 @@ class YTHost extends React.Component {
     if(newId !== 'Invalid pattern') {
       let state = this.player.getPlayerState();
       if (this.player && (state === 0 || state === -1 || state === 5)) {
-        this.loadVideo(newId);
+        this.setState({videoQueue: this.state.videoQueue.concat([{videoId: newId, queueTimestamp: Date.now()}])}, () => {
+          this.loadNextVideo();
+        })
       } else {
-        this.setState({videoQueue: this.state.videoQueue.concat([newId])})
+        this.setState({videoQueue: this.state.videoQueue.concat([{videoId: newId, queueTimestamp: Date.now()}])});
       }
     }
   }
