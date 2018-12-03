@@ -24,7 +24,7 @@ try {
 }
 
 const app = express();
-const http = require('http').Server(app);
+const http = require('http').Server(/*app*/);
 const io = require('socket.io')(http);
 const socketPort = config.SOCKET_PORT || 9001;
 const apiPort = config.PORT_NUM || 1234;
@@ -162,6 +162,9 @@ io.on('connection', socket => {
       if (target.service !== data.service) {
         throw new Error('service type mismatch');
       }
+      if(data.hostTimestamp && data.hostTimestamp !== target.hostTimestamp) {
+        throw new Error('invalid host timestamp');
+      }
       activeSessions[data.host].host = socket;
       if (data.service === 'youtube'){
         ytSocketActions.setYTSocketHost(socket, data.host, activeSessions, io, deleteClosedSession);
@@ -225,17 +228,21 @@ app.post('/host', (req, res) => {
   if(validServices[service] !== true) {
     //console.log('invalid service');
     res.status(400).send(`Service "${service}" not supported`);
-  } else if (!hostName || isInvalidName(hostName) || activeSessions[hostName]) {
+  } else if (!hostName || isInvalidName(hostName) /*|| activeSessions[hostName]*/) {
     res.sendStatus(403);
   } else {
     try {
-      makeNewSession(hostName, service);
+      const hostTimestamp = Date.now();
+      if (!activeSessions[hostName]) {
+        makeNewSession(hostName, service);
+      }
+      activeSessions[hostName].hostTimestamp = hostTimestamp;
       setTimeout(() => {
         if(activeSessions[hostName] && activeSessions[hostName].host === null) {
           deleteClosedSession(hostName);
         }
       }, 5000);
-      res.status(201).send({hostName, service});
+      res.status(201).send({hostName, service, hostTimestamp});
     } catch (err) {
       res.status(500).send();
     }

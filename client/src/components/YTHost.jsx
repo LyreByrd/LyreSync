@@ -36,7 +36,7 @@ class YTHost extends React.Component {
     this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`); //io(`/${this.props.hostingName}`); namespace implementation
     this.socket.on('initPing', () => {
       //console.log('claiming host, name: ' + props.hostingName);
-      this.socket.emit('claimHost', {host: props.hostingName, service:'youtube'});
+      this.socket.emit('claimHost', {host: props.hostingName, service:'youtube', hostTimestamp: props.hostTimestamp});
     })
     this.socket.on('findInitStatus', (socketId) => {
       //console.log('client attempting to initialize, id: ' + socketId)
