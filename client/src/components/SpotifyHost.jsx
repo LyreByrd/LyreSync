@@ -219,12 +219,15 @@ class SpotifyHost extends React.Component {
     let soundshockDefault = {
       href: 'https://api.spotify.com/v1/albums/6jg4LbYcSeB9r6bj2p1CKf',
       uri: 'spotify:album:6jg4LbYcSeB9r6bj2p1CKf',
+      type: 'album'
     }
-    let doteDefault = {
-      uri: 'spotify:album:5frKFvB263lUvjSrrJ1sQ8'
+    let trackDefault = {
+      uri: 'spotify:track:0qEuvRbJzqFrqURfD2zfxj',
+      href: 'https://api.spotify.com/v1/tracks/0qEuvRbJzqFrqURfD2zfxj',
+      type: 'track',
     }
     if(this.state.playerReady) {
-      this.loadPlaylistFromKnown(soundshockDefault);
+      this.loadPlaylistFromKnown(trackDefault);
     }
 
   }
@@ -425,6 +428,7 @@ class SpotifyHost extends React.Component {
   }
 
   loadPlaylistFromKnown(playlist) {
+
     console.log(playlist.href)
     axios.get(playlist.href,
       {headers: {
@@ -435,7 +439,7 @@ class SpotifyHost extends React.Component {
     .then(response => {
       console.log('Got playlist: ', response.data);
       this.setState({currentPlaylist: response.data, playlistPosition: 0}, () => {
-        this.loadKnownTracks(playlist.uri);
+        this.loadKnownTracks(playlist.uri, playlist.type);
       })
     })
     .catch(err => {
@@ -507,9 +511,9 @@ class SpotifyHost extends React.Component {
           playerTime={this.state.playerTime}
           setTime={this.setTime}
         />
-        <button onClick={this.loadDefaultMusic}>Start Default Music</button>
+        <button onClick={this.loadDefaultMusic}>Load Default Album</button>
         <br />
-        <button onClick={this.loadDefaultFromClient}>Load-from-client test</button>
+        <button onClick={this.loadDefaultFromClient}>Load default single track</button>
         <button onClick={this.logPlayer}>Log Player</button>
         <button onClick={this.loadCurrentUserPlaylists}>Load Playlists</button>
         <br />
