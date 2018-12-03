@@ -21,8 +21,8 @@ const ActiveSpotifyPlaylist = (props) => {
         playing = 'active-playlist-entry';
       }
       return (<div className='playlist-entry' key={track.id} id={playing}>
-          <div className='track-name ' >{playing ? 'Loc ->' : ''}{track.name}</div>
-          <div className='track-artist'> by {artistList}</div>
+          <div className='track-name ' >{playing ? <span className='dev dev-playlist-location'>{'->'}</span> : null}{track.name}</div> 
+          <div className='track-artist'>{playing ? <span className='dev dev-playlist-location'>{'->'}</span> : null} by {artistList}</div>
         </div>)
     })
   }

@@ -36,6 +36,7 @@ class SpotifyHost extends React.Component {
       volume: 50,
       isMuted: false,
       currentPlayingDuration: null,
+      specialMessage: null,
     }
     this.loadDefaultMusic = this.loadDefaultMusic.bind(this);
     this.logPlayer = this.logPlayer.bind(this);
@@ -139,10 +140,22 @@ class SpotifyHost extends React.Component {
       getOAuthToken: cb => { cb(this.state.authToken); },
       volume: this.state.isMuted ? 0 : (this.state.volume / 100),
     })
-    this.player.addListener('initialization_error', ({ message }) => { console.error(message); });
-    this.player.addListener('authentication_error', ({ message }) => { console.error(message); });
-    this.player.addListener('account_error', ({ message }) => { console.error(message); });
-    this.player.addListener('playback_error', ({ message }) => { console.error(message); });
+    this.player.addListener('initialization_error', ({ message }) => { 
+      console.error(message); 
+      this.setState({specialMessage: 'Unable to initalize player - browser may not be supported'})
+    });
+    this.player.addListener('authentication_error', ({ message }) => { 
+      console.error(message); 
+      this.setState({specialMessage: 'Invalid authorization token - refresh or regenerate'})
+    });
+    this.player.addListener('account_error', ({ message }) => { 
+      console.error(message); 
+      this.setState({specialMessage: 'Invalid user account - must have Spotify Premium'})
+    });
+    this.player.addListener('playback_error', ({ message }) => { 
+      console.error(message); 
+      this.setState({specialMessage: 'This track is unavailable in your region.'})
+    });
   
     // Playback status updates
     this.player.addListener('player_state_changed', playerState => {
