@@ -1,3 +1,7 @@
+require('dotenv').config();
+
+const YT_API_KEY = process.env.YT_API_KEY;
+
 module.exports.setYTSocketHost = (socket, hostName, activeSessions, io, deleteClosedSession) => {
   socket.on('hostAction', event => {
     io.to(hostName).emit('hostAction', event);
@@ -16,6 +20,14 @@ module.exports.setYTSocketHost = (socket, hostName, activeSessions, io, deleteCl
     }
     if (target) {
       target.emit('initState', data);
+    }
+  })
+  socket.on('sendSearchRequest', term => {
+    console.log('search YouTube for ' + term);
+    if(YT_API_KEY) {
+      //do in a bit
+    } else {
+      socket.emit('gotSearchResults', {status: 'forbidden'});
     }
   })
 }

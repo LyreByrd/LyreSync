@@ -2,6 +2,7 @@ import React from 'react'
 import io from 'socket.io-client';
 import getVideoId from 'get-video-id';
 import YTVideoQueue from './YTVideoQueue.jsx';
+import YTSearchResults from './YTSearchResults.jsx';
 
 let HOME_URL, SOCKET_PORT;
 try {
@@ -20,6 +21,7 @@ class YTHost extends React.Component {
     super(props);
     this.state = {
       videoQueue: [],
+      searchResults: [],
       idVal: '',
       hasErrored: false,
     }
@@ -29,7 +31,10 @@ class YTHost extends React.Component {
     this.logPlayer = this.logPlayer.bind(this);
     this.onIdValChange = this.onIdValChange.bind(this);
     this.addToQueue = this.addToQueue.bind(this);
+    this.addSearchResultToQueue = this.addSearchResultToQueue.bind(this);
+    this.sendSearchRequest = this.sendSearchRequest.bind(this);
   }
+
   componentDidMount () {
     let props = this.props
     //console.log(this.props)
@@ -57,6 +62,11 @@ class YTHost extends React.Component {
       this.setState({hasErrored: true}, () => {
         setTimeout(() => this.props.resetToLobby(err), 5000);
       });
+    })
+    this.socket.on('gotSearchResults', data => {
+      if (data.status === 'forbidden') {
+        this.setState({searchResults: null});
+      }
     })
     if (!loadYT) {
       window.YT = {};
@@ -196,6 +206,15 @@ class YTHost extends React.Component {
     }
   }
 
+  addSearchResultToQueue(searchResult) {
+    console.log('attempting to add result to queue:', searchResult);
+  }
+
+  sendSearchRequest(term) {
+    console.log('Attempting to search for ' + term);
+    this.socket.emit('sendSearchRequest', {term});
+  }
+
   render () {
     
     return (
@@ -211,6 +230,11 @@ class YTHost extends React.Component {
           <button>Add to Queue</button>
         </form>
         <YTVideoQueue videoQueue={this.state.videoQueue} />
+        <YTSearchResults 
+          searchResults={this.state.searchResults} 
+          addSearchResultToQueue={this.addSearchResultToQueue} 
+          sendSearchRequest={this.sendSearchRequest}
+        />
         <button onClick={this.logPlayer}>log</button>
         <span> {this.state.hasErrored ? 'Error connecting to session. Attempting to refresh' : 'Now Hosting'} </span>
       </div>
