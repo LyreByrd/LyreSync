@@ -141,19 +141,19 @@ class SpotifyHost extends React.Component {
       volume: this.state.isMuted ? 0 : (this.state.volume / 100),
     })
     this.player.addListener('initialization_error', ({ message }) => { 
-      console.error(message); 
+      console.error('initialization: ', message); 
       this.setState({specialMessage: 'Unable to initalize player - browser may not be supported'})
     });
     this.player.addListener('authentication_error', ({ message }) => { 
-      console.error(message); 
+      console.error('authentication: ', message); 
       this.setState({specialMessage: 'Invalid authorization token - refresh or regenerate'})
     });
     this.player.addListener('account_error', ({ message }) => { 
-      console.error(message); 
+      console.error('account: ', message); 
       this.setState({specialMessage: 'Invalid user account - must have Spotify Premium'})
     });
     this.player.addListener('playback_error', ({ message }) => { 
-      console.error(message); 
+      console.error('playback: ', message); 
       this.setState({specialMessage: 'This track is unavailable in your region.'})
     });
   
