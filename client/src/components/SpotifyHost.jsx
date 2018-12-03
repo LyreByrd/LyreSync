@@ -188,16 +188,32 @@ class SpotifyHost extends React.Component {
 
   loadDefaultMusic() {
     console.log('checking player status');
+    let soundshockDefault = {
+      href: 'https://api.spotify.com/v1/albums/6jg4LbYcSeB9r6bj2p1CKf',
+      uri: 'spotify:album:6jg4LbYcSeB9r6bj2p1CKf',
+    }
+    let doteDefault = {
+      uri: 'spotify:album:5frKFvB263lUvjSrrJ1sQ8'
+    }
     if(this.state.playerReady) {
       console.log('attempting to get music');
-      this.loadKnownTracks('spotify:album:5frKFvB263lUvjSrrJ1sQ8');
+      this.loadPlaylistFromKnown(soundshockDefault);
     }
   }
   
   loadDefaultFromClient() {
-    if(this.state.playerReady) {
-      this.loadKnownTracks('spotify:track:4wGCusPRszIZYxbwtgISjD', 'track');
+    //spotify:album:6jg4LbYcSeB9r6bj2p1CKf
+    let soundshockDefault = {
+      href: 'https://api.spotify.com/v1/albums/6jg4LbYcSeB9r6bj2p1CKf',
+      uri: 'spotify:album:6jg4LbYcSeB9r6bj2p1CKf',
     }
+    let doteDefault = {
+      uri: 'spotify:album:5frKFvB263lUvjSrrJ1sQ8'
+    }
+    if(this.state.playerReady) {
+      this.loadPlaylistFromKnown(soundshockDefault);
+    }
+
   }
 
   logPlayer() {
@@ -368,6 +384,7 @@ class SpotifyHost extends React.Component {
       body = JSON.stringify({context_uri: uri});
     }
     console.log('sending axios call from client');
+    console.log(body)
     axios.put(`https://api.spotify.com/v1/me/player/play?device_id=${this.state.playerId}`,
       body,
       {headers: {
@@ -395,6 +412,7 @@ class SpotifyHost extends React.Component {
   }
 
   loadPlaylistFromKnown(playlist) {
+    console.log(playlist.href)
     axios.get(playlist.href,
       {headers: {
         'Content-Type': 'application.json',
@@ -408,23 +426,38 @@ class SpotifyHost extends React.Component {
       })
     })
     .catch(err => {
-      console.log('ERROR LOADING PLAYLIST');
+      console.error('ERROR LOADING PLAYLIST:', err);
     })
   }
 
   findNewPlaylistPosition(trackId) {
-    let position = this.state.playlistPosition;
-    let tracklist = this.state.currentPlaylist.tracks.items;
-    if(trackId === tracklist[position].track.id) {
-      return position;
-    } else if (trackId === tracklist[position + 1].track.id) {
-      return position + 1;
-    } else {
-      for(let i = 0; i < tracklist.length; i++) {
-        if(tracklist[i].track.id === trackId) {
-          return i;
-        }
+
+    let itemToTrackId = (spotifyItem) => {
+      //console.log('examining item: ', spotifyItem)
+      if(spotifyItem.type === 'track') {
+        return spotifyItem.id;
+      } else if (spotifyItem.track) {
+        return spotifyItem.track.id
       }
+      return undefined;
+    }
+    try {
+      console.log('finding position');
+      let position = this.state.playlistPosition;
+      let tracklist = this.state.currentPlaylist.tracks.items;
+      if(trackId === itemToTrackId(tracklist[position])) {
+        return position;
+      } else if (trackId === itemToTrackId(tracklist[position+1])) {
+        return position + 1;
+      } else {
+        for(let i = 0; i < tracklist.length; i++) {
+          if(itemToTrackId(tracklist[i]) === trackId) {
+            return i;
+          }
+        }
+      } 
+    } catch(err) {
+      //no tracklist, just return null
     }
 
     return null;
@@ -445,7 +478,7 @@ class SpotifyHost extends React.Component {
       </div>)
       : '';
     return (
-      <div>
+      <div className='spotify-window spotify-window-host'>
         Spotify Component
         <SpotifyGUI 
           isHost={true} 

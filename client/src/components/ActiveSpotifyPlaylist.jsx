@@ -5,8 +5,12 @@ const ActiveSpotifyPlaylist = (props) => {
   let tracks = [];
   if (props.currentPlaylist.name) {
     title = <div className='playlist-title'>Currently Playing: {props.currentPlaylist.name}</div>;
+    let toMapFrom = [];
     tracks = props.currentPlaylist.tracks.items.map((item, trackIndex) => {
-      let track = item.track;
+      let track = item;
+      if (item.track) {
+        track = item.track;
+      }
       let artistList = 'unknown';
       if (track.artists.length) {
         artistList = track.artists[0].name;
