@@ -14,7 +14,7 @@ const VolumeControls = (props) => {
       value={props.currentVolume}  
       onChange={props.setVolume}
     />
-    <span className={'volume-display'}>  {props.currentVolume}/100</span>
+    <span className={'volume-display'}>  <span className={'volume-dsplay-current'}>{props.currentVolume}</span>/100</span>
   </div>)
 }
 
