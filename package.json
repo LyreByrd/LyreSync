@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/LyreByrd/LyreSync#readme",
   "dependencies": {
+    "@mh-cbon/sudo-fs": "^1.0.17",
     "axios": "^0.18.0",
     "babel": "^6.23.0",
     "body-parser": "^1.18.3",
