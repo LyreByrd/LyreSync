@@ -9,9 +9,11 @@ try {
   let config = require('../../../config.js');
   HOME_URL = config.HOME_URL;
   SOCKET_PORT = config.SOCKET_PORT;
+  FEED_PORT = config.FEED_PORT;
 } catch (err) {
   HOME_URL = 'localhost';
   SOCKET_PORT = 9001;
+  FEED_PORT = 8080;
 }
 
 let loadYT
@@ -40,7 +42,7 @@ class YTHost extends React.Component {
     let props = this.props
     //console.log(this.props)
     this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`); //io(`/${this.props.hostingName}`); namespace implementation
-    this.feedSocket = io(`http://${HOME_URL}:8080`);
+    this.feedSocket = io(`http://${HOME_URL}:${FEED_PORT}`);
     this.socket.on('initPing', () => {
       //console.log('claiming host, name: ' + props.hostingName);
       this.socket.emit('claimHost', {host: props.hostingName, service:'youtube', hostTimestamp: props.hostTimestamp});
