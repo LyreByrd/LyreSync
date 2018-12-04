@@ -27,7 +27,7 @@ class YTSearchResults extends React.Component {
       return <YTSearchEntry 
         key={index}
         searchResult={searchResult} 
-        addResultToQueue={this.props.addResultToQueue}
+        addSearchResultToQueue={this.props.addSearchResultToQueue}
         />
     });
     return (<div className='yt-search-results'>

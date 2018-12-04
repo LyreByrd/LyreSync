@@ -66,6 +66,9 @@ class YTHost extends React.Component {
     this.socket.on('gotSearchResults', data => {
       if (data.status === 'forbidden') {
         this.setState({searchResults: null});
+      } else {
+        console.log('search results: ', data);
+        this.setState({searchResults: data.items});
       }
     })
     if (!loadYT) {
@@ -208,6 +211,21 @@ class YTHost extends React.Component {
 
   addSearchResultToQueue(searchResult) {
     console.log('attempting to add result to queue:', searchResult);
+    const newQueueEntry = {
+      queueTimestamp: Date.now(),
+      videoId: searchResult.id.videoId,
+      title: searchResult.snippet.title,
+      snippet: searchResult.snippet,
+    }
+    this.setState({videoQueue: this.state.videoQueue.concat([newQueueEntry])}, () => {
+      let state;
+      if(this.player) {
+        state = this.player.getPlayerState();
+      }
+      if(state === 0 || state === -1 || state === 5) {
+        this.loadNextVideo();
+      }
+    })
   }
 
   sendSearchRequest(term) {

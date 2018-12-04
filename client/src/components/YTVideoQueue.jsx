@@ -2,7 +2,15 @@ import React from 'react';
 
 const YTVideoQueue = (props) => {
   let queue = props.videoQueue.map((queueEntry, index) => {
-    return <div key={queueEntry.queueTimestamp} id={index === 0 ? 'active-playlist-entry' : ''}>{queueEntry.videoId}</div>
+    let htmlId = '';
+    if (index === 0) {
+      htmlId = 'active-playlist-entry'
+    }
+    let text = queueEntry.videoId;
+    if(queueEntry.title) {
+      text = queueEntry.title;
+    }
+    return <div key={queueEntry.queueTimestamp} id={htmlId}>{text}</div>
   })
   return (<div className={'youtube-queue'}>
       Queued Videos:
