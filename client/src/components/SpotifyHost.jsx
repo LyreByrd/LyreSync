@@ -8,14 +8,18 @@ import SpotifyGUI from './SpotifyGUI.jsx';
 import KnownSpotifyPlaylists from './KnownSpotifyPlaylists.jsx';
 import ActiveSpotifyPlaylist from './ActiveSpotifyPlaylist.jsx';
 
-let HOME_URL, SOCKET_PORT;
+let HOME_URL, SOCKET_PORT, FEED_PORT, FEED_URL;
 try {
   let config = require('../../../config.js');
   HOME_URL = config.HOME_URL;
   SOCKET_PORT = config.SOCKET_PORT;
+  FEED_URL = config.FEED_PORT;
+  FEED_PORT = config.FEED_PORT;
 } catch (err) {
   HOME_URL = 'localhost';
   SOCKET_PORT = 9001;
+  FEED_URL = 'localhost'
+  FEED_PORT = 8080;
 }
 
 let loadSpotify;
@@ -70,6 +74,7 @@ class SpotifyHost extends React.Component {
         })
       })
     this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`); //io(`/${this.props.hostingName}`); namespace implementation
+    this.feedSocket = io(`http://${FEED_URL}:${FEED_PORT}`);
     this.socket.on('initPing', () => {
       //console.log('claiming host, name: ' + props.hostingName);
       this.socket.emit('claimHost', {host: this.props.hostingName, service: 'spotify', env: this.props.env, hostTimestamp: this.state.hostTimestamp});
@@ -373,6 +378,16 @@ class SpotifyHost extends React.Component {
     }
     if(edited) {
       console.log('New information: ', neededUpdates)
+      if (neededUpdates.currentPlayingInfo) {
+        let spotifyFeedData = {
+          room: this.props.hostingName,
+          title: neededUpdates.currentPlayingInfo.name,
+          artist: neededUpdates.currentPlayingInfo.artists[0].name,
+          albumArt: neededUpdates.currentPlayingInfo.album.images[0].url,
+        }
+        console.log('spotifyFeedData :', spotifyFeedData);
+        this.feedSocket.emit('spotify data', spotifyFeedData)
+      }
       this.setState(neededUpdates);
     }
   }

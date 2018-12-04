@@ -5,5 +5,5 @@ module.exports = {
   PROXY_URL: 'localhost',
   PROXY_PORT: 3000,
   FEED_URL: 'localhost',
-  FEED_PORT: 3001,
+  FEED_PORT: 8080,
 }

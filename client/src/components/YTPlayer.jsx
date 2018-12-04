@@ -58,6 +58,7 @@ class YTPlayer extends React.Component {
 
   onPlayerReady() {
     this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`);
+    // this.feedSocket = io(`http://${HOME_URL}:8080`);
     this.socket.on('initPing', () => {
       this.socket.emit('getClientActions', {host: this.props.sessionHost, service: 'youtube'});
     })
@@ -72,6 +73,7 @@ class YTPlayer extends React.Component {
       //   this.player.pauseVideo();
       // }
       this.player.setPlaybackRate(status.rate);
+
     });
     this.socket.on('clientError', () => {
       this.setState({hasErrored: true}, () => {
