@@ -290,7 +290,7 @@ class YTHost extends React.Component {
     
     return (
       <div className='youtube-window youtube-window-host'>
-        <section className='youtubeComponent-wrapper'>
+        <section className='youtube-component-wrapper'>
           <div style={{width:'640px', height:'390px', display:'inline-block'}} ref={(r) => { this.youtubePlayerAnchorHost = r }}></div>
           <br />
         </section>
