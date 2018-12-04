@@ -4,7 +4,11 @@ import getVideoId from 'get-video-id';
 import YTVideoQueue from './YTVideoQueue.jsx';
 import YTSearchResults from './YTSearchResults.jsx';
 
+<<<<<<< HEAD
 let HOME_URL, SOCKET_PORT, FEED_URL, FEED_PORT;
+=======
+let HOME_URL, SOCKET_PORT, FEED_PORT;
+>>>>>>> 204639ccfe96b4f36ff438f23358d38012b3e24d
 try {
   let config = require('../../../config.js');
   HOME_URL = config.HOME_URL;
