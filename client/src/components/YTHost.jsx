@@ -4,14 +4,16 @@ import getVideoId from 'get-video-id';
 import YTVideoQueue from './YTVideoQueue.jsx';
 import YTSearchResults from './YTSearchResults.jsx';
 
-let HOME_URL, SOCKET_PORT;
+let HOME_URL, SOCKET_PORT, FEED_PORT;
 try {
   let config = require('../../../config.js');
   HOME_URL = config.HOME_URL;
   SOCKET_PORT = config.SOCKET_PORT;
+  FEED_PORT = config.FEED_PORT;
 } catch (err) {
   HOME_URL = 'localhost';
   SOCKET_PORT = 9001;
+  FEED_PORT = 8080;
 }
 
 let loadYT
@@ -33,15 +35,14 @@ class YTHost extends React.Component {
     this.addToQueue = this.addToQueue.bind(this);
     this.addSearchResultToQueue = this.addSearchResultToQueue.bind(this);
     this.sendSearchRequest = this.sendSearchRequest.bind(this);
+    this.emitVideoData = this.emitVideoData.bind(this);
   }
 
   componentDidMount () {
     let props = this.props
     //console.log(this.props)
     this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`); //io(`/${this.props.hostingName}`); namespace implementation
-    
-    this.feedSocket = io(`http://${HOME_URL}:8080`);
-
+    this.feedSocket = io(`http://${HOME_URL}:${FEED_PORT}`);
     this.socket.on('initPing', () => {
       //console.log('claiming host, name: ' + props.hostingName);
       this.socket.emit('claimHost', {host: props.hostingName, service:'youtube', hostTimestamp: props.hostTimestamp});
@@ -146,26 +147,29 @@ class YTHost extends React.Component {
   loadVideo(id) {
     if(id) {
       this.player.loadVideoById(id);
+      this.emitVideoData(id);
     } else {
       this.player.loadVideoById(this.state.videoQueue[0]);
+      this.emitVideoData(this.state.videoQueue[0].vidId)
       this.setState({videoQueue: this.state.videoQueue.slice(1)});
     }
     let videoData = {
       host: this.props.hostingName,
       id: id
     }
-    this.feedSocket.emit('video data', videoData)
   }
 
   loadNextVideo() {
     console.log('loading next from ', this.state.videoQueue)
     if(this.player) {
       if(this.state.videoQueue[1]) {
-        console.log('skipping to next')
+        this.emitVideoData(this.state.videoQueue[1].videoId);
+        console.log('skipping to next', this.state.videoQueue[1])
         this.setState({videoQueue: this.state.videoQueue.slice(1)}, () => {
           this.player.loadVideoById(this.state.videoQueue[0].videoId);
         });
       } else if (this.state.videoQueue[0]) {
+        this.emitVideoData(this.state.videoQueue[0].videoId);
         console.log('loading first in queue')
         this.player.loadVideoById(this.state.videoQueue[0].videoId);
       }
@@ -239,6 +243,15 @@ class YTHost extends React.Component {
   sendSearchRequest(term) {
     console.log('Attempting to search for ' + term);
     this.socket.emit('sendSearchRequest', {term});
+  }
+
+  emitVideoData(id) {
+    console.log('id :', id);
+    let videoData = {
+      id: id,
+      host: this.props.hostingName,
+    };
+    this.feedSocket.emit('video data', videoData);
   }
 
   render () {
