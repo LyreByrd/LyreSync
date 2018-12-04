@@ -23,8 +23,6 @@ try {
   config = {};
 }
 
-ssl_certificate /etc/letsencrypt/live/gamaycotte.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/gamaycotte.com/privkey.pem;
 const app = express();
 const http = require('http').Server(app);
 const privateKey = fs.readFileSync('/etc/letsencrypt/live/gamaycotte.com/privkey.pem').toString();
