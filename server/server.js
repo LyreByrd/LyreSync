@@ -26,8 +26,11 @@ try {
 const privateKey = fs.readFileSync('../../../etc/letsencrypt/live/gamaycotte.com/privkey.pem').toString();
 const certificate = fs.readFileSync('../../../etc/letsencrypt/live/gamaycotte.com/fullchain.pem').toString();
 const app = express();
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
+const https = require('https').Server({
+  key: privateKey,
+  cert: certificate
+},app);
+const io = require('socket.io')(https);
 // const io = require('socket.io')(http, {key: privateKey, cert: certificate});
 const socketPort = config.SOCKET_PORT || 9001;
 const apiPort = config.PORT_NUM || 1234;
