@@ -23,9 +23,13 @@ try {
   config = {};
 }
 
+ssl_certificate /etc/letsencrypt/live/gamaycotte.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/gamaycotte.com/privkey.pem;
 const app = express();
 const http = require('http').Server(app);
-const io = require('socket.io')(http);
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/gamaycotte.com/privkey.pem').toString();
+const certificate = fs.readFileSync('/etc/letsencrypt/live/gamaycotte.com/fullchain.pem').toString();
+const io = require('socket.io')(http, {key: privateKey, cert: certificate});
 const socketPort = config.SOCKET_PORT || 9001;
 const apiPort = config.PORT_NUM || 1234;
 const USER_DB_LOCATION = process.env.USER_DB_LOCATION;
