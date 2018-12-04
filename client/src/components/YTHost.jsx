@@ -33,7 +33,7 @@ class YTHost extends React.Component {
   componentDidMount () {
     let props = this.props
     //console.log(this.props)
-    this.socket = io(`https://${HOME_URL}:${SOCKET_PORT}`, {secure: true}); //io(`/${this.props.hostingName}`); namespace implementation
+    this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`, {secure: true}); //io(`/${this.props.hostingName}`); namespace implementation
     this.socket.on('initPing', () => {
       //console.log('claiming host, name: ' + props.hostingName);
       this.socket.emit('claimHost', {host: props.hostingName, service:'youtube'});

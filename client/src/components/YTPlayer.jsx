@@ -57,7 +57,7 @@ class YTPlayer extends React.Component {
   }
 
   onPlayerReady() {
-    this.socket = io(`https://${HOME_URL}:${SOCKET_PORT}`, {secure: true});
+    this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`, {secure: true});
     this.socket.on('initPing', () => {
       this.socket.emit('getClientActions', {host: this.props.sessionHost, service: 'youtube'});
     })
