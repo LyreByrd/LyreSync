@@ -25,7 +25,7 @@ module.exports.setYTSocketHost = (socket, hostName, activeSessions, io, deleteCl
   })
   socket.on('sendSearchRequest', data => {
     console.log('search YouTube for ' + data.term);
-    if(YT_API_KEY) {
+    if(YT_API_KEY && data.mode === 'search') {
       axios.get('https://www.googleapis.com/youtube/v3/search', {
         params: {
           type: 'video',
@@ -36,11 +36,25 @@ module.exports.setYTSocketHost = (socket, hostName, activeSessions, io, deleteCl
       })
       .then(response => {
         console.log('response');
-        socket.emit('gotSearchResults', {items: response.data.items});
+        socket.emit('gotSearchResults', {mode: 'search', items: response.data.items});
       })
       .catch(response => {
         console.log('Error in youtube search: ', response);
       })
+    } else if (data.mode === 'id' && YT_API_KEY) {
+      axios.get('https://www.googleapis.com/youtube/v3/videos', {
+        params: {
+          part: 'snippet', 
+          key: YT_API_KEY,
+          id: data.term,
+        }
+      })
+        .then(response => {
+          socket.emit('gotSearchResults', {mode: 'id', items: response.data.items, videoId: data.term});
+        })
+        .catch(err => {
+          socket.emit('log', err.data);
+        })
     } else {
       socket.emit('gotSearchResults', {status: 'forbidden'});
     }

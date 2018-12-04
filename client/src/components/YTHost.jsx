@@ -72,11 +72,19 @@ class YTHost extends React.Component {
     this.socket.on('gotSearchResults', data => {
       if (data.status === 'forbidden') {
         this.setState({searchResults: null});
-      } else {
+      } else if (data.mode === 'id') {
+        if(data.items[0]) {
+          data.items[0].id = {videoId: data.videoId};
+          this.addSearchResultToQueue(data.items[0]);
+        } else {
+          //no such video
+        }
+      } else if (data.mode === 'search') {
         console.log('search results: ', data);
         this.setState({searchResults: data.items});
       }
     })
+    this.socket.on('log', data => console.log('logging data: ', data))
     if (!loadYT) {
       window.YT = {};
       loadYT = new Promise((resolve) => {
@@ -212,14 +220,15 @@ class YTHost extends React.Component {
     }
 
     if(newId !== 'Invalid pattern') {
-      let state = this.player.getPlayerState();
-      if (this.player && (state === 0 || state === -1 || state === 5)) {
-        this.setState({videoQueue: this.state.videoQueue.concat([{videoId: newId, queueTimestamp: Date.now()}])}, () => {
-          this.loadNextVideo();
-        })
-      } else {
-        this.setState({videoQueue: this.state.videoQueue.concat([{videoId: newId, queueTimestamp: Date.now()}])});
-      }
+      this.sendSearchRequest(newId, 'id');
+      //let state = this.player.getPlayerState();
+      //if (this.player && (state === 0 || state === -1 || state === 5)) {
+      //  this.setState({videoQueue: this.state.videoQueue.concat([{videoId: newId, queueTimestamp: Date.now()}])}, () => {
+      //    this.loadNextVideo();
+      //  })
+      //} else {
+      //  this.setState({videoQueue: this.state.videoQueue.concat([{videoId: newId, queueTimestamp: Date.now()}])});
+      //}
     }
   }
 
@@ -242,9 +251,9 @@ class YTHost extends React.Component {
     })
   }
 
-  sendSearchRequest(term) {
+  sendSearchRequest(term, mode = 'search') {
     console.log('Attempting to search for ' + term);
-    this.socket.emit('sendSearchRequest', {term});
+    this.socket.emit('sendSearchRequest', {term, mode});
   }
 
   emitVideoData(id) {
