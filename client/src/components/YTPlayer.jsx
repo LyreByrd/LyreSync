@@ -165,7 +165,7 @@ class YTPlayer extends React.Component {
   render () {
     return (
       <div className='youtube-window youtube-window-client'>
-        <section className='youtubeComponent-wrapper'>
+        <section className='youtube-component-wrapper'>
           <div ref={(r) => { this.youtubePlayerAnchor = r }}></div>
         </section>
         <br />
