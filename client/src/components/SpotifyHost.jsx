@@ -573,9 +573,10 @@ class SpotifyHost extends React.Component {
             playlistPosition={this.state.playlistPosition}
           />
           <br />
-          <button onClick={this.loadCurrentUserPlaylists}>Load Playlists</button>
-          <button onClick={() => {this.searchSpotify('shnabubula', ['album'])}}>Search Shnabubula albums</button>
+          
+          {/* <button onClick={() => {this.searchSpotify('shnabubula', ['album'])}}>Search Shnabubula albums</button> */}
           <KnownSpotifyPlaylists 
+            loadCurrentUserPlaylists={this.loadCurrentUserPlaylists}
             searchSpotify={this.searchSpotify}
             className='spotify-known-playlists known-playlists'
             hostPlaylists={this.state.hostPlaylists} 

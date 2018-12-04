@@ -13,7 +13,7 @@ let samplePlaylists;
 try {
   samplePlaylists = require('../samples/sampleSpotifyPlaylists');
 } catch(err) {
-  samplePlaylists = null;
+  samplePlaylists = null; 
 }
 
 let config;
