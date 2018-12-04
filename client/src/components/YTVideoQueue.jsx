@@ -10,7 +10,7 @@ const YTVideoQueue = (props) => {
     if(queueEntry.title) {
       text = queueEntry.title;
     }
-    return <div key={queueEntry.queueTimestamp} id={htmlId}>{text}</div>
+    return <div className={'yt-queue-entry'} key={queueEntry.queueTimestamp} id={htmlId}>{text}</div>
   })
   return (<div className={'youtube-queue'}>
       Queued Videos:
