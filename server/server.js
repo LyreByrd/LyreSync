@@ -259,8 +259,8 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname + '/../client/dist/index.html'));
 });
 
-app.listen(433, function() {
-  console.log(`Listening for http on port ${433}`);
+app.listen(apiPort, function() {
+  console.log(`Listening for http on port ${apiPort}`);
 })
 
 http.listen(socketPort, function() {
