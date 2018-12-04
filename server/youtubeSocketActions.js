@@ -1,3 +1,8 @@
+const axios = require('axios');
+require('dotenv').config();
+
+const YT_API_KEY = process.env.YT_API_KEY;
+
 module.exports.setYTSocketHost = (socket, hostName, activeSessions, io, deleteClosedSession) => {
   socket.on('hostAction', event => {
     io.to(hostName).emit('hostAction', event);
@@ -16,6 +21,28 @@ module.exports.setYTSocketHost = (socket, hostName, activeSessions, io, deleteCl
     }
     if (target) {
       target.emit('initState', data);
+    }
+  })
+  socket.on('sendSearchRequest', data => {
+    console.log('search YouTube for ' + data.term);
+    if(YT_API_KEY) {
+      axios.get('https://www.googleapis.com/youtube/v3/search', {
+        params: {
+          type: 'video',
+          part: 'snippet',
+          q: data.term,
+          key: YT_API_KEY,
+        }
+      })
+      .then(response => {
+        console.log('response');
+        socket.emit('gotSearchResults', {items: response.data.items});
+      })
+      .catch(response => {
+        console.log('Error in youtube search: ', response);
+      })
+    } else {
+      socket.emit('gotSearchResults', {status: 'forbidden'});
     }
   })
 }

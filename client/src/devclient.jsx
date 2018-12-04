@@ -14,6 +14,7 @@ class Test extends React.Component {
       hostingName: '',
       knownSessions: [],
       service: null,
+      hostTimestamp: 1,
     }
     this.tryClaimHost = this.tryClaimHost.bind(this);
     this.joinSession = this.joinSession.bind(this);
@@ -47,10 +48,17 @@ class Test extends React.Component {
       .then((res) => {
         //console.log('host claim response: ', res);
         if(res.data.hostName === this.state.hostingName) {
-          this.setState({inSession: true, isHost: true, service});
+          console.log(res.data.hostTimestamp);
+          this.setState({
+            inSession: true, 
+            isHost: true, 
+            hostTimestamp: res.data.hostTimestamp,
+            service,
+          });
         }
       })
       .catch((err) => {
+        console.error(err)
         if(err.response.status === 403) {
           alert('Host claimed or in dispute');
         } else {
@@ -111,6 +119,7 @@ class Test extends React.Component {
           resetToLobby={this.resetToLobby}
           service={this.state.service}
           env={'dev'}
+          hostTimestamp={this.state.hostTimestamp}
         />
       )
     } else {

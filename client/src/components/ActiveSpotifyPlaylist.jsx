@@ -1,12 +1,21 @@
 import React from 'react';
 
 const ActiveSpotifyPlaylist = (props) => {
-  let title = <div>No playlist selected</div>
+  let title = <div className='playlist-title' >No playlist selected</div>
   let tracks = [];
   if (props.currentPlaylist.name) {
-    title = <div>Currently Playing: {props.currentPlaylist.name}</div>;
-    tracks = props.currentPlaylist.tracks.items.map((item, trackIndex) => {
-      let track = item.track;
+    title = <div className='playlist-title'>Currently Playing: {props.currentPlaylist.name}</div>;
+    let toMap = [];
+    if(props.currentPlaylist.type === 'track') {
+      toMap = [props.currentPlaylist];
+    } else {
+      toMap = props.currentPlaylist.tracks.items
+    }
+    tracks = toMap.map((item, trackIndex) => {
+      let track = item;
+      if (item.track) {
+        track = item.track;
+      }
       let artistList = 'unknown';
       if (track.artists.length) {
         artistList = track.artists[0].name;
@@ -14,15 +23,15 @@ const ActiveSpotifyPlaylist = (props) => {
       }
       let playing = '';
       if(trackIndex === props.playlistPosition) {
-        playing = 'active';
+        playing = 'active-playlist-entry';
       }
-      return (<div key={track.id} id={playing}>
-          <div className='track-name'>{playing ? 'Loc ->' : ''}{track.name}</div>
-          <div className='track-artist'> by {artistList}</div>
+      return (<div className='playlist-entry' key={track.id} id={playing}>
+          <div className='track-name ' >{playing ? <span className='dev dev-playlist-location'>{'->'}</span> : null}{track.name}</div> 
+          <div className='track-artist'>{playing ? <span className='dev dev-playlist-location'>{'->'}</span> : null} by {artistList}</div>
         </div>)
     })
   }
-  return <span>{title}{tracks}</span>
+  return <span className='active-playlist spotify-active-playlist'>{title}{tracks}</span>
 }
 
 export default ActiveSpotifyPlaylist;
