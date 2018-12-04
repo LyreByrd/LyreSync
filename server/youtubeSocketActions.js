@@ -22,7 +22,7 @@ module.exports.setYTSocketHost = (socket, hostName, activeSessions, io, deleteCl
 
 module.exports.setYTSocketClient = (socket, hostName, targetSession, io, data) => {
   //nothing special yet
-  console.log('new youtube ')
+  // console.log('new youtube ')
   socket.hostName = hostName;
   socket.join(hostName);
   targetSession.activeSockets[socket.id] = socket;

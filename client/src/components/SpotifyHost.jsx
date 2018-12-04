@@ -68,6 +68,7 @@ class SpotifyHost extends React.Component {
         })
       })
     this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`); //io(`/${this.props.hostingName}`); namespace implementation
+    this.feedSocket = io(`http://${HOME_URL}:8080`);
     this.socket.on('initPing', () => {
       //console.log('claiming host, name: ' + props.hostingName);
       this.socket.emit('claimHost', {host: this.props.hostingName, service: 'spotify', env: this.props.env});
@@ -340,6 +341,16 @@ class SpotifyHost extends React.Component {
     }
     if(edited) {
       console.log('New information: ', neededUpdates)
+      if (neededUpdates.currentPlayingInfo) {
+        let spotifyFeedData = {
+          room: this.props.hostingName,
+          title: neededUpdates.currentPlayingInfo.name,
+          artist: neededUpdates.currentPlayingInfo.artists[0].name,
+          albumArt: neededUpdates.currentPlayingInfo.album.images[0].url,
+        }
+        console.log('spotifyFeedData :', spotifyFeedData);
+        this.feedSocket.emit('spotify data', spotifyFeedData)
+      }
       this.setState(neededUpdates);
     }
   }
