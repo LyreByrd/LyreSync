@@ -25,7 +25,7 @@ try {
 
 const privateKey = fs.readFileSync('../../../etc/letsencrypt/live/gamaycotte.com/privkey.pem').toString();
 const certificate = fs.readFileSync('../../../etc/letsencrypt/live/gamaycotte.com/fullchain.pem').toString();
-const app = express.createServer({key:privateKey,cert:certificate});
+const app = express({key: privateKey, cert: certificate});
 const http = require('http').Server(app);
 const io = require('socket.io')(http, {key: privateKey, cert: certificate});
 // const io = require('socket.io')(http, {key: privateKey, cert: certificate});
