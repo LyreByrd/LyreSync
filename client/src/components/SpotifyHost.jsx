@@ -36,6 +36,7 @@ class SpotifyHost extends React.Component {
       volume: 50,
       isMuted: false,
       currentPlayingDuration: null,
+      specialMessage: null,
     }
     this.loadDefaultMusic = this.loadDefaultMusic.bind(this);
     this.logPlayer = this.logPlayer.bind(this);
@@ -55,6 +56,7 @@ class SpotifyHost extends React.Component {
     this.loadKnownTracks = this.loadKnownTracks.bind(this);
     this.loadCurrentUserPlaylists = this.loadCurrentUserPlaylists.bind(this);
     this.loadPlaylistFromKnown = this.loadPlaylistFromKnown.bind(this);
+    this.searchSpotify = this.searchSpotify.bind(this);
   }
 
   componentDidMount () {
@@ -70,7 +72,7 @@ class SpotifyHost extends React.Component {
     this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`); //io(`/${this.props.hostingName}`); namespace implementation
     this.socket.on('initPing', () => {
       //console.log('claiming host, name: ' + props.hostingName);
-      this.socket.emit('claimHost', {host: this.props.hostingName, service: 'spotify', env: this.props.env});
+      this.socket.emit('claimHost', {host: this.props.hostingName, service: 'spotify', env: this.props.env, hostTimestamp: this.state.hostTimestamp});
     });
     this.socket.on('findInitStatus', (socketId) => {
       //return current state for newly joining audience
@@ -139,10 +141,22 @@ class SpotifyHost extends React.Component {
       getOAuthToken: cb => { cb(this.state.authToken); },
       volume: this.state.isMuted ? 0 : (this.state.volume / 100),
     })
-    this.player.addListener('initialization_error', ({ message }) => { console.error(message); });
-    this.player.addListener('authentication_error', ({ message }) => { console.error(message); });
-    this.player.addListener('account_error', ({ message }) => { console.error(message); });
-    this.player.addListener('playback_error', ({ message }) => { console.error(message); });
+    this.player.addListener('initialization_error', ({ message }) => { 
+      console.error('initialization: ', message); 
+      this.setState({specialMessage: 'Unable to initalize player - browser may not be supported'})
+    });
+    this.player.addListener('authentication_error', ({ message }) => { 
+      console.error('authentication: ', message); 
+      this.setState({specialMessage: 'Invalid authorization token - refresh or regenerate'})
+    });
+    this.player.addListener('account_error', ({ message }) => { 
+      console.error('account: ', message); 
+      this.setState({specialMessage: 'Invalid user account - must have Spotify Premium'})
+    });
+    this.player.addListener('playback_error', ({ message }) => { 
+      console.error('playback: ', message); 
+      this.setState({specialMessage: 'This track is unavailable in your region.'})
+    });
   
     // Playback status updates
     this.player.addListener('player_state_changed', playerState => {
@@ -188,16 +202,35 @@ class SpotifyHost extends React.Component {
 
   loadDefaultMusic() {
     console.log('checking player status');
+    let soundshockDefault = {
+      href: 'https://api.spotify.com/v1/albums/6jg4LbYcSeB9r6bj2p1CKf',
+      uri: 'spotify:album:6jg4LbYcSeB9r6bj2p1CKf',
+    }
+    let doteDefault = {
+      uri: 'spotify:album:5frKFvB263lUvjSrrJ1sQ8'
+    }
     if(this.state.playerReady) {
       console.log('attempting to get music');
-      this.loadKnownTracks('spotify:album:5frKFvB263lUvjSrrJ1sQ8');
+      this.loadPlaylistFromKnown(soundshockDefault);
     }
   }
   
   loadDefaultFromClient() {
-    if(this.state.playerReady) {
-      this.loadKnownTracks('spotify:track:4wGCusPRszIZYxbwtgISjD', 'track');
+    //spotify:album:6jg4LbYcSeB9r6bj2p1CKf
+    let soundshockDefault = {
+      href: 'https://api.spotify.com/v1/albums/6jg4LbYcSeB9r6bj2p1CKf',
+      uri: 'spotify:album:6jg4LbYcSeB9r6bj2p1CKf',
+      type: 'album'
     }
+    let trackDefault = {
+      uri: 'spotify:track:0qEuvRbJzqFrqURfD2zfxj',
+      href: 'https://api.spotify.com/v1/tracks/0qEuvRbJzqFrqURfD2zfxj',
+      type: 'track',
+    }
+    if(this.state.playerReady) {
+      this.loadPlaylistFromKnown(trackDefault);
+    }
+
   }
 
   logPlayer() {
@@ -368,6 +401,7 @@ class SpotifyHost extends React.Component {
       body = JSON.stringify({context_uri: uri});
     }
     console.log('sending axios call from client');
+    console.log(body)
     axios.put(`https://api.spotify.com/v1/me/player/play?device_id=${this.state.playerId}`,
       body,
       {headers: {
@@ -395,6 +429,8 @@ class SpotifyHost extends React.Component {
   }
 
   loadPlaylistFromKnown(playlist) {
+
+    console.log(playlist.href)
     axios.get(playlist.href,
       {headers: {
         'Content-Type': 'application.json',
@@ -404,30 +440,73 @@ class SpotifyHost extends React.Component {
     .then(response => {
       console.log('Got playlist: ', response.data);
       this.setState({currentPlaylist: response.data, playlistPosition: 0}, () => {
-        this.loadKnownTracks(playlist.uri);
+        this.loadKnownTracks(playlist.uri, playlist.type);
       })
     })
     .catch(err => {
-      console.log('ERROR LOADING PLAYLIST');
+      console.error('ERROR LOADING PLAYLIST:', err);
     })
   }
 
   findNewPlaylistPosition(trackId) {
-    let position = this.state.playlistPosition;
-    let tracklist = this.state.currentPlaylist.tracks.items;
-    if(trackId === tracklist[position].track.id) {
-      return position;
-    } else if (trackId === tracklist[position + 1].track.id) {
-      return position + 1;
-    } else {
-      for(let i = 0; i < tracklist.length; i++) {
-        if(tracklist[i].track.id === trackId) {
-          return i;
-        }
+
+    let itemToTrackId = (spotifyItem) => {
+      //console.log('examining item: ', spotifyItem)
+      if(spotifyItem.type === 'track') {
+        return spotifyItem.id;
+      } else if (spotifyItem.track) {
+        return spotifyItem.track.id
       }
+      return undefined;
+    }
+    try {
+      console.log('finding position');
+      let position = this.state.playlistPosition;
+      let tracklist = this.state.currentPlaylist.tracks.items;
+      if(trackId === itemToTrackId(tracklist[position])) {
+        return position;
+      } else if (trackId === itemToTrackId(tracklist[position+1])) {
+        return position + 1;
+      } else {
+        for(let i = 0; i < tracklist.length; i++) {
+          if(itemToTrackId(tracklist[i]) === trackId) {
+            return i;
+          }
+        }
+      } 
+    } catch(err) {
+      //no tracklist, just return null
     }
 
     return null;
+  }
+
+  searchSpotify(term, domains) {
+    axios.get('https://api.spotify.com/v1/search', {
+      params: {
+        q: term,
+        type: domains.join(','),
+      },
+      headers: {
+        'Content-Type': 'application.json',
+        'Authorization': 'Bearer ' + this.state.authToken
+      }
+    })
+    .then(response => {
+      console.log('Search results: ', response.data);
+      let data = response.data;
+      let results = [];
+      domains.forEach(domain => {
+        let pluralized = domain + 's';
+        if(data[pluralized]) {
+          results = results.concat(data[pluralized].items);
+        }
+      });
+      this.setState({hostPlaylists: results});
+    })
+    .catch(response => {
+      console.log('Search failed');
+    })
   }
 
   render () {
@@ -445,7 +524,7 @@ class SpotifyHost extends React.Component {
       </div>)
       : '';
     return (
-      <div>
+      <div className='spotify-window spotify-window-host'>
         Spotify Component
         <SpotifyGUI 
           isHost={true} 
@@ -461,18 +540,21 @@ class SpotifyHost extends React.Component {
           playerTime={this.state.playerTime}
           setTime={this.setTime}
         />
-        <button onClick={this.loadDefaultMusic}>Start Default Music</button>
+        <button onClick={this.loadDefaultMusic}>Load Default Album</button>
         <br />
-        <button onClick={this.loadDefaultFromClient}>Load-from-client test</button>
+        <button onClick={this.loadDefaultFromClient}>Load default single track</button>
         <button onClick={this.logPlayer}>Log Player</button>
         <button onClick={this.loadCurrentUserPlaylists}>Load Playlists</button>
         <br />
         <div className={'spotify-playlist-handlers'}>
           <ActiveSpotifyPlaylist 
+            className='active-playlist spotify-active-playlist'
             currentPlaylist={this.state.currentPlaylist}
             playlistPosition={this.state.playlistPosition}
           />
+          <button onClick={() => {this.searchSpotify('shnabubula', ['album'])}}>Search Shnabubula albums</button>
           <KnownSpotifyPlaylists 
+            className='spotify-known-playlists known-playlists'
             hostPlaylists={this.state.hostPlaylists} 
             loadPlaylistFromKnown={this.loadPlaylistFromKnown}
           />
