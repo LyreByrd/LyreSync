@@ -266,7 +266,7 @@ app.listen(apiPort, function() {
   console.log(`Listening for http on port ${apiPort}`);
 })
 
-http.listen(socketPort, function() {
+https.listen(socketPort, function() {
   console.log(`Listening on port ${socketPort}`);
 })
 
