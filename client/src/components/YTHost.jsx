@@ -2,6 +2,7 @@ import React from 'react'
 import io from 'socket.io-client';
 import getVideoId from 'get-video-id';
 import YTVideoQueue from './YTVideoQueue.jsx';
+import YTSearchResults from './YTSearchResults.jsx';
 
 let HOME_URL, SOCKET_PORT;
 try {
@@ -20,6 +21,7 @@ class YTHost extends React.Component {
     super(props);
     this.state = {
       videoQueue: [],
+      searchResults: [],
       idVal: '',
       hasErrored: false,
     }
@@ -29,7 +31,10 @@ class YTHost extends React.Component {
     this.logPlayer = this.logPlayer.bind(this);
     this.onIdValChange = this.onIdValChange.bind(this);
     this.addToQueue = this.addToQueue.bind(this);
+    this.addSearchResultToQueue = this.addSearchResultToQueue.bind(this);
+    this.sendSearchRequest = this.sendSearchRequest.bind(this);
   }
+
   componentDidMount () {
     let props = this.props
     //console.log(this.props)
@@ -39,7 +44,7 @@ class YTHost extends React.Component {
 
     this.socket.on('initPing', () => {
       //console.log('claiming host, name: ' + props.hostingName);
-      this.socket.emit('claimHost', {host: props.hostingName, service:'youtube'});
+      this.socket.emit('claimHost', {host: props.hostingName, service:'youtube', hostTimestamp: props.hostTimestamp});
     })
     this.socket.on('findInitStatus', (socketId) => {
       //console.log('client attempting to initialize, id: ' + socketId)
@@ -60,6 +65,14 @@ class YTHost extends React.Component {
       this.setState({hasErrored: true}, () => {
         setTimeout(() => this.props.resetToLobby(err), 5000);
       });
+    })
+    this.socket.on('gotSearchResults', data => {
+      if (data.status === 'forbidden') {
+        this.setState({searchResults: null});
+      } else {
+        console.log('search results: ', data);
+        this.setState({searchResults: data.items});
+      }
     })
     if (!loadYT) {
       window.YT = {};
@@ -102,14 +115,14 @@ class YTHost extends React.Component {
 
   onPlayerStateChange(e) {
     if(e.data === 0) {
-      if (this.state.videoQueue[0]) {
-        this.loadVideo()
+      if (this.state.videoQueue[1]) {
+        this.loadNextVideo()
       } else {
         //video ended, no video in queue - no action needed
       }
     } else if (e.data === -1) {
-      if(this.state.videoQueue[0]) {
-        this.loadVideo();
+      if(this.state.videoQueue[1]) {
+        this.loadNextVideo();
       } else {
         //see above
       }
@@ -144,6 +157,21 @@ class YTHost extends React.Component {
     this.feedSocket.emit('video data', videoData)
   }
 
+  loadNextVideo() {
+    console.log('loading next from ', this.state.videoQueue)
+    if(this.player) {
+      if(this.state.videoQueue[1]) {
+        console.log('skipping to next')
+        this.setState({videoQueue: this.state.videoQueue.slice(1)}, () => {
+          this.player.loadVideoById(this.state.videoQueue[0].videoId);
+        });
+      } else if (this.state.videoQueue[0]) {
+        console.log('loading first in queue')
+        this.player.loadVideoById(this.state.videoQueue[0].videoId);
+      }
+    }
+  }
+
   gotInvalidIdPattern() {
     console.log('try again buddy');
   }
@@ -158,6 +186,7 @@ class YTHost extends React.Component {
   }
 
   addToQueue(event) {
+    console.log(this.state.videoQueue);
     event.preventDefault();
     console.log('Hit Queue Button');
     let newId;
@@ -179,17 +208,43 @@ class YTHost extends React.Component {
     if(newId !== 'Invalid pattern') {
       let state = this.player.getPlayerState();
       if (this.player && (state === 0 || state === -1 || state === 5)) {
-        this.loadVideo(newId);
+        this.setState({videoQueue: this.state.videoQueue.concat([{videoId: newId, queueTimestamp: Date.now()}])}, () => {
+          this.loadNextVideo();
+        })
       } else {
-        this.setState({videoQueue: this.state.videoQueue.concat([newId])})
+        this.setState({videoQueue: this.state.videoQueue.concat([{videoId: newId, queueTimestamp: Date.now()}])});
       }
     }
+  }
+
+  addSearchResultToQueue(searchResult) {
+    console.log('attempting to add result to queue:', searchResult);
+    const newQueueEntry = {
+      queueTimestamp: Date.now(),
+      videoId: searchResult.id.videoId,
+      title: searchResult.snippet.title,
+      snippet: searchResult.snippet,
+    }
+    this.setState({videoQueue: this.state.videoQueue.concat([newQueueEntry])}, () => {
+      let state;
+      if(this.player) {
+        state = this.player.getPlayerState();
+      }
+      if(state === 0 || state === -1 || state === 5) {
+        this.loadNextVideo();
+      }
+    })
+  }
+
+  sendSearchRequest(term) {
+    console.log('Attempting to search for ' + term);
+    this.socket.emit('sendSearchRequest', {term});
   }
 
   render () {
     
     return (
-      <div>
+      <div className='youtube-window youtube-window-host'>
         <section className='youtubeComponent-wrapper'>
           <div style={{width:'640px', height:'390px', display:'inline-block'}} ref={(r) => { this.youtubePlayerAnchorHost = r }}></div>
           <br />
@@ -201,6 +256,11 @@ class YTHost extends React.Component {
           <button>Add to Queue</button>
         </form>
         <YTVideoQueue videoQueue={this.state.videoQueue} />
+        <YTSearchResults 
+          searchResults={this.state.searchResults} 
+          addSearchResultToQueue={this.addSearchResultToQueue} 
+          sendSearchRequest={this.sendSearchRequest}
+        />
         <button onClick={this.logPlayer}>log</button>
         <span> {this.state.hasErrored ? 'Error connecting to session. Attempting to refresh' : 'Now Hosting'} </span>
       </div>

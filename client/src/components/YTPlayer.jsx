@@ -165,8 +165,10 @@ class YTPlayer extends React.Component {
 
   render () {
     return (
-      <section className='youtubeComponent-wrapper'>
-        <div ref={(r) => { this.youtubePlayerAnchor = r }}></div>
+      <div className='youtube-window youtube-window-client'>
+        <section className='youtubeComponent-wrapper'>
+          <div ref={(r) => { this.youtubePlayerAnchor = r }}></div>
+        </section>
         <br />
         <VolumeControls 
           toggleMute={this.toggleMute} 
@@ -180,7 +182,7 @@ class YTPlayer extends React.Component {
         <br />
         <button onClick={this.loadVideo}>Re-Sync To Host</button>
         {this.state.hasErrored ? 'No such session. Returning to lobby...' : ''}
-      </section>
+      </div>
     )
   }
 }
