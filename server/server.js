@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-const fs = require('@mh-cbon/sudo-fs');
+const fs = require('fs');
 const url = require('url');
 const ytSocketActions = require('./youtubeSocketActions.js');
 const spotifySocketActions = require('./spotifySocketActions.js');
@@ -25,8 +25,8 @@ try {
 
 const app = express();
 const http = require('http').Server(app);
-const privateKey = fs.readFile('../../../etc/letsencrypt/live/gamaycotte.com/privkey.pem').toString();
-const certificate = fs.readFile('../../../etc/letsencrypt/live/gamaycotte.com/fullchain.pem').toString();
+const privateKey = fs.readFileSync('../../../etc/letsencrypt/live/gamaycotte.com/privkey.pem').toString();
+const certificate = fs.readFileSync('../../../etc/letsencrypt/live/gamaycotte.com/fullchain.pem').toString();
 const io = require('socket.io')(http, {key: privateKey, cert: certificate});
 const socketPort = config.SOCKET_PORT || 9001;
 const apiPort = config.PORT_NUM || 1234;
