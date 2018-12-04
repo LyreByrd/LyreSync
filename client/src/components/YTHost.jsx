@@ -3,6 +3,7 @@ import io from 'socket.io-client';
 import getVideoId from 'get-video-id';
 import YTVideoQueue from './YTVideoQueue.jsx';
 import YTSearchResults from './YTSearchResults.jsx';
+import { debounce } from 'debounce'
 
 let HOME_URL, SOCKET_PORT, FEED_URL, FEED_PORT;
 try {
@@ -28,6 +29,7 @@ class YTHost extends React.Component {
       searchResults: [],
       idVal: '',
       hasErrored: false,
+      expectUnstarted: false,
     }
     this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
     this.onPlaybackRateChange = this.onPlaybackRateChange.bind(this);
@@ -38,6 +40,8 @@ class YTHost extends React.Component {
     this.addSearchResultToQueue = this.addSearchResultToQueue.bind(this);
     this.sendSearchRequest = this.sendSearchRequest.bind(this);
     this.emitVideoData = this.emitVideoData.bind(this);
+    this.loadNextVideo = this.loadNextVideo.bind(this);
+    this.handleNextClick = this.handleNextClick.bind(this);
   }
 
   componentDidMount () {
@@ -133,6 +137,7 @@ class YTHost extends React.Component {
   }
 
   onPlayerStateChange(e) {
+    console.log('state change to ', e.data)
     if(e.data === 0) {
       if (this.state.videoQueue[1]) {
         this.loadNextVideo()
@@ -140,7 +145,10 @@ class YTHost extends React.Component {
         //video ended, no video in queue - no action needed
       }
     } else if (e.data === -1) {
-      if(this.state.videoQueue[1]) {
+      if (this.state.expectUnstarted) {
+        console.log('skipping expected unstarted');
+        this.setState({expectUnstarted: false})
+      } else if (this.state.videoQueue[1]) {
         this.loadNextVideo();
       } else {
         //see above
@@ -183,7 +191,7 @@ class YTHost extends React.Component {
       if(this.state.videoQueue[1]) {
         this.emitVideoData(this.state.videoQueue[1].videoId);
         console.log('skipping to next', this.state.videoQueue[1])
-        this.setState({videoQueue: this.state.videoQueue.slice(1)}, () => {
+        this.setState({videoQueue: this.state.videoQueue.slice(1), expectUnstarted: true}, () => {
           this.player.loadVideoById(this.state.videoQueue[0].videoId);
         });
       } else if (this.state.videoQueue[0]) {
@@ -191,7 +199,7 @@ class YTHost extends React.Component {
         console.log('loading first in queue')
         this.player.loadVideoById(this.state.videoQueue[0].videoId);
       }
-    }
+    } 
   }
 
   gotInvalidIdPattern() {
@@ -238,6 +246,11 @@ class YTHost extends React.Component {
       //  this.setState({videoQueue: this.state.videoQueue.concat([{videoId: newId, queueTimestamp: Date.now()}])});
       //}
     }
+  }
+
+  handleNextClick() {
+    this.loadNextVideo();
+    
   }
 
   addSearchResultToQueue(searchResult) {
@@ -287,6 +300,11 @@ class YTHost extends React.Component {
           <input type='text' name='YTLocation' value={this.state.idVal} onChange={this.onIdValChange}></input>
           <button>Add to Queue</button>
         </form>
+        <button 
+          className='next-queue-btn next-queue-btn-yt' 
+          onClick={this.handleNextClick}>
+          Skip to Next in Queue
+        </button>
         <YTVideoQueue videoQueue={this.state.videoQueue} />
         <YTSearchResults 
           searchResults={this.state.searchResults} 

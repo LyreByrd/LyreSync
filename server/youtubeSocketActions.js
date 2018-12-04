@@ -44,7 +44,7 @@ module.exports.setYTSocketHost = (socket, hostName, activeSessions, io, deleteCl
     } else if (data.mode === 'id' && YT_API_KEY) {
       axios.get('https://www.googleapis.com/youtube/v3/videos', {
         params: {
-          part: 'snippet', 
+          part: 'snippet,id', 
           key: YT_API_KEY,
           id: data.term,
         }
