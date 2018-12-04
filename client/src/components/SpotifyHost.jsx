@@ -8,15 +8,17 @@ import SpotifyGUI from './SpotifyGUI.jsx';
 import KnownSpotifyPlaylists from './KnownSpotifyPlaylists.jsx';
 import ActiveSpotifyPlaylist from './ActiveSpotifyPlaylist.jsx';
 
-let HOME_URL, SOCKET_PORT, FEED_PORT;
+let HOME_URL, SOCKET_PORT, FEED_PORT, FEED_URL;
 try {
   let config = require('../../../config.js');
   HOME_URL = config.HOME_URL;
   SOCKET_PORT = config.SOCKET_PORT;
+  FEED_URL = config.FEED_PORT;
   FEED_PORT = config.FEED_PORT;
 } catch (err) {
   HOME_URL = 'localhost';
   SOCKET_PORT = 9001;
+  FEED_URL = 'localhost'
   FEED_PORT = 8080;
 }
 
@@ -72,7 +74,7 @@ class SpotifyHost extends React.Component {
         })
       })
     this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`); //io(`/${this.props.hostingName}`); namespace implementation
-    this.feedSocket = io(`http://${HOME_URL}:${FEED_PORT}`);
+    this.feedSocket = io(`http://${FEED_URL}:${FEED_PORT}`);
     this.socket.on('initPing', () => {
       //console.log('claiming host, name: ' + props.hostingName);
       this.socket.emit('claimHost', {host: this.props.hostingName, service: 'spotify', env: this.props.env, hostTimestamp: this.state.hostTimestamp});
@@ -557,7 +559,6 @@ class SpotifyHost extends React.Component {
         <br />
         <button onClick={this.loadDefaultFromClient}>Load default single track</button>
         <button onClick={this.logPlayer}>Log Player</button>
-        <button onClick={this.loadCurrentUserPlaylists}>Load Playlists</button>
         <br />
         <div className={'spotify-playlist-handlers'}>
           <ActiveSpotifyPlaylist 
@@ -565,6 +566,8 @@ class SpotifyHost extends React.Component {
             currentPlaylist={this.state.currentPlaylist}
             playlistPosition={this.state.playlistPosition}
           />
+          <br />
+          <button onClick={this.loadCurrentUserPlaylists}>Load Playlists</button>
           <button onClick={() => {this.searchSpotify('shnabubula', ['album'])}}>Search Shnabubula albums</button>
           <KnownSpotifyPlaylists 
             className='spotify-known-playlists known-playlists'

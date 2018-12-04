@@ -93,7 +93,6 @@ class YTPlayer extends React.Component {
         //console.log(`Playing id ${currVideo}, directive to look for ${newVideo}`);
         if(newVideo !== currVideo) {
           this.player.loadVideoById({videoId: event.newVideo, startSeconds: event.newTime});
-          this.feedSocket.emit('video data', newVideo);
         } else if (Math.abs(event.newTime - this.player.getCurrentTime()) > 1) {
           //console.log('time is wrong');
           if(this.player.getPlayerState() === 5 && this.player.cuedTime && (Math.abs(event.newTime - this.player.cuedTime) <= 1)) {
