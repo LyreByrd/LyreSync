@@ -8,7 +8,7 @@ import SpotifyGUI from './SpotifyGUI.jsx';
 import KnownSpotifyPlaylists from './KnownSpotifyPlaylists.jsx';
 import ActiveSpotifyPlaylist from './ActiveSpotifyPlaylist.jsx';
 
-let HOME_URL, SOCKET_PORT;
+let HOME_URL, SOCKET_PORT, FEED_PORT;
 try {
   let config = require('../../../config.js');
   HOME_URL = config.HOME_URL;
