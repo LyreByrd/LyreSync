@@ -480,6 +480,25 @@ class SpotifyHost extends React.Component {
     return null;
   }
 
+  searchSpotify(term, domain) {
+    axios.get('https://api.spotify.com/v1/search', {
+      params: {
+        q: term,
+        type: domain,
+      },
+      headers: {
+        'Content-Type': 'application.json',
+        'Authorization': 'Bearer ' + this.state.authToken
+      }
+    })
+    .then(response => {
+      console.log('Search results: ', response.data);
+    })
+    .catch(response => {
+      console.log('Search failed');
+    })
+  }
+
   render () {
     let spoofButtons = this.props.env === 'dev' ?
       (<div>
