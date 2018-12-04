@@ -160,7 +160,7 @@ io.on('connection', socket => {
         throw new Error('no such session');
       }
       if (target.service !== data.service) {
-        throw new Error('service type mismatch');
+        throw new Error(`service type mismatch: target:${target.service}, client:${data.service}`);
       }
       if(data.hostTimestamp && data.hostTimestamp !== target.hostTimestamp) {
         throw new Error('invalid host timestamp');
@@ -178,6 +178,7 @@ io.on('connection', socket => {
       //console.log('starts session in object');
       //console.log('gets host actions');
     } catch (err) {
+      console.log(err.message);
       socket.emit('hostingError', err);
       socket.disconnect();
     }

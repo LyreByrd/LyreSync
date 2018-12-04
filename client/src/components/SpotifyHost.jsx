@@ -56,6 +56,7 @@ class SpotifyHost extends React.Component {
     this.loadKnownTracks = this.loadKnownTracks.bind(this);
     this.loadCurrentUserPlaylists = this.loadCurrentUserPlaylists.bind(this);
     this.loadPlaylistFromKnown = this.loadPlaylistFromKnown.bind(this);
+    this.searchSpotify = this.searchSpotify.bind(this);
   }
 
   componentDidMount () {
@@ -480,11 +481,11 @@ class SpotifyHost extends React.Component {
     return null;
   }
 
-  searchSpotify(term, domain) {
+  searchSpotify(term, domains) {
     axios.get('https://api.spotify.com/v1/search', {
       params: {
         q: term,
-        type: domain,
+        type: domains.join(','),
       },
       headers: {
         'Content-Type': 'application.json',
@@ -493,6 +494,15 @@ class SpotifyHost extends React.Component {
     })
     .then(response => {
       console.log('Search results: ', response.data);
+      let data = response.data;
+      let results = [];
+      domains.forEach(domain => {
+        let pluralized = domain + 's';
+        if(data[pluralized]) {
+          results = results.concat(data[pluralized].items);
+        }
+      });
+      this.setState({hostPlaylists: results});
     })
     .catch(response => {
       console.log('Search failed');
@@ -542,6 +552,7 @@ class SpotifyHost extends React.Component {
             currentPlaylist={this.state.currentPlaylist}
             playlistPosition={this.state.playlistPosition}
           />
+          <button onClick={() => {this.searchSpotify('shnabubula', ['album'])}}>Search Shnabubula albums</button>
           <KnownSpotifyPlaylists 
             className='spotify-known-playlists known-playlists'
             hostPlaylists={this.state.hostPlaylists} 
