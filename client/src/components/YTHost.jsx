@@ -155,7 +155,6 @@ class YTHost extends React.Component {
       host: this.props.hostingName,
       id: id
     }
-    this.feedSocket.emit('video data', videoData)
   }
 
   loadNextVideo() {
