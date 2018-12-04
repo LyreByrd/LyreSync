@@ -4,4 +4,5 @@ module.exports = {
   SOCKET_PORT: 9001,
   PROXY_URL: 'localhost',
   PROXY_PORT: 3000,
+  FEED_PORT: 8080,
 }
