@@ -23,10 +23,10 @@ try {
   config = {};
 }
 
-const app = express();
-const http = require('https').Server(app);
 const privateKey = fs.readFileSync('../../../etc/letsencrypt/live/gamaycotte.com/privkey.pem').toString();
 const certificate = fs.readFileSync('../../../etc/letsencrypt/live/gamaycotte.com/fullchain.pem').toString();
+const app = express.createServer({key:privateKey,cert:certificate});
+const http = require('http').Server(app);
 const io = require('socket.io')(http, {key: privateKey, cert: certificate});
 // const io = require('socket.io')(http, {key: privateKey, cert: certificate});
 const socketPort = config.SOCKET_PORT || 9001;
@@ -259,8 +259,8 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname + '/../client/dist/index.html'));
 });
 
-app.listen(apiPort, function() {
-  console.log(`Listening for http on port ${apiPort}`);
+app.listen(433, function() {
+  console.log(`Listening for http on port ${433}`);
 })
 
 http.listen(socketPort, function() {
