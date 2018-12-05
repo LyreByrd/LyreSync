@@ -18,7 +18,7 @@ const KnownSpotifyPlaylists = (props) => {
   }
   return <div className='known-playlists spotify-known-playlists'>
     <button onClick={props.loadCurrentUserPlaylists}>Load Your Playlists</button>
-    <GenericTextInputForm 
+    <GenericTextInputForm className={'spotify-search-form'}
       onSubmit={ (term) => {props.searchSpotify(term, ['album'])} }
       buttonText={'Search for an album'}
     />

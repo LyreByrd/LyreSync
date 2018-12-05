@@ -2,6 +2,7 @@ import React from 'react';
 import SpotifyHostControls from './SpotifyHostControls.jsx';
 import VolumeControls from './VolumeControls.jsx';
 import TimeDisplay from './TimeDisplay.jsx';
+import TimeDisplayBar from './TimeDisplayBar.jsx';
 
 const SpotifyGUI = (props) => {
   const controls = props.isHost ? <SpotifyHostControls {...props} /> : '';
@@ -9,7 +10,7 @@ const SpotifyGUI = (props) => {
   return (
     <div className='spotify-player'>
       {currentPlayingName ? `Currently playing ${currentPlayingName}` : 'No music loaded'}
-      <TimeDisplay 
+      <TimeDisplayBar 
         playerTime={props.playerTime} 
         setTime={props.setTime} 
         currentPlayingDuration={props.currentPlayingDuration}
