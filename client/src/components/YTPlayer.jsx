@@ -63,7 +63,7 @@ class YTPlayer extends React.Component {
       this.socket.emit('getClientActions', {host: this.props.sessionHost, service: 'youtube'});
     })
     this.socket.on('initState', ({status, socketId}) => {
-      console.log('got sync data');
+      //console.log('got sync data');
       if(status.state === 1) {
         this.player.loadVideoById(status.videoId, status.time);
       } else {
