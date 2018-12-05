@@ -1,5 +1,6 @@
 import React from 'react';
 import GenericTextInputForm from './GenericTextInputForm.jsx';
+import { Dropdown, Icon, Menu, Input } from 'semantic-ui-react';
 
 const entryStyle ={
   display: 'flex',

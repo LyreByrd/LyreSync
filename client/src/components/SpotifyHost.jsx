@@ -11,14 +11,9 @@ import ActiveSpotifyPlaylist from './ActiveSpotifyPlaylist.jsx';
 
 //style
 const entryStyle ={
-  display: 'flex',
-  flexDirection: 'row',
-  flexBasis: 'auto',
-  justifyContent: 'space-around',
-  alignItems: 'center',
-  'flex-wrap': 'wrap',
-  'margin-top': '3em',
-}
+  padding: '1em',
+  margin: 'auto'
+};
 
 let HOME_URL, SOCKET_PORT, FEED_PORT, FEED_URL;
 try {
@@ -558,7 +553,9 @@ class SpotifyHost extends React.Component {
       </div>)
       : '';
     return (
-      <div className='spotify-window spotify-window-host'>
+      <div className='spotify-window spotify-window-host'
+      style={entryStyle}
+      >
         Spotify Component
         <SpotifyGUI 
           isHost={true} 
@@ -588,6 +585,7 @@ class SpotifyHost extends React.Component {
           <br />
           
           {/* <button onClick={() => {this.searchSpotify('shnabubula', ['album'])}}>Search Shnabubula albums</button> */}
+
           <KnownSpotifyPlaylists
             loadCurrentUserPlaylists={this.loadCurrentUserPlaylists}
             searchSpotify={this.searchSpotify}
