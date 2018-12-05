@@ -10,7 +10,7 @@ try {
   let config = require('../../../config.js');
   HOME_URL = config.HOME_URL;
   SOCKET_PORT = config.SOCKET_PORT;
-  FEED_URL = config.FEED_PORT;
+  FEED_URL = config.FEED_URL;
   FEED_PORT = config.FEED_PORT;
 } catch (err) {
   HOME_URL = 'localhost';
