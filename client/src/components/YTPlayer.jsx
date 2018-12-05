@@ -111,6 +111,11 @@ class YTPlayer extends React.Component {
         } else if (event.newState === 1) {
           this.player.playVideo();
         }
+        if(event.newSpeed) {
+          if (this.player.getPlaybackRate() !== event.newSpeed) {
+            this.player.setPlaybackRate(event.newSpeed);
+          }
+        }
       } else if (event.type === 'rateChange') {
         this.player.setPlaybackRate(event.newSpeed);
       }

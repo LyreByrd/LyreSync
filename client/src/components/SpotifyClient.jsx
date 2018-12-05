@@ -33,6 +33,7 @@ class SpotifyClient extends React.Component {
       currentPlayingDuration: 0,
       isMuted: false,
       volume: 50,
+      shouldTimeAutoUpdate: true,
     } 
     this.logPlayer = this.logPlayer.bind(this);
     this.onSpotifyReady = this.onSpotifyReady.bind(this);
@@ -71,7 +72,7 @@ class SpotifyClient extends React.Component {
       });
     });
     this.socket.on('playerConfirm', (confirmData) => {
-      this.socket.emit('getPlayerInit');
+      //this.socket.emit('getPlayerInit');
     })
     this.socket.on('spotifyResponse', object => {
       console.log('Spotify response: ', object);
@@ -142,7 +143,12 @@ class SpotifyClient extends React.Component {
     });
   
     // Connect to the player!
-    this.player.connect();
+    this.player.connect()
+      .then((isConnected) => {
+        if(isConnected) {
+          this.socket.emit('getPlayerInit');
+        }
+      });
   }
 
   componentWillUnmount() {
@@ -231,6 +237,7 @@ class SpotifyClient extends React.Component {
     }
     if (Math.abs(this.state.playerTime - playerState.position) > 500) {
       neededUpdates.playerTime = playerState.position;
+      neededUpdates.shouldTimeAutoUpdate = false;
       edited = true;
     }
     let playerMode = playerState.paused ? 'paused' : 'playing';
@@ -282,7 +289,11 @@ class SpotifyClient extends React.Component {
   startTimer() {
     this.timerInterval = setInterval(() => {
       if(this.state.playerState === 'playing') {
-        this.setState({playerTime: this.state.playerTime + 250})
+        if(this.state.shouldTimeAutoUpdate) {
+          this.setState({playerTime: this.state.playerTime + 250});
+        } else {
+          this.setState({shouldTimeAutoUpdate: true});
+        }
       }
     }, 250);
   }
