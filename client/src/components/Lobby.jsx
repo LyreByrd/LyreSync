@@ -7,7 +7,7 @@ import SpotifyClient from './SpotifyClient.jsx';
 
 const Lobby = (props) => {
   if (props.inSession && props.service === 'youtube') {
-    return <div>{props.isHost ? <YTHost resetToLobby={props.resetToLobby} hostingName={props.hostingName}/> : <YTPlayer resetToLobby={props.resetToLobby} sessionHost={props.sessionHost}/>}</div>
+    return <div>{props.isHost ? <YTHost hostTimestamp={props.hostTimestamp} resetToLobby={props.resetToLobby} hostingName={props.hostingName}/> : <YTPlayer resetToLobby={props.resetToLobby} sessionHost={props.sessionHost}/>}</div>
   }
   if (props.inSession && props.service === 'spotify') {
     return <div>{props.isHost ? <SpotifyHost {...props}/> : <SpotifyClient {...props}/>}</div>

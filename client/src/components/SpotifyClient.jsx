@@ -289,7 +289,7 @@ class SpotifyClient extends React.Component {
 
   render () {
     return (
-      <div>
+      <div className='spotify-window spotify-window-client'>
         Spotify Audience Component
         <br />
         <SpotifyGUI 

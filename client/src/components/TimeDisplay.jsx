@@ -34,7 +34,7 @@ class TimeDisplay extends React.Component {
         </form>
       )
     }
-    return (<div>
+    return (<div className ='time-display'>
       {timesetter}
       Current position: {Math.round(this.props.playerTime / 1000)} seconds, of {playingLength}
     </div>);
