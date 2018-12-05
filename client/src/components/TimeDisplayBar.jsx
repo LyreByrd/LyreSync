@@ -55,7 +55,7 @@ class TimeDisplayBar extends React.Component {
     return (<div className ='time-display' style={{padding: '20px'}}>
        <div 
         className={'time-display-holder'} 
-        style={{position: 'relative', top:'0', left:'0', height: '20px', width: '50%', border: '1px black solid'}}
+        style={{position: 'relative', top:'0', left:'0', height: '20px', width: '80%', border: '1px solid #6d6d6d'}}
         >
         {clickListener}
         <div style={{'zIndex': '2', 'height': '100%', 'width': percentDone + '%', 'background':'red', position: 'absolute', top:'0', left:'0'}} /> 

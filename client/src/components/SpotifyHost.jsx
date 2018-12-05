@@ -11,14 +11,9 @@ import ActiveSpotifyPlaylist from './ActiveSpotifyPlaylist.jsx';
 
 //style
 const entryStyle ={
-  display: 'flex',
-  flexDirection: 'row',
-  flexBasis: 'auto',
-  justifyContent: 'space-around',
-  alignItems: 'center',
-  'flex-wrap': 'wrap',
-  'margin-top': '3em',
-}
+  padding: '1em',
+  margin: 'auto'
+};
 
 let HOME_URL, SOCKET_PORT, FEED_PORT, FEED_URL;
 try {
@@ -571,7 +566,9 @@ class SpotifyHost extends React.Component {
       </div>)
       : '';
     return (
-      <div className='spotify-window spotify-window-host'>
+      <div className='spotify-window spotify-window-host'
+      style={entryStyle}
+      >
         Spotify Component
         <SpotifyGUI 
           isHost={true} 
@@ -587,10 +584,10 @@ class SpotifyHost extends React.Component {
           playerTime={this.state.playerTime}
           setTime={this.setTime}
         />
-        <button onClick={this.loadDefaultMusic}>Load Default Album</button>
+        {/* <button onClick={this.loadDefaultMusic}>Load Default Album</button>
         <br />
         <button onClick={this.loadDefaultFromClient}>Load default single track</button>
-        <button onClick={this.logPlayer}>Log Player</button>
+        <button onClick={this.logPlayer}>Log Player</button> */}
         <br />
         <div className={'spotify-playlist-handlers'}>
           <ActiveSpotifyPlaylist 
@@ -601,13 +598,15 @@ class SpotifyHost extends React.Component {
           <br />
           
           {/* <button onClick={() => {this.searchSpotify('shnabubula', ['album'])}}>Search Shnabubula albums</button> */}
-          <KnownSpotifyPlaylists
-            loadCurrentUserPlaylists={this.loadCurrentUserPlaylists}
-            searchSpotify={this.searchSpotify}
-            className='spotify-known-playlists known-playlists'
-            hostPlaylists={this.state.hostPlaylists} 
-            loadPlaylistFromKnown={this.loadPlaylistFromKnown}
-          />
+          <div>
+            <KnownSpotifyPlaylists
+              loadCurrentUserPlaylists={this.loadCurrentUserPlaylists}
+              searchSpotify={this.searchSpotify}
+              className='spotify-known-playlists known-playlists'
+              hostPlaylists={this.state.hostPlaylists} 
+              loadPlaylistFromKnown={this.loadPlaylistFromKnown}
+            />
+          </div>
         </div>
         {spoofButtons}
       </div>
