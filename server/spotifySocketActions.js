@@ -46,21 +46,40 @@ module.exports.setSpotifyHostSocket = (socket, hostName, activeSessions, io, del
     io.to(hostName).emit('hostStateUpdate', state);
   })
   socket.on('sendInitStatus', ({socketId, hostState}) => {
-    io.to(socketId).emit('hostStateUpdate', hostState);
+    console.log('spotify status init for ' + socketId)
+    let target;
+    try {
+      
+      target = activeSessions[hostName].activeSockets[socketId];
+      console.log('socket found, id: ', target.id);
+      target.emit('hostStateUpdate', hostState)
+    } catch(err) {
+      console.log('error finding init socket')
+      //do nothing
+    }
+    //io.to(socketId).emit('hostStateUpdate', hostState);
   })
 }
 
 module.exports.setSpotifySocket = (socket, hostName, activeSessions, io, initData, User) => {
   //console.log('new spotify socket. init data: ', initData);
-  socket.join(hostName);
-  socket.on('spotifyPlayerDetails', ({playerId, playerAuthToken}) => {
-    socket.spotifyPlayerId = playerId;
-    socket.spotifyAuthToken = playerAuthToken;
-  })
-  socket.on('getPlayerInit', () => {
-    if(activeSessions[hostName] && activeSessions[hostName].host) {
-      activeSessions[hostName].host.emit('getPlayerInit', socket.id);
-    }
-  })
+  try {
+    activeSessions[hostName].activeSockets[socket.id] = socket;
+    socket.join(hostName);
+
+    socket.on('spotifyPlayerDetails', ({playerId, playerAuthToken}) => {
+      socket.spotifyPlayerId = playerId;
+      socket.spotifyAuthToken = playerAuthToken;
+    })
+    socket.on('getPlayerInit', () => {
+      console.log('spotify getPlayerInit for ' + hostName + ', socket ' + socket.id);
+      if(activeSessions[hostName] && activeSessions[hostName].host) {
+        activeSessions[hostName].host.emit('getPlayerInit', socket.id);
+      }
+    })
+  } catch(err) {
+    socket.emit('clientError');
+    socket.disconnect();
+  }
   //console.log('general spotify socket actions added');
 }
