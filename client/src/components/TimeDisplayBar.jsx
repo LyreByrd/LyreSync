@@ -32,7 +32,8 @@ class TimeDisplayBar extends React.Component {
   }
 
   startTimesetterFloat(e) {
-
+    //supposed to start click-and-drag for the timesetter component
+    //might be interesting to do if i have the spare time
   }
 
   render() {
@@ -43,7 +44,8 @@ class TimeDisplayBar extends React.Component {
     if (this.props.isHost) {
       timesetter = (<div 
         className='timesetter' 
-        style={{background:'black', height:'100%', width:'4px', position:'relative', left: percentDone + '%'}}
+        style={{'zIndex': '10', background:'black', height:'100%', width:'4px', position:'absolute', left: percentDone + '%'}}
+        //onClick={() => console.log('timesetter clicked')}
       />)
     }
     let clickListener = null;
@@ -53,10 +55,10 @@ class TimeDisplayBar extends React.Component {
     return (<div className ='time-display' style={{padding: '20px'}}>
        <div 
         className={'time-display-holder'} 
-        style={{height: '20px', width: '200px', border: '1px black solid'}}
+        style={{position: 'relative', top:'0', left:'0', height: '20px', width: '50%', border: '1px black solid'}}
         >
         {clickListener}
-        <div style={{'height': '100%', 'width': percentDone + '%', 'background':'red', position: 'relative', top:'0', left:'0'}} /> 
+        <div style={{'zIndex': '2', 'height': '100%', 'width': percentDone + '%', 'background':'red', position: 'absolute', top:'0', left:'0'}} /> 
         {timesetter}
       </div>
       Current position: {Math.round(this.props.playerTime / 1000)} seconds, of {secLength}
