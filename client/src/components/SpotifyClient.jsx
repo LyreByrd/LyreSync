@@ -33,6 +33,7 @@ class SpotifyClient extends React.Component {
       currentPlayingDuration: 0,
       isMuted: false,
       volume: 50,
+      shouldTimeAutoUpdate: true,
     } 
     this.logPlayer = this.logPlayer.bind(this);
     this.onSpotifyReady = this.onSpotifyReady.bind(this);
@@ -236,6 +237,7 @@ class SpotifyClient extends React.Component {
     }
     if (Math.abs(this.state.playerTime - playerState.position) > 500) {
       neededUpdates.playerTime = playerState.position;
+      neededUpdates.shouldTimeAutoUpdate = false;
       edited = true;
     }
     let playerMode = playerState.paused ? 'paused' : 'playing';
@@ -287,7 +289,11 @@ class SpotifyClient extends React.Component {
   startTimer() {
     this.timerInterval = setInterval(() => {
       if(this.state.playerState === 'playing') {
-        this.setState({playerTime: this.state.playerTime + 250})
+        if(this.state.shouldTimeAutoUpdate) {
+          this.setState({playerTime: this.state.playerTime + 250});
+        } else {
+          this.setState({shouldTimeAutoUpdate: true});
+        }
       }
     }, 250);
   }
