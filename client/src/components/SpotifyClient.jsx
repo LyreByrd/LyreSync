@@ -35,7 +35,7 @@ class SpotifyClient extends React.Component {
       volume: 50,
       shouldTimeAutoUpdate: true,
     } 
-    this.logPlayer = this.logPlayer.bind(this);
+    //this.logPlayer = this.logPlayer.bind(this);
     this.onSpotifyReady = this.onSpotifyReady.bind(this);
     this.syncIfNeeded = this.syncIfNeeded.bind(this);
     this.toggleMute = this.toggleMute.bind(this);
@@ -75,10 +75,10 @@ class SpotifyClient extends React.Component {
       //this.socket.emit('getPlayerInit');
     })
     this.socket.on('spotifyResponse', object => {
-      console.log('Spotify response: ', object);
+      //console.log('Spotify response: ', object);
     })
     this.socket.on('hostStateUpdate', hostState => {
-      console.log('Host has a state update!');
+      //console.log('Host has a state update!');
       if(hostState && this.player && this.state.playerId) {
         this.player.getCurrentState().then(audienceState => {
           this.syncIfNeeded(hostState, audienceState);
@@ -101,11 +101,11 @@ class SpotifyClient extends React.Component {
 
   onSpotifyReady() {
     if (this.state.authToken === null || !window.Spotify) {
-      console.log('tried to ready spotify too early');
+      //console.log('tried to ready spotify too early');
       return;
     }
 
-    console.log('onSpotifyReady fired');
+    //console.log('onSpotifyReady fired');
     //console.log(Spotify);
 
     this.player = new Spotify.Player({
@@ -125,21 +125,21 @@ class SpotifyClient extends React.Component {
     // Ready
     this.player.addListener('ready', ({ device_id }) => {
       this.setState({playerId: device_id}, () => {
-        console.log('player id state set');
+        //console.log('player id state set');
         if (this.socket) {
-          console.log('informing server of player info');
+          //console.log('informing server of player info');
           this.setState({playerReady: true}, () => {
             this.startTimer();
           });
           this.socket.emit('spotifyPlayerDetails', {playerId: this.state.playerId, playerAuthToken: this.state.authToken});
         }
       });
-      console.log('Ready with Device ID', device_id);
+      //console.log('Ready with Device ID', device_id);
     });
   
     // Not Ready
     this.player.addListener('not_ready', ({ device_id }) => {
-      console.log('Device ID has gone offline', device_id);
+      //console.log('Device ID has gone offline', device_id);
     });
   
     // Connect to the player!
@@ -160,10 +160,10 @@ class SpotifyClient extends React.Component {
     }
   }
 
-  logPlayer() {
-    console.log(this.player)
-    window.player = this.player;
-  }
+  // logPlayer() {
+  //   console.log(this.player)
+  //   window.player = this.player;
+  // }
 
   syncIfNeeded(hostState, playerState) {
     if (!hostState && this.state.playerState !== 'inactive') {
@@ -206,7 +206,7 @@ class SpotifyClient extends React.Component {
   }
 
   loadTrack(loadInfo) {
-    console.log('new track load');
+    //console.log('new track load');
     let body = {uris: [loadInfo.uri]};
     if(loadInfo.time) {
       body.position_ms = loadInfo.time;
@@ -245,7 +245,7 @@ class SpotifyClient extends React.Component {
       neededUpdates.playerState = playerMode;
     }
     if(edited) {
-      console.log('New information: ', neededUpdates)
+      //console.log('New information: ', neededUpdates)
       this.setState(neededUpdates);
     }
   }
@@ -280,7 +280,7 @@ class SpotifyClient extends React.Component {
   }
 
   sendVolumeRequest() {
-    console.log('send volume request');
+    //console.log('send volume request');
     if(this.state.playerReady && this.state.isMuted === false) {
       this.player.setVolume(this.state.volume/100);
     }
@@ -301,8 +301,8 @@ class SpotifyClient extends React.Component {
   render () {
     return (
       <div className='spotify-window spotify-window-client'>
-        Spotify Audience Component
-        <br />
+        {/* Spotify Audience Component
+        <br /> */}
         <SpotifyGUI 
           isHost={false} 
           currentPlayingInfo={this.state.currentPlayingInfo} 
@@ -314,8 +314,8 @@ class SpotifyClient extends React.Component {
           currentVolume={this.state.volume}
           isMuted={this.state.isMuted}
         />
-        <button onClick={this.loadDefaultMusic}>Start Default Music</button>
-        <button onClick={this.logPlayer}>Log Player</button>
+        {/* <button onClick={this.loadDefaultMusic}>Start Default Music</button>
+        <button onClick={this.logPlayer}>Log Player</button> */}
       </div>
     )
   }
