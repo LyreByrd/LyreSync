@@ -5,9 +5,12 @@ import TimeDisplay from './TimeDisplay.jsx';
 import TimeDisplayBar from './TimeDisplayBar.jsx';
 
 const SpotifyGUI = (props) => {
-  const controls = props.isHost ? <SpotifyHostControls {...props} /> : '';
-  console.log(props.currentPlayingInfo)
   let currentPlayingName = props.currentPlayingInfo.name;
+  const controls = props.isHost ? 
+  <SpotifyHostControls 
+  isMuted={props.isMuted} 
+  toggleMute={props.toggleMute}
+   {...props} /> : '';
   let img = <img className='track-image' width={200} height={200} src='http://www.scdn.co/i/_global/twitter_card-default.jpg'/>
   if (props.currentPlayingInfo.album) {
     img = <img className='track-image' width={200} height={200} src={props.currentPlayingInfo.album.images[0].url}/>

@@ -584,10 +584,10 @@ class SpotifyHost extends React.Component {
           playerTime={this.state.playerTime}
           setTime={this.setTime}
         />
-        <button onClick={this.loadDefaultMusic}>Load Default Album</button>
+        {/* <button onClick={this.loadDefaultMusic}>Load Default Album</button>
         <br />
         <button onClick={this.loadDefaultFromClient}>Load default single track</button>
-        <button onClick={this.logPlayer}>Log Player</button>
+        <button onClick={this.logPlayer}>Log Player</button> */}
         <br />
         <div className={'spotify-playlist-handlers'}>
           <ActiveSpotifyPlaylist 
@@ -598,14 +598,15 @@ class SpotifyHost extends React.Component {
           <br />
           
           {/* <button onClick={() => {this.searchSpotify('shnabubula', ['album'])}}>Search Shnabubula albums</button> */}
-
-          <KnownSpotifyPlaylists
-            loadCurrentUserPlaylists={this.loadCurrentUserPlaylists}
-            searchSpotify={this.searchSpotify}
-            className='spotify-known-playlists known-playlists'
-            hostPlaylists={this.state.hostPlaylists} 
-            loadPlaylistFromKnown={this.loadPlaylistFromKnown}
-          />
+          <div>
+            <KnownSpotifyPlaylists
+              loadCurrentUserPlaylists={this.loadCurrentUserPlaylists}
+              searchSpotify={this.searchSpotify}
+              className='spotify-known-playlists known-playlists'
+              hostPlaylists={this.state.hostPlaylists} 
+              loadPlaylistFromKnown={this.loadPlaylistFromKnown}
+            />
+          </div>
         </div>
         {spoofButtons}
       </div>

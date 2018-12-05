@@ -27,15 +27,15 @@ class GenericTextInputForm extends React.Component {
           placeholder={this.props.placeholder || ''} 
           value={this.state.textInput} 
           onChange={this.handleChange} /> */}
-          <div class="ui icon input">
+          <div className="ui icon input">
             <input 
             type="text" 
             placeholder="Search..."
-            buttonText={'Search for an album'}
+            buttontext={'Search for an album'}
             value={this.state.textInput} 
             onChange={this.handleChange}
             />
-            <i class="search icon"></i>
+            <i className="search icon"></i>
           </div>
         <button type='submit'>{this.props.buttonText}</button>
       </form >)

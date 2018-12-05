@@ -14,7 +14,7 @@ const entryStyle ={
 };
 
 const titleStyle = {
-  'font-weight': 'bold'
+  'fontWeight': 'bold'
 }
 
 const KnownSpotifyPlaylists = (props) => {
