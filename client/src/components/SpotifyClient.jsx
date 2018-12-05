@@ -72,7 +72,7 @@ class SpotifyClient extends React.Component {
       });
     });
     this.socket.on('playerConfirm', (confirmData) => {
-      this.socket.emit('getPlayerInit');
+      //this.socket.emit('getPlayerInit');
     })
     this.socket.on('spotifyResponse', object => {
       console.log('Spotify response: ', object);
@@ -143,7 +143,12 @@ class SpotifyClient extends React.Component {
     });
   
     // Connect to the player!
-    this.player.connect();
+    this.player.connect()
+      .then((isConnected) => {
+        if(isConnected) {
+          this.socket.emit('getPlayerInit');
+        }
+      });
   }
 
   componentWillUnmount() {

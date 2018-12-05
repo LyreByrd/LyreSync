@@ -167,6 +167,9 @@ class YTHost extends React.Component {
     if(this.socket) {
       this.socket.close();
     }
+    if(this.timedUpdates) {
+      clearInterval(this.timedUpdates);
+    }
   }
 
 
@@ -199,9 +202,24 @@ class YTHost extends React.Component {
         console.log('loading first in queue')
         this.player.loadVideoById(this.state.videoQueue[0].videoId);
       }
+
+      if(!this.timedUpdates) {
+        this.startTimedUpdates();
+      }
     } 
   }
 
+  startTimedUpdates() {
+    this.timedUpdates = setInterval(() => {
+      this.socket.emit('hostAction', {
+        type:'stateChange', 
+        newState: this.player.getPlayerState(), 
+        newVideo: this.player.getVideoData().video_id, 
+        newTime: this.player.getCurrentTime(),
+        newSpeed: this.player.getPlaybackRate(),
+      })
+    }, 5000)
+  }
   gotInvalidIdPattern() {
     console.log('try again buddy');
   }

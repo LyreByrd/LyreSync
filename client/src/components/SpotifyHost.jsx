@@ -126,6 +126,13 @@ class SpotifyHost extends React.Component {
         });
     });
 
+    this.socket.on('getPlayerInit', socketId => {
+      this.player.getCurrentState()
+        .then(playerState => {
+          this.socket.emit('sendInitStatus', {socketId, hostState: playerState});
+        })
+    })
+
     if (!loadSpotify) {
       loadSpotify = new Promise((resolve) => {
         //console.log('Host trying to add a script')
