@@ -55,12 +55,12 @@ class SpotifyHost extends React.Component {
       specialMessage: null,
       shouldTimeAutoUpdate: true,
     }
-    this.loadDefaultMusic = this.loadDefaultMusic.bind(this);
-    this.logPlayer = this.logPlayer.bind(this);
+    //this.loadDefaultMusic = this.loadDefaultMusic.bind(this);
+    //this.logPlayer = this.logPlayer.bind(this);
     this.onSpotifyReady = this.onSpotifyReady.bind(this);
-    this.loadDefaultFromClient = this.loadDefaultFromClient.bind(this);
-    this.spoofHostAction = this.spoofHostAction.bind(this);
-    this.spoofTimedSync.bind(this);
+    //this.loadDefaultFromClient = this.loadDefaultFromClient.bind(this);
+    //this.spoofHostAction = this.spoofHostAction.bind(this);
+    //this.spoofTimedSync = this.spoofTimedSync.bind(this);
     this.togglePause = this.togglePause.bind(this);
     this.skipTo = this.skipTo.bind(this);
     this.toggleMute = this.toggleMute.bind(this);
@@ -231,44 +231,44 @@ class SpotifyHost extends React.Component {
     }
   }
 
-  loadDefaultMusic() {
-    console.log('checking player status');
-    let soundshockDefault = {
-      href: 'https://api.spotify.com/v1/albums/6jg4LbYcSeB9r6bj2p1CKf',
-      uri: 'spotify:album:6jg4LbYcSeB9r6bj2p1CKf',
-    }
-    let doteDefault = {
-      uri: 'spotify:album:5frKFvB263lUvjSrrJ1sQ8'
-    }
-    if(this.state.playerReady) {
-      console.log('attempting to get music');
-      this.loadPlaylistFromKnown(soundshockDefault);
-    }
-  }
+  //loadDefaultMusic() {
+  //  console.log('checking player status');
+  //  let soundshockDefault = {
+  //    href: 'https://api.spotify.com/v1/albums/6jg4LbYcSeB9r6bj2p1CKf',
+  //    uri: 'spotify:album:6jg4LbYcSeB9r6bj2p1CKf',
+  //  }
+  //  let doteDefault = {
+  //    uri: 'spotify:album:5frKFvB263lUvjSrrJ1sQ8'
+  //  }
+  //  if(this.state.playerReady) {
+  //    console.log('attempting to get music');
+  //    this.loadPlaylistFromKnown(soundshockDefault);
+  //  }
+  //}
   
-  loadDefaultFromClient() {
-    //spotify:album:6jg4LbYcSeB9r6bj2p1CKf
-    let soundshockDefault = {
-      href: 'https://api.spotify.com/v1/albums/6jg4LbYcSeB9r6bj2p1CKf',
-      uri: 'spotify:album:6jg4LbYcSeB9r6bj2p1CKf',
-      type: 'album'
-    }
-    let trackDefault = {
-      uri: 'spotify:track:0qEuvRbJzqFrqURfD2zfxj',
-      href: 'https://api.spotify.com/v1/tracks/0qEuvRbJzqFrqURfD2zfxj',
-      type: 'track',
-    }
-    if(this.state.playerReady) {
-      this.loadPlaylistFromKnown(trackDefault);
-    }
+  //loadDefaultFromClient() {
+  //  //spotify:album:6jg4LbYcSeB9r6bj2p1CKf
+  //  let soundshockDefault = {
+  //    href: 'https://api.spotify.com/v1/albums/6jg4LbYcSeB9r6bj2p1CKf',
+  //    uri: 'spotify:album:6jg4LbYcSeB9r6bj2p1CKf',
+  //    type: 'album'
+  //  }
+  //  let trackDefault = {
+  //    uri: 'spotify:track:0qEuvRbJzqFrqURfD2zfxj',
+  //    href: 'https://api.spotify.com/v1/tracks/0qEuvRbJzqFrqURfD2zfxj',
+  //    type: 'track',
+  //  }
+  //  if(this.state.playerReady) {
+  //    this.loadPlaylistFromKnown(trackDefault);
+  //  }
+  //}
 
-  }
+  //logPlayer() {
+  //  console.log(this.player)
+  //  window.player = this.player;
+  //}
 
-  logPlayer() {
-    console.log(this.player)
-    window.player = this.player;
-  }
-
+  /*
   spoofHostAction(track, time) {
     let spoofTracks = {
       wreckingBad: 'spotify:track:4wGCusPRszIZYxbwtgISjD',
@@ -307,6 +307,7 @@ class SpotifyHost extends React.Component {
       }, i * 1000);
     }
   }
+  */
 
   togglePause() {
     console.log('Should pause/resume');
@@ -372,7 +373,7 @@ class SpotifyHost extends React.Component {
     let edited = false;
     let neededUpdates = {};
     if (playerState) {
-      console.log('playerState is not null');
+      //console.log('playerState is not null');
       if (this.state.currentPlayingInfo.uri !== playerState.track_window.current_track.uri) {
         neededUpdates.currentPlayingDuration = playerState.duration;
         neededUpdates.currentPlayingInfo = playerState.track_window.current_track;
@@ -557,6 +558,7 @@ class SpotifyHost extends React.Component {
   }
 
   render () {
+    /* 
     let spoofButtons = this.props.env === 'dev' ?
       (<div>
         Spoof Buttons:
@@ -570,6 +572,7 @@ class SpotifyHost extends React.Component {
         <button onClick={() => this.spoofTimedSync('cygnus', 30)}>Check long-term sync</button>
       </div>)
       : '';
+    */
     return (
       <div className='spotify-window spotify-window-host'>
         Spotify Component
@@ -587,11 +590,11 @@ class SpotifyHost extends React.Component {
           playerTime={this.state.playerTime}
           setTime={this.setTime}
         />
-        <button onClick={this.loadDefaultMusic}>Load Default Album</button>
+        {/*<button onClick={this.loadDefaultMusic}>Load Default Album</button>
         <br />
         <button onClick={this.loadDefaultFromClient}>Load default single track</button>
         <button onClick={this.logPlayer}>Log Player</button>
-        <br />
+        <br />*/}
         <div className={'spotify-playlist-handlers'}>
           <ActiveSpotifyPlaylist 
             className='active-playlist spotify-active-playlist'
@@ -609,7 +612,7 @@ class SpotifyHost extends React.Component {
             loadPlaylistFromKnown={this.loadPlaylistFromKnown}
           />
         </div>
-        {spoofButtons}
+        {/*spoofButtons*/}
       </div>
     )
   }
