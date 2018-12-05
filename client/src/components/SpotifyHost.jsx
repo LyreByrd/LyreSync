@@ -141,7 +141,7 @@ class SpotifyHost extends React.Component {
     this.socket.on('getPlayerInit', socketId => {
       this.player.getCurrentState()
         .then(playerState => {
-          console.log('heard getPlayerInit');
+          //console.log('heard getPlayerInit');
           this.socket.emit('sendInitStatus', {socketId, hostState: playerState});
         })
     })

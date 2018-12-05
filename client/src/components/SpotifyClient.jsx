@@ -80,9 +80,9 @@ class SpotifyClient extends React.Component {
     this.socket.on('hostStateUpdate', hostState => {
       //console.log('Host has a state update!');
       console.log(hostState);
-      console.log(`hostState? ${!!hostState}\nthis.player? ${!!this.player}\nplayerId? ${!!this.state.playerId}`)
+      //console.log(`hostState? ${!!hostState}\nthis.player? ${!!this.player}\nplayerId? ${!!this.state.playerId}`)
       if(hostState && this.player && this.state.playerId) {
-        console.log('preparing to update');
+        //console.log('preparing to update');
         this.player.getCurrentState().then(audienceState => {
           this.syncIfNeeded(hostState, audienceState);
         })
@@ -222,7 +222,7 @@ class SpotifyClient extends React.Component {
       })
       .catch(error => {
         //console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||\nERROR:\n', error.response)
-        console.log('spotifyResponse', error.response);
+        //console.log('spotifyResponse', error.response);
       })
   }
 
