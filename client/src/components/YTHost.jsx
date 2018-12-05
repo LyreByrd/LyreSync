@@ -168,7 +168,7 @@ class YTHost extends React.Component {
       this.socket.close();
     }
     if(this.timedUpdates) {
-      cancelInterval(this.timedUpdates;
+      clearInterval(this.timedUpdates);
     }
   }
 
