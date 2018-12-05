@@ -118,16 +118,16 @@ class SpotifyHost extends React.Component {
     })
     this.socket.on('hostingError', (err) => {
       //console.log('got host error');
-      console.log('host error: ', err)
+      //console.log('host error: ', err)
       this.setState({hasErrored: true}, () => {
         setTimeout(() => this.props.resetToLobby(err), 5000);
       });
     })
     this.socket.on('playerConfirm', (confirmData) => {
-      console.log(this.state, confirmData);
+      //console.log(this.state, confirmData);
     })
     this.socket.on('spotifyResponse', object => {
-      console.log('Spotify response: ', object);
+      //console.log('Spotify response: ', object);
       this.player.getCurrentState()
         .then(state => {
           if(state) {
@@ -160,11 +160,11 @@ class SpotifyHost extends React.Component {
 
   onSpotifyReady() {
     if (this.state.authToken === null || !window.Spotify) {
-      console.log('tried to ready spotify too early');
+      //console.log('tried to ready spotify too early');
       return;
     }
 
-    console.log('onSpotifyReady fired');
+    //console.log('onSpotifyReady fired');
     //console.log(Spotify);
 
     this.player = new Spotify.Player({
@@ -198,21 +198,21 @@ class SpotifyHost extends React.Component {
     // Ready
     this.player.addListener('ready', ({ device_id }) => {
       this.setState({playerId: device_id}, () => {
-        console.log('player id state set');
+        //console.log('player id state set');
         if (this.socket) {
-          console.log('informing server of player info');
+          //console.log('informing server of player info');
           this.setState({playerReady: true}, () => {
             this.startTimer();
           });
           this.socket.emit('spotifyPlayerDetails', {playerId: this.state.playerId, playerAuthToken: this.state.authToken});
         }
       });
-      console.log('Ready with Device ID', device_id);
+      //console.log('Ready with Device ID', device_id);
     });
   
     // Not Ready
     this.player.addListener('not_ready', ({ device_id }) => {
-      console.log('Device ID has gone offline', device_id);
+      //console.log('Device ID has gone offline', device_id);
     });
   
     // Connect to the player!
@@ -310,7 +310,7 @@ class SpotifyHost extends React.Component {
   */
 
   togglePause() {
-    console.log('Should pause/resume');
+    //console.log('Should pause/resume');
     if(this.state.playerReady && this.state.playerState !== 'inactive') {
       this.player.togglePlay()
         .then(() => {
@@ -362,7 +362,7 @@ class SpotifyHost extends React.Component {
   }
 
   sendVolumeRequest() {
-    console.log('send volume request');
+    //console.log('send volume request');
     if(this.state.playerReady && this.state.isMuted === false) {
       this.player.setVolume(this.state.volume/100);
     }
@@ -405,7 +405,7 @@ class SpotifyHost extends React.Component {
       }
     }
     if(edited) {
-      console.log('New information: ', neededUpdates)
+      //console.log('New information: ', neededUpdates)
       if (neededUpdates.currentPlayingInfo) {
         let spotifyFeedData = {
           room: this.props.hostingName,
@@ -413,7 +413,7 @@ class SpotifyHost extends React.Component {
           artist: neededUpdates.currentPlayingInfo.artists[0].name,
           albumArt: neededUpdates.currentPlayingInfo.album.images[0].url,
         }
-        console.log('spotifyFeedData :', spotifyFeedData);
+        //console.log('spotifyFeedData :', spotifyFeedData);
         this.feedSocket.emit('spotify data', spotifyFeedData)
       }
       this.setState(neededUpdates);
@@ -433,7 +433,7 @@ class SpotifyHost extends React.Component {
   }
 
   setTime(newTime) {
-    console.log('plan to set time to ' + newTime + 's');
+    //console.log('plan to set time to ' + newTime + 's');
     if (0 <= newTime && newTime * 1000 <= this.state.currentPlayingDuration) {
       this.player.seek(newTime * 1000);
     }
@@ -441,14 +441,14 @@ class SpotifyHost extends React.Component {
 
   loadKnownTracks(uri, type) {
     let body;
-    console.log('loadKnownTracks');
+    //console.log('loadKnownTracks');
     if (type === 'track') {
       body = JSON.stringify({uris: [uri]});
     } else {
       body = JSON.stringify({context_uri: uri});
     }
-    console.log('sending axios call from client');
-    console.log(body)
+    //console.log('sending axios call from client');
+    //console.log(body)
     axios.put(`https://api.spotify.com/v1/me/player/play?device_id=${this.state.playerId}`,
       body,
       {headers: {
@@ -457,11 +457,11 @@ class SpotifyHost extends React.Component {
       }}
     )
     .then(response => {
-      console.log(response.data);
+      //console.log(response.data);
     })
     .catch(error => {
       //console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||\nERROR:\n', error.response)
-      console.log('spotifyResponse', error.response);
+      //console.log('spotifyResponse', error.response);
     })
   }
 
@@ -477,7 +477,7 @@ class SpotifyHost extends React.Component {
 
   loadPlaylistFromKnown(playlist) {
 
-    console.log(playlist.href)
+    //console.log(playlist.href)
     axios.get(playlist.href,
       {headers: {
         'Content-Type': 'application.json',
@@ -485,7 +485,7 @@ class SpotifyHost extends React.Component {
       }
     })
     .then(response => {
-      console.log('Got playlist: ', response.data);
+      //console.log('Got playlist: ', response.data);
       this.setState({currentPlaylist: response.data, playlistPosition: 0}, () => {
         this.loadKnownTracks(playlist.uri, playlist.type);
       })
@@ -507,7 +507,7 @@ class SpotifyHost extends React.Component {
       return undefined;
     }
     try {
-      console.log('finding position');
+      //console.log('finding position');
       let position = this.state.playlistPosition;
       let tracklist = this.state.currentPlaylist.tracks.items;
       if(trackId === itemToTrackId(tracklist[position])) {
@@ -540,12 +540,12 @@ class SpotifyHost extends React.Component {
       }
     })
     .then(response => {
-      console.log('Search results: ', response.data);
+      //console.log('Search results: ', response.data);
       let data = response.data;
       let results = [];
       domains.forEach(domain => {
         let pluralized = domain + 's';
-        console.log(pluralized);
+        //console.log(pluralized);
         if(data[pluralized]) {
           results = results.concat(data[pluralized].items);
         }
@@ -553,7 +553,7 @@ class SpotifyHost extends React.Component {
       this.setState({hostPlaylists: results});
     })
     .catch(response => {
-      console.log('Search failed');
+      //console.log('Search failed');
     })
   }
 
