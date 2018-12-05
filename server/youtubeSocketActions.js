@@ -23,6 +23,7 @@ module.exports.setYTSocketHost = (socket, hostName, activeSessions, io, deleteCl
       target.emit('initState', data);
     }
   })
+
   socket.on('sendSearchRequest', data => {
     console.log('search YouTube for ' + data.term);
     if(YT_API_KEY && data.mode === 'search') {
@@ -73,4 +74,10 @@ module.exports.setYTSocketClient = (socket, hostName, targetSession, io, data) =
   } catch(err) {
     socket.emit('clientError');
   }
+
+  socket.on('getInitState', () => {
+    if(targetSession && targetSession.host) {
+      targetSession.host.emit('findInitStatus', socket.id);
+    }
+  });
 }
