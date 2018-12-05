@@ -1,12 +1,13 @@
 import React from 'react';
 import SpotifyHostControls from './SpotifyHostControls.jsx';
 import VolumeControls from './VolumeControls.jsx';
-import TimeDisplay from './TimeDisplay.jsx';
+//import TimeDisplay from './TimeDisplay.jsx';
 import TimeDisplayBar from './TimeDisplayBar.jsx';
+import SpotifyPlayingData from './SpotifyPlayingData.jsx';
 
 const SpotifyGUI = (props) => {
   const controls = props.isHost ? <SpotifyHostControls {...props} /> : '';
-  console.log(props.currentPlayingInfo)
+  //console.log(props.currentPlayingInfo)
   let currentPlayingName = props.currentPlayingInfo.name;
   let img = <img className='track-image' width={200} height={200} src='http://www.scdn.co/i/_global/twitter_card-default.jpg'/>
   if (props.currentPlayingInfo.album) {
@@ -14,11 +15,11 @@ const SpotifyGUI = (props) => {
   }
   return (
     <div className='spotify-player'>
-      <div>
+      {/*<div>
         {img}
       </div>
-      {currentPlayingName ? `Currently playing ${currentPlayingName}` : 'No music loaded'}
-
+      {currentPlayingName ? `Currently playing ${currentPlayingName}` : 'No music loaded'}*/}
+      <SpotifyPlayingData currentPlayingInfo={props.currentPlayingInfo} />
       <TimeDisplayBar 
         playerTime={props.playerTime} 
         setTime={props.setTime} 
