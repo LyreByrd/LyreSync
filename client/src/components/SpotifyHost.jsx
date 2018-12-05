@@ -8,6 +8,18 @@ import SpotifyGUI from './SpotifyGUI.jsx';
 import KnownSpotifyPlaylists from './KnownSpotifyPlaylists.jsx';
 import ActiveSpotifyPlaylist from './ActiveSpotifyPlaylist.jsx';
 
+
+//style
+const entryStyle ={
+  display: 'flex',
+  flexDirection: 'row',
+  flexBasis: 'auto',
+  justifyContent: 'space-around',
+  alignItems: 'center',
+  'flex-wrap': 'wrap',
+  'margin-top': '3em',
+}
+
 let HOME_URL, SOCKET_PORT, FEED_PORT, FEED_URL;
 try {
   let config = require('../../../config.js');
@@ -532,6 +544,7 @@ class SpotifyHost extends React.Component {
       let results = [];
       domains.forEach(domain => {
         let pluralized = domain + 's';
+        console.log(pluralized);
         if(data[pluralized]) {
           results = results.concat(data[pluralized].items);
         }
@@ -588,7 +601,7 @@ class SpotifyHost extends React.Component {
           <br />
           
           {/* <button onClick={() => {this.searchSpotify('shnabubula', ['album'])}}>Search Shnabubula albums</button> */}
-          <KnownSpotifyPlaylists 
+          <KnownSpotifyPlaylists
             loadCurrentUserPlaylists={this.loadCurrentUserPlaylists}
             searchSpotify={this.searchSpotify}
             className='spotify-known-playlists known-playlists'
