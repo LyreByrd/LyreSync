@@ -58,6 +58,7 @@ class YTPlayer extends React.Component {
 
   onPlayerReady() {
     this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`, {secure: true});
+    // this.feedSocket = io(`http://${HOME_URL}:8080`);
     this.socket.on('initPing', () => {
       this.socket.emit('getClientActions', {host: this.props.sessionHost, service: 'youtube'});
     })
@@ -72,6 +73,7 @@ class YTPlayer extends React.Component {
       //   this.player.pauseVideo();
       // }
       this.player.setPlaybackRate(status.rate);
+
     });
     this.socket.on('clientError', () => {
       this.setState({hasErrored: true}, () => {
@@ -162,8 +164,10 @@ class YTPlayer extends React.Component {
 
   render () {
     return (
-      <section className='youtubeComponent-wrapper'>
-        <div ref={(r) => { this.youtubePlayerAnchor = r }}></div>
+      <div className='youtube-window youtube-window-client'>
+        <section className='youtube-component-wrapper'>
+          <div ref={(r) => { this.youtubePlayerAnchor = r }}></div>
+        </section>
         <br />
         <VolumeControls 
           toggleMute={this.toggleMute} 
@@ -177,7 +181,7 @@ class YTPlayer extends React.Component {
         <br />
         <button onClick={this.loadVideo}>Re-Sync To Host</button>
         {this.state.hasErrored ? 'No such session. Returning to lobby...' : ''}
-      </section>
+      </div>
     )
   }
 }

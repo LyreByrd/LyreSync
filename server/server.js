@@ -13,7 +13,7 @@ let samplePlaylists;
 try {
   samplePlaylists = require('../samples/sampleSpotifyPlaylists');
 } catch(err) {
-  samplePlaylists = null;
+  samplePlaylists = null; 
 }
 
 let config;
@@ -166,7 +166,10 @@ io.on('connection', socket => {
         throw new Error('no such session');
       }
       if (target.service !== data.service) {
-        throw new Error('service type mismatch');
+        throw new Error(`service type mismatch: target:${target.service}, client:${data.service}`);
+      }
+      if(data.hostTimestamp && data.hostTimestamp !== target.hostTimestamp) {
+        throw new Error('invalid host timestamp');
       }
       activeSessions[data.host].host = socket;
       if (data.service === 'youtube'){
@@ -181,6 +184,7 @@ io.on('connection', socket => {
       //console.log('starts session in object');
       //console.log('gets host actions');
     } catch (err) {
+      console.log(err.message);
       socket.emit('hostingError', err);
       socket.disconnect();
     }
@@ -231,17 +235,21 @@ app.post('/host', (req, res) => {
   if(validServices[service] !== true) {
     //console.log('invalid service');
     res.status(400).send(`Service "${service}" not supported`);
-  } else if (!hostName || isInvalidName(hostName) || activeSessions[hostName]) {
+  } else if (!hostName || isInvalidName(hostName) /*|| activeSessions[hostName]*/) {
     res.sendStatus(403);
   } else {
     try {
-      makeNewSession(hostName, service);
+      const hostTimestamp = Date.now();
+      if (!activeSessions[hostName]) {
+        makeNewSession(hostName, service);
+      }
+      activeSessions[hostName].hostTimestamp = hostTimestamp;
       setTimeout(() => {
         if(activeSessions[hostName] && activeSessions[hostName].host === null) {
           deleteClosedSession(hostName);
         }
       }, 5000);
-      res.status(201).send({hostName, service});
+      res.status(201).send({hostName, service, hostTimestamp});
     } catch (err) {
       res.status(500).send();
     }
