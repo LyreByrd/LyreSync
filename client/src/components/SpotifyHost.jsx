@@ -41,7 +41,7 @@ class SpotifyHost extends React.Component {
       isMuted: false,
       currentPlayingDuration: null,
       specialMessage: null,
-      shouldTimeUpdate: true,
+      shouldTimeAutoUpdate: true,
     }
     this.loadDefaultMusic = this.loadDefaultMusic.bind(this);
     this.logPlayer = this.logPlayer.bind(this);
@@ -362,7 +362,7 @@ class SpotifyHost extends React.Component {
       }
       if (Math.abs(this.state.playerTime - playerState.position) > 1000) {
         neededUpdates.playerTime = playerState.position;
-        neededUpdates.shouldTimeUpdate = false;
+        neededUpdates.shouldTimeAutoUpdate = false;
         edited = true;
       }
       if (playerState.paused && this.state.playerState !== 'paused') {
@@ -403,10 +403,10 @@ class SpotifyHost extends React.Component {
   startTimer() {
     this.timerInterval = setInterval(() => {
       if(this.state.playerState === 'playing') {
-        if(this.state.shouldTimeUpdate) {
+        if(this.state.shouldTimeAutoUpdate) {
         this.setState({playerTime: this.state.playerTime + 250})
         } else {
-        this.setState({shouldTimeUpdate: true});
+        this.setState({shouldTimeAutoUpdate: true});
         }
       }
     }, 250);
