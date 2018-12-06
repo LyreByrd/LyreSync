@@ -13,7 +13,7 @@ let samplePlaylists;
 try {
   samplePlaylists = require('../samples/sampleSpotifyPlaylists');
 } catch(err) {
-  samplePlaylists = null;
+  samplePlaylists = null; 
 }
 
 let config;
@@ -171,14 +171,14 @@ io.on('connection', socket => {
       } else if (data.service === 'spotify') {
         //socket.emit('devToken', DEV_TOKEN)
         spotifySocketActions.setSpotifySocket(socket, data.host, activeSessions, io, data, User);
-        console.log('general actions set');
+        //console.log('general actions set');
         spotifySocketActions.setSpotifyHostSocket(socket, data.host, activeSessions, io, deleteClosedSession, data);
-        console.log('host actions set');
+        //console.log('host actions set');
       }
       //console.log('starts session in object');
       //console.log('gets host actions');
     } catch (err) {
-      console.log(err.message);
+      //console.log(err.message);
       socket.emit('hostingError', err);
       socket.disconnect();
     }
@@ -192,7 +192,7 @@ io.on('connection', socket => {
       if (data.service === 'youtube') {
         ytSocketActions.setYTSocketClient(socket, data.host, target, io, data);
       } else if (data.service === 'spotify') {
-        console.log('making spotify audience session');
+        //console.log('making spotify audience session');
         spotifySocketActions.setSpotifySocket(socket, data.host, activeSessions, io, data)
       }
     } else {
