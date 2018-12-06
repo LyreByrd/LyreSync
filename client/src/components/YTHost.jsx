@@ -4,6 +4,7 @@ import getVideoId from 'get-video-id';
 import YTVideoQueue from './YTVideoQueue.jsx';
 import YTSearchResults from './YTSearchResults.jsx';
 import { debounce } from 'debounce';
+import { Dropdown, Icon, Menu, Input } from 'semantic-ui-react';
 
 let HOME_URL, SOCKET_PORT, FEED_URL, FEED_PORT;
 try {
@@ -375,17 +376,6 @@ class YTHost extends React.Component {
 
           .controls {
             border: 1px solid black;
-          }
-
-          input {
-            border: 1px solid #dfdcd4;
-            background-color: #dfdcd4;
-            font-size: 14px;
-            border-radius: 5px;
-            padding: 1rem;
-            width: 200px;
-            transition: all 300ms ease;
-            position: relative;
           }
         `}</style>
       </React.Fragment>
