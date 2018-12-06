@@ -114,13 +114,13 @@ class SpotifyHost extends React.Component {
           this.onSpotifyReady();
         })
       })
-    this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`, {secure:true}); //io(`/${this.props.hostingName}`); namespace implementation
+    this.socket = io(`https://${HOME_URL}:${SOCKET_PORT}`, {secure:true}); //io(`/${this.props.hostingName}`); namespace implementation
     if (FEED_PORT === 'inactive') {
       this.feedSocket = {
         emit: () => undefined,
       }
     } else {
-      this.feedSocket = io(`http://${FEED_URL}:${FEED_PORT}`);
+      this.feedSocket = io(`https://${FEED_URL}:${FEED_PORT}`);
     }
     this.socket.on('initPing', () => {
       //console.log('claiming host, name: ' + props.hostingName);

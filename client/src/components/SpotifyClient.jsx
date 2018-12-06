@@ -55,7 +55,7 @@ class SpotifyClient extends React.Component {
       })
     });
 
-    this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`, {secure:true}); //io(`/${this.props.hostingName}`); namespace implementation
+    this.socket = io(`https://${HOME_URL}:${SOCKET_PORT}`, {secure:true}); //io(`/${this.props.hostingName}`); namespace implementation
     this.socket.on('initPing', () => {
       //console.log('claiming host, name: ' + props.hostingName);
       this.socket.emit('getClientActions', {host: this.props.sessionHost, service: 'spotify', env: this.props.env});

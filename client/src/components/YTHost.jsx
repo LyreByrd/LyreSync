@@ -47,7 +47,7 @@ class YTHost extends React.Component {
   componentDidMount() {
     let props = this.props;
     //console.log(this.props)
-    this.socket = io(`http://${HOME_URL}:${SOCKET_PORT}`, {secure: true}); //io(`/${this.props.hostingName}`); namespace implementation
+    this.socket = io(`https://${HOME_URL}:${SOCKET_PORT}`, {secure: true}); //io(`/${this.props.hostingName}`); namespace implementation
     console.log('feed port: ' + FEED_PORT)
     if (FEED_PORT === 'inactive') {
       console.log('make no port');
@@ -55,7 +55,7 @@ class YTHost extends React.Component {
         emit: () => undefined,
       };
     } else {
-      this.feedSocket = io(`http://${FEED_URL}:${FEED_PORT}`, {secure: true});
+      this.feedSocket = io(`https://${FEED_URL}:${FEED_PORT}`, {secure: true});
     }
 
     this.socket.on('initPing', () => {
