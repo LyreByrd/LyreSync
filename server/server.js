@@ -26,11 +26,15 @@ try {
 const privateKey = fs.readFileSync('../../../etc/letsencrypt/live/lyrebyrd.live/privkey.pem').toString();
 const certificate = fs.readFileSync('../../../etc/letsencrypt/live/lyrebyrd.live/fullchain.pem').toString();
 const app = express();
-const https = require('https').Server({
+const apiHTTPS = require('https').Server({
   key: privateKey,
   cert: certificate
 },app);
-const io = require('socket.io')(https);
+const socketHTTPS = require('https').Server({
+  key: privateKey,
+  cert: certificate
+})
+const io = require('socket.io')(socketHTTPS);
 // const io = require('socket.io')(http, {key: privateKey, cert: certificate});
 const socketPort = config.SOCKET_PORT || 9001;
 const apiPort = config.PORT_NUM || 1234;
@@ -271,11 +275,11 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname + '/../client/dist/index.html'));
 });
 
-app.listen(apiPort, function() {
+apiHTTPS.listen(apiPort, function() {
   console.log(`Listening for http on port ${apiPort}`);
 })
 
-https.listen(socketPort, function() {
+socketHTTPS.listen(socketPort, function() {
   console.log(`Listening on port ${socketPort}`);
 })
 
