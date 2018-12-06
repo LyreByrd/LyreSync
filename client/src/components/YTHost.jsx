@@ -365,8 +365,8 @@ class YTHost extends React.Component {
           .player {
             margin-top: 10px;
             background-color: red;
-            height: 75vh;
-            width: 75vw;
+            height: 60vh;
+            width: 60vw;
             margin: 5px;
           }
           .player-window {
