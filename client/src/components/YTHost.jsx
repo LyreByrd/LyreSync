@@ -4,6 +4,7 @@ import getVideoId from 'get-video-id';
 import YTVideoQueue from './YTVideoQueue.jsx';
 import YTSearchResults from './YTSearchResults.jsx';
 import { debounce } from 'debounce';
+import { Dropdown, Icon, Menu, Input } from 'semantic-ui-react';
 
 let HOME_URL, SOCKET_PORT, FEED_URL, FEED_PORT;
 try {
@@ -323,7 +324,7 @@ class YTHost extends React.Component {
   render() {
     return (
       <React.Fragment>
-        <div>
+        <div className="player">
           <div
             className="player-window"
             ref={r => {
@@ -331,43 +332,55 @@ class YTHost extends React.Component {
             }}
           />
         </div>
-        <form onSubmit={this.addToQueue}>
-          <label htmlFor="YTLocation">
-            YouTube link, embed code, or video ID:
-          </label>
-          <br />
-          <input
-            type="text"
-            name="YTLocation"
-            value={this.state.idVal}
-            onChange={this.onIdValChange}
+        <div className="controls">
+          <form onSubmit={this.addToQueue}>
+            <div className='ui active input'>
+              <input
+                type="text"
+                name="YTLocation"
+                value={this.state.idVal}
+                placeholder="  YouTube link"
+                onChange={this.onIdValChange}
+              />
+              <button className='ui button'>Add to Queue</button>
+            </div>
+          </form>
+          <div className='ui icon buttons'>
+          <button
+            className="ui button"
+            onClick={this.handleNextClick}>
+            {/* <i className='step forward icon'></i> */}
+            Skip to Next in Queue
+          </button>
+          </div>
+          <YTVideoQueue videoQueue={this.state.videoQueue} />
+          <YTSearchResults
+            searchResults={this.state.searchResults}
+            addSearchResultToQueue={this.addSearchResultToQueue}
+            sendSearchRequest={this.sendSearchRequest}
           />
-          <button>Add to Queue</button>
-        </form>
-        <button
-          className="next-queue-btn next-queue-btn-yt"
-          onClick={this.handleNextClick}>
-          Skip to Next in Queue
-        </button>
-        <YTVideoQueue videoQueue={this.state.videoQueue} />
-        <YTSearchResults
-          searchResults={this.state.searchResults}
-          addSearchResultToQueue={this.addSearchResultToQueue}
-          sendSearchRequest={this.sendSearchRequest}
-        />
-        <button onClick={this.logPlayer}>log</button>
-        <span>
-          {' '}
-          {this.state.hasErrored
-            ? 'Error connecting to session. Attempting to refresh'
-            : 'Now Hosting'}{' '}
-        </span>
+          {/* <button onClick={this.logPlayer}>log</button> */}
+          <span>
+            {' '}
+            {this.state.hasErrored
+              ? 'Error connecting to session. Attempting to refresh'
+              : 'Now Hosting'}{' '}
+          </span>
+        </div>
         <style jsx>{`
-          .player-window {
+          .player {
             margin-top: 10px;
-            height: 720px;
-            width: 1280px;
-            background-color: red;
+            height: 60vh;
+            width: 60vw;
+            margin: 5px;
+          }
+          .player-window {
+            height: 100%;
+            width: 100%;
+          }
+
+          .controls {
+            border: 1px solid black;
           }
         `}</style>
       </React.Fragment>
