@@ -15,7 +15,9 @@ class SpotifyClientWindow extends React.Component {
   }
   render() {
     return (<div>
-      {this.state.mounted ? <SpotifyClient {...this.props} /> : 'Loading...'}
+      {this.state.mounted ? <SpotifyClient {...this.props} /> : <div class="ui active inverted dimmer">
+              <div class="ui massive text loader">Loading</div>
+            </div>}
     </div>) 
   }
 }

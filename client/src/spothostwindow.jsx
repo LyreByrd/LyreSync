@@ -15,7 +15,11 @@ class SpotifyHostWindow extends React.Component {
   }
   render() {
     return (<div>
-      {this.state.mounted ? <SpotifyHost {...this.props} /> : 'Loading...'}
+      {this.state.mounted ? 
+      <SpotifyHost {...this.props} /> : 
+      <div className="ui active inverted dimmer">
+        <div className="ui massive text loader">Loading</div>
+      </div>}
     </div>) 
   }
 }
