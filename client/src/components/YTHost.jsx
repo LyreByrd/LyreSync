@@ -323,7 +323,7 @@ class YTHost extends React.Component {
   render() {
     return (
       <React.Fragment>
-        <div>
+        <div className="player">
           <div
             className="player-window"
             ref={r => {
@@ -362,10 +362,16 @@ class YTHost extends React.Component {
           </span>
         </div>
         <style jsx>{`
-          .player-window {
+          .player {
             margin-top: 10px;
-            height: 720px;
-            width: 1280px;
+            background-color: red;
+            height: 75vh;
+            width: 75vw;
+            margin: 5px;
+          }
+          .player-window {
+            height: 100%;
+            width: 100%;
             background-color: red;
           }
 
