@@ -32,8 +32,10 @@ class YTSearchResults extends React.Component {
     });
     return (<div className='yt-search-results'>
       <form onSubmit={this.onSubmit}>
-        <input type='text' name='search' value={this.state.searchTerm} onChange={this.onTextboxChange}/>
-        <button type='input'>Search</button>
+      <div className='ui action input'>
+        <input type='text' placeholder='Search YouTube'name='search' value={this.state.searchTerm} onChange={this.onTextboxChange}/>
+        <button className='ui button' type='input'>Search</button>
+      </div>
       </form>
       {formattedResults}
     </div>)
