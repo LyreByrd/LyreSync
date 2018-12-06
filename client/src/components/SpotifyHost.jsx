@@ -10,9 +10,42 @@ import ActiveSpotifyPlaylist from './ActiveSpotifyPlaylist.jsx';
 
 
 //style
-const entryStyle ={
+const container ={
   padding: '1em',
-  margin: 'auto'
+  margin: 'auto',
+  backgroundColor: 'black',
+  color: 'white',
+};
+
+const guiStyle = {
+  backgroundColor: 'rgb(51, 51, 51)',
+  color: 'white',
+  padding: '1em',
+  marginBottom: '0.1em',
+  marginRight: '0.1em',
+  float: 'left',
+  overflow: 'hidden',
+};
+
+const actStyle = {
+  backgroundColor: 'rgb(51, 51, 51)',
+  color: 'white',
+  padding: '1em',
+  marginBottom: '0.1em',
+  overflow: 'hidden',
+};
+
+const knwnStyle = { 
+  backgroundColor: 'rgb(51, 51, 51)',
+  color: 'white',
+  padding: '1em',
+  marginBottom: 'auto',
+  width: '100%',
+  display: 'flex',
+  flexDirection: 'row',
+  flexBasis: 'auto',
+  flexFlow: 'row wrap',
+  overflow: 'hidden',
 };
 
 let HOME_URL, SOCKET_PORT, FEED_PORT, FEED_URL;
@@ -570,39 +603,40 @@ class SpotifyHost extends React.Component {
       : '';
     */
     return (
-      <div className='spotify-window spotify-window-host'
-      style={entryStyle}
-      >
-        {/* Spotify Component */}
-        <SpotifyGUI 
-          isHost={true} 
-          togglePause={this.togglePause} 
-          skipTo={this.skipTo} 
-          playerState={this.state.playerState} 
-          isMuted={this.state.isMuted}
-          currentVolume={this.state.volume}
-          toggleMute={this.toggleMute}
-          setVolume={this.setVolume}
-          currentPlayingDuration={this.state.currentPlayingDuration}
-          currentPlayingInfo={this.state.currentPlayingInfo}
-          playerTime={this.state.playerTime}
-          setTime={this.setTime}
-        />
-        {/* <button onClick={this.loadDefaultMusic}>Load Default Album</button>
-        <br />
-        <button onClick={this.loadDefaultFromClient}>Load default single track</button>
-        <button onClick={this.logPlayer}>Log Player</button> */}
-        <br />
-        <div className={'spotify-playlist-handlers'}>
+
+      <div className='spotify-window spotify-window-host' style={container}>
+        <h1>Spotify Component</h1>
+        <div style={guiStyle}>
+          <SpotifyGUI style={guiStyle}
+            isHost={true} 
+            togglePause={this.togglePause} 
+            skipTo={this.skipTo} 
+            playerState={this.state.playerState} 
+            isMuted={this.state.isMuted}
+            currentVolume={this.state.volume}
+            toggleMute={this.toggleMute}
+            setVolume={this.setVolume}
+            currentPlayingDuration={this.state.currentPlayingDuration}
+            currentPlayingInfo={this.state.currentPlayingInfo}
+            playerTime={this.state.playerTime}
+            setTime={this.setTime}
+          />
+        </div>
+        <div style={actStyle}>
           <ActiveSpotifyPlaylist 
             className='active-playlist spotify-active-playlist'
             currentPlaylist={this.state.currentPlaylist}
             playlistPosition={this.state.playlistPosition}
           />
-          <br />
+        </div>
+        {/* <button onClick={this.loadDefaultMusic}>Load Default Album</button>
+        <br />
+        <button onClick={this.loadDefaultFromClient}>Load default single track</button>
+        <button onClick={this.logPlayer}>Log Player</button> */}
+        <div className={'spotify-playlist-handlers'}>
           
           {/* <button onClick={() => {this.searchSpotify('shnabubula', ['album'])}}>Search Shnabubula albums</button> */}
-          <div>
+          <div style={knwnStyle}>
             <KnownSpotifyPlaylists
               loadCurrentUserPlaylists={this.loadCurrentUserPlaylists}
               searchSpotify={this.searchSpotify}
