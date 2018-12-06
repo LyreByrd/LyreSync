@@ -8,6 +8,46 @@ import SpotifyGUI from './SpotifyGUI.jsx';
 import KnownSpotifyPlaylists from './KnownSpotifyPlaylists.jsx';
 import ActiveSpotifyPlaylist from './ActiveSpotifyPlaylist.jsx';
 
+
+//style
+const container ={
+  padding: '1em',
+  margin: 'auto',
+  backgroundColor: 'black',
+  color: 'white',
+};
+
+const guiStyle = {
+  backgroundColor: 'rgb(51, 51, 51)',
+  color: 'white',
+  padding: '1em',
+  marginBottom: '0.1em',
+  marginRight: '0.1em',
+  float: 'left',
+  overflow: 'hidden',
+};
+
+const actStyle = {
+  backgroundColor: 'rgb(51, 51, 51)',
+  color: 'white',
+  padding: '1em',
+  marginBottom: '0.1em',
+  overflow: 'hidden',
+};
+
+const knwnStyle = { 
+  backgroundColor: 'rgb(51, 51, 51)',
+  color: 'white',
+  padding: '1em',
+  marginBottom: 'auto',
+  width: '100%',
+  display: 'flex',
+  flexDirection: 'row',
+  flexBasis: 'auto',
+  flexFlow: 'row wrap',
+  overflow: 'hidden',
+};
+
 let HOME_URL, SOCKET_PORT, FEED_PORT, FEED_URL;
 try {
   let config = require('../../../config.js');
@@ -41,13 +81,14 @@ class SpotifyHost extends React.Component {
       isMuted: false,
       currentPlayingDuration: null,
       specialMessage: null,
+      shouldTimeAutoUpdate: true,
     }
-    this.loadDefaultMusic = this.loadDefaultMusic.bind(this);
-    this.logPlayer = this.logPlayer.bind(this);
+    //this.loadDefaultMusic = this.loadDefaultMusic.bind(this);
+    //this.logPlayer = this.logPlayer.bind(this);
     this.onSpotifyReady = this.onSpotifyReady.bind(this);
-    this.loadDefaultFromClient = this.loadDefaultFromClient.bind(this);
-    this.spoofHostAction = this.spoofHostAction.bind(this);
-    this.spoofTimedSync.bind(this);
+    //this.loadDefaultFromClient = this.loadDefaultFromClient.bind(this);
+    //this.spoofHostAction = this.spoofHostAction.bind(this);
+    //this.spoofTimedSync = this.spoofTimedSync.bind(this);
     this.togglePause = this.togglePause.bind(this);
     this.skipTo = this.skipTo.bind(this);
     this.toggleMute = this.toggleMute.bind(this);
@@ -105,16 +146,16 @@ class SpotifyHost extends React.Component {
     })
     this.socket.on('hostingError', (err) => {
       //console.log('got host error');
-      console.log('host error: ', err)
+      //console.log('host error: ', err)
       this.setState({hasErrored: true}, () => {
         setTimeout(() => this.props.resetToLobby(err), 5000);
       });
     })
     this.socket.on('playerConfirm', (confirmData) => {
-      console.log(this.state, confirmData);
+      //console.log(this.state, confirmData);
     })
     this.socket.on('spotifyResponse', object => {
-      console.log('Spotify response: ', object);
+      //console.log('Spotify response: ', object);
       this.player.getCurrentState()
         .then(state => {
           if(state) {
@@ -124,6 +165,14 @@ class SpotifyHost extends React.Component {
           }
         });
     });
+
+    this.socket.on('getPlayerInit', socketId => {
+      this.player.getCurrentState()
+        .then(playerState => {
+          //console.log('heard getPlayerInit');
+          this.socket.emit('sendInitStatus', {socketId, hostState: playerState});
+        })
+    })
 
     if (!loadSpotify) {
       loadSpotify = new Promise((resolve) => {
@@ -140,11 +189,11 @@ class SpotifyHost extends React.Component {
 
   onSpotifyReady() {
     if (this.state.authToken === null || !window.Spotify) {
-      console.log('tried to ready spotify too early');
+      //console.log('tried to ready spotify too early');
       return;
     }
 
-    console.log('onSpotifyReady fired');
+    //console.log('onSpotifyReady fired');
     //console.log(Spotify);
 
     this.player = new Spotify.Player({
@@ -178,21 +227,21 @@ class SpotifyHost extends React.Component {
     // Ready
     this.player.addListener('ready', ({ device_id }) => {
       this.setState({playerId: device_id}, () => {
-        console.log('player id state set');
+        //console.log('player id state set');
         if (this.socket) {
-          console.log('informing server of player info');
+          //console.log('informing server of player info');
           this.setState({playerReady: true}, () => {
             this.startTimer();
           });
           this.socket.emit('spotifyPlayerDetails', {playerId: this.state.playerId, playerAuthToken: this.state.authToken});
         }
       });
-      console.log('Ready with Device ID', device_id);
+      //console.log('Ready with Device ID', device_id);
     });
   
     // Not Ready
     this.player.addListener('not_ready', ({ device_id }) => {
-      console.log('Device ID has gone offline', device_id);
+      //console.log('Device ID has gone offline', device_id);
     });
   
     // Connect to the player!
@@ -211,44 +260,44 @@ class SpotifyHost extends React.Component {
     }
   }
 
-  loadDefaultMusic() {
-    console.log('checking player status');
-    let soundshockDefault = {
-      href: 'https://api.spotify.com/v1/albums/6jg4LbYcSeB9r6bj2p1CKf',
-      uri: 'spotify:album:6jg4LbYcSeB9r6bj2p1CKf',
-    }
-    let doteDefault = {
-      uri: 'spotify:album:5frKFvB263lUvjSrrJ1sQ8'
-    }
-    if(this.state.playerReady) {
-      console.log('attempting to get music');
-      this.loadPlaylistFromKnown(soundshockDefault);
-    }
-  }
+  //loadDefaultMusic() {
+  //  console.log('checking player status');
+  //  let soundshockDefault = {
+  //    href: 'https://api.spotify.com/v1/albums/6jg4LbYcSeB9r6bj2p1CKf',
+  //    uri: 'spotify:album:6jg4LbYcSeB9r6bj2p1CKf',
+  //  }
+  //  let doteDefault = {
+  //    uri: 'spotify:album:5frKFvB263lUvjSrrJ1sQ8'
+  //  }
+  //  if(this.state.playerReady) {
+  //    console.log('attempting to get music');
+  //    this.loadPlaylistFromKnown(soundshockDefault);
+  //  }
+  //}
   
-  loadDefaultFromClient() {
-    //spotify:album:6jg4LbYcSeB9r6bj2p1CKf
-    let soundshockDefault = {
-      href: 'https://api.spotify.com/v1/albums/6jg4LbYcSeB9r6bj2p1CKf',
-      uri: 'spotify:album:6jg4LbYcSeB9r6bj2p1CKf',
-      type: 'album'
-    }
-    let trackDefault = {
-      uri: 'spotify:track:0qEuvRbJzqFrqURfD2zfxj',
-      href: 'https://api.spotify.com/v1/tracks/0qEuvRbJzqFrqURfD2zfxj',
-      type: 'track',
-    }
-    if(this.state.playerReady) {
-      this.loadPlaylistFromKnown(trackDefault);
-    }
+  //loadDefaultFromClient() {
+  //  //spotify:album:6jg4LbYcSeB9r6bj2p1CKf
+  //  let soundshockDefault = {
+  //    href: 'https://api.spotify.com/v1/albums/6jg4LbYcSeB9r6bj2p1CKf',
+  //    uri: 'spotify:album:6jg4LbYcSeB9r6bj2p1CKf',
+  //    type: 'album'
+  //  }
+  //  let trackDefault = {
+  //    uri: 'spotify:track:0qEuvRbJzqFrqURfD2zfxj',
+  //    href: 'https://api.spotify.com/v1/tracks/0qEuvRbJzqFrqURfD2zfxj',
+  //    type: 'track',
+  //  }
+  //  if(this.state.playerReady) {
+  //    this.loadPlaylistFromKnown(trackDefault);
+  //  }
+  //}
 
-  }
+  //logPlayer() {
+  //  console.log(this.player)
+  //  window.player = this.player;
+  //}
 
-  logPlayer() {
-    console.log(this.player)
-    window.player = this.player;
-  }
-
+  /*
   spoofHostAction(track, time) {
     let spoofTracks = {
       wreckingBad: 'spotify:track:4wGCusPRszIZYxbwtgISjD',
@@ -287,9 +336,10 @@ class SpotifyHost extends React.Component {
       }, i * 1000);
     }
   }
+  */
 
   togglePause() {
-    console.log('Should pause/resume');
+    //console.log('Should pause/resume');
     if(this.state.playerReady && this.state.playerState !== 'inactive') {
       this.player.togglePlay()
         .then(() => {
@@ -341,7 +391,7 @@ class SpotifyHost extends React.Component {
   }
 
   sendVolumeRequest() {
-    console.log('send volume request');
+    //console.log('send volume request');
     if(this.state.playerReady && this.state.isMuted === false) {
       this.player.setVolume(this.state.volume/100);
     }
@@ -352,7 +402,7 @@ class SpotifyHost extends React.Component {
     let edited = false;
     let neededUpdates = {};
     if (playerState) {
-      console.log('playerState is not null');
+      //console.log('playerState is not null');
       if (this.state.currentPlayingInfo.uri !== playerState.track_window.current_track.uri) {
         neededUpdates.currentPlayingDuration = playerState.duration;
         neededUpdates.currentPlayingInfo = playerState.track_window.current_track;
@@ -361,6 +411,7 @@ class SpotifyHost extends React.Component {
       }
       if (Math.abs(this.state.playerTime - playerState.position) > 1000) {
         neededUpdates.playerTime = playerState.position;
+        neededUpdates.shouldTimeAutoUpdate = false;
         edited = true;
       }
       if (playerState.paused && this.state.playerState !== 'paused') {
@@ -383,7 +434,7 @@ class SpotifyHost extends React.Component {
       }
     }
     if(edited) {
-      console.log('New information: ', neededUpdates)
+      //console.log('New information: ', neededUpdates)
       if (neededUpdates.currentPlayingInfo) {
         let spotifyFeedData = {
           room: this.props.hostingName,
@@ -391,7 +442,7 @@ class SpotifyHost extends React.Component {
           artist: neededUpdates.currentPlayingInfo.artists[0].name,
           albumArt: neededUpdates.currentPlayingInfo.album.images[0].url,
         }
-        console.log('spotifyFeedData :', spotifyFeedData);
+        //console.log('spotifyFeedData :', spotifyFeedData);
         this.feedSocket.emit('spotify data', spotifyFeedData)
       }
       this.setState(neededUpdates);
@@ -401,13 +452,17 @@ class SpotifyHost extends React.Component {
   startTimer() {
     this.timerInterval = setInterval(() => {
       if(this.state.playerState === 'playing') {
+        if(this.state.shouldTimeAutoUpdate) {
         this.setState({playerTime: this.state.playerTime + 250})
+        } else {
+        this.setState({shouldTimeAutoUpdate: true});
+        }
       }
     }, 250);
   }
 
   setTime(newTime) {
-    console.log('plan to set time to ' + newTime + 's');
+    //console.log('plan to set time to ' + newTime + 's');
     if (0 <= newTime && newTime * 1000 <= this.state.currentPlayingDuration) {
       this.player.seek(newTime * 1000);
     }
@@ -415,14 +470,14 @@ class SpotifyHost extends React.Component {
 
   loadKnownTracks(uri, type) {
     let body;
-    console.log('loadKnownTracks');
+    //console.log('loadKnownTracks');
     if (type === 'track') {
       body = JSON.stringify({uris: [uri]});
     } else {
       body = JSON.stringify({context_uri: uri});
     }
-    console.log('sending axios call from client');
-    console.log(body)
+    //console.log('sending axios call from client');
+    //console.log(body)
     axios.put(`https://api.spotify.com/v1/me/player/play?device_id=${this.state.playerId}`,
       body,
       {headers: {
@@ -431,11 +486,11 @@ class SpotifyHost extends React.Component {
       }}
     )
     .then(response => {
-      console.log(response.data);
+      //console.log(response.data);
     })
     .catch(error => {
       //console.log('||||||||||||||||||||||||||||||||||||||||||||||||||||||||\nERROR:\n', error.response)
-      console.log('spotifyResponse', error.response);
+      //console.log('spotifyResponse', error.response);
     })
   }
 
@@ -451,7 +506,7 @@ class SpotifyHost extends React.Component {
 
   loadPlaylistFromKnown(playlist) {
 
-    console.log(playlist.href)
+    //console.log(playlist.href)
     axios.get(playlist.href,
       {headers: {
         'Content-Type': 'application.json',
@@ -459,7 +514,7 @@ class SpotifyHost extends React.Component {
       }
     })
     .then(response => {
-      console.log('Got playlist: ', response.data);
+      //console.log('Got playlist: ', response.data);
       this.setState({currentPlaylist: response.data, playlistPosition: 0}, () => {
         this.loadKnownTracks(playlist.uri, playlist.type);
       })
@@ -481,7 +536,7 @@ class SpotifyHost extends React.Component {
       return undefined;
     }
     try {
-      console.log('finding position');
+      //console.log('finding position');
       let position = this.state.playlistPosition;
       let tracklist = this.state.currentPlaylist.tracks.items;
       if(trackId === itemToTrackId(tracklist[position])) {
@@ -514,11 +569,12 @@ class SpotifyHost extends React.Component {
       }
     })
     .then(response => {
-      console.log('Search results: ', response.data);
+      //console.log('Search results: ', response.data);
       let data = response.data;
       let results = [];
       domains.forEach(domain => {
         let pluralized = domain + 's';
+        //console.log(pluralized);
         if(data[pluralized]) {
           results = results.concat(data[pluralized].items);
         }
@@ -526,11 +582,12 @@ class SpotifyHost extends React.Component {
       this.setState({hostPlaylists: results});
     })
     .catch(response => {
-      console.log('Search failed');
+      //console.log('Search failed');
     })
   }
 
   render () {
+    /* 
     let spoofButtons = this.props.env === 'dev' ?
       (<div>
         Spoof Buttons:
@@ -544,46 +601,52 @@ class SpotifyHost extends React.Component {
         <button onClick={() => this.spoofTimedSync('cygnus', 30)}>Check long-term sync</button>
       </div>)
       : '';
+    */
     return (
-      <div className='spotify-window spotify-window-host'>
-        Spotify Component
-        <SpotifyGUI 
-          isHost={true} 
-          togglePause={this.togglePause} 
-          skipTo={this.skipTo} 
-          playerState={this.state.playerState} 
-          isMuted={this.state.isMuted}
-          currentVolume={this.state.volume}
-          toggleMute={this.toggleMute}
-          setVolume={this.setVolume}
-          currentPlayingDuration={this.state.currentPlayingDuration}
-          currentPlayingInfo={this.state.currentPlayingInfo}
-          playerTime={this.state.playerTime}
-          setTime={this.setTime}
-        />
-        <button onClick={this.loadDefaultMusic}>Load Default Album</button>
-        <br />
-        <button onClick={this.loadDefaultFromClient}>Load default single track</button>
-        <button onClick={this.logPlayer}>Log Player</button>
-        <br />
-        <div className={'spotify-playlist-handlers'}>
+
+      <div className='spotify-window spotify-window-host' style={container}>
+        <h1>Spotify Component</h1>
+        <div style={guiStyle}>
+          <SpotifyGUI style={guiStyle}
+            isHost={true} 
+            togglePause={this.togglePause} 
+            skipTo={this.skipTo} 
+            playerState={this.state.playerState} 
+            isMuted={this.state.isMuted}
+            currentVolume={this.state.volume}
+            toggleMute={this.toggleMute}
+            setVolume={this.setVolume}
+            currentPlayingDuration={this.state.currentPlayingDuration}
+            currentPlayingInfo={this.state.currentPlayingInfo}
+            playerTime={this.state.playerTime}
+            setTime={this.setTime}
+          />
+        </div>
+        <div style={actStyle}>
           <ActiveSpotifyPlaylist 
             className='active-playlist spotify-active-playlist'
             currentPlaylist={this.state.currentPlaylist}
             playlistPosition={this.state.playlistPosition}
           />
-          <br />
+        </div>
+        {/* <button onClick={this.loadDefaultMusic}>Load Default Album</button>
+        <br />
+        <button onClick={this.loadDefaultFromClient}>Load default single track</button>
+        <button onClick={this.logPlayer}>Log Player</button> */}
+        <div className={'spotify-playlist-handlers'}>
           
           {/* <button onClick={() => {this.searchSpotify('shnabubula', ['album'])}}>Search Shnabubula albums</button> */}
-          <KnownSpotifyPlaylists 
-            loadCurrentUserPlaylists={this.loadCurrentUserPlaylists}
-            searchSpotify={this.searchSpotify}
-            className='spotify-known-playlists known-playlists'
-            hostPlaylists={this.state.hostPlaylists} 
-            loadPlaylistFromKnown={this.loadPlaylistFromKnown}
-          />
+          <div style={knwnStyle}>
+            <KnownSpotifyPlaylists
+              loadCurrentUserPlaylists={this.loadCurrentUserPlaylists}
+              searchSpotify={this.searchSpotify}
+              className='spotify-known-playlists known-playlists'
+              hostPlaylists={this.state.hostPlaylists} 
+              loadPlaylistFromKnown={this.loadPlaylistFromKnown}
+            />
+          </div>
         </div>
-        {spoofButtons}
+        {/*spoofButtons*/}
       </div>
     )
   }

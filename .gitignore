@@ -4,3 +4,4 @@ client/dist/*-bundle.js
 *.env 
 config.js
 samples/
+package-lock.json
