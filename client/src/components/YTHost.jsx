@@ -331,43 +331,46 @@ class YTHost extends React.Component {
             }}
           />
         </div>
-        <form onSubmit={this.addToQueue}>
-          <label htmlFor="YTLocation">
-            YouTube link, embed code, or video ID:
-          </label>
-          <br />
-          <input
-            type="text"
-            name="YTLocation"
-            value={this.state.idVal}
-            onChange={this.onIdValChange}
+        <div className="controls">
+          <form onSubmit={this.addToQueue}>
+            <input
+              type="text"
+              name="YTLocation"
+              value={this.state.idVal}
+              placeholder="  YouTube link, embed code, or video ID:"
+              onChange={this.onIdValChange}
+            />
+            <button>Add to Queue</button>
+          </form>
+          <button
+            className="next-queue-btn next-queue-btn-yt"
+            onClick={this.handleNextClick}>
+            Skip to Next in Queue
+          </button>
+          <YTVideoQueue videoQueue={this.state.videoQueue} />
+          <YTSearchResults
+            searchResults={this.state.searchResults}
+            addSearchResultToQueue={this.addSearchResultToQueue}
+            sendSearchRequest={this.sendSearchRequest}
           />
-          <button>Add to Queue</button>
-        </form>
-        <button
-          className="next-queue-btn next-queue-btn-yt"
-          onClick={this.handleNextClick}>
-          Skip to Next in Queue
-        </button>
-        <YTVideoQueue videoQueue={this.state.videoQueue} />
-        <YTSearchResults
-          searchResults={this.state.searchResults}
-          addSearchResultToQueue={this.addSearchResultToQueue}
-          sendSearchRequest={this.sendSearchRequest}
-        />
-        <button onClick={this.logPlayer}>log</button>
-        <span>
-          {' '}
-          {this.state.hasErrored
-            ? 'Error connecting to session. Attempting to refresh'
-            : 'Now Hosting'}{' '}
-        </span>
+          <button onClick={this.logPlayer}>log</button>
+          <span>
+            {' '}
+            {this.state.hasErrored
+              ? 'Error connecting to session. Attempting to refresh'
+              : 'Now Hosting'}{' '}
+          </span>
+        </div>
         <style jsx>{`
           .player-window {
             margin-top: 10px;
             height: 720px;
             width: 1280px;
             background-color: red;
+          }
+
+          .controls {
+            border: 1px solid black;
           }
         `}</style>
       </React.Fragment>
