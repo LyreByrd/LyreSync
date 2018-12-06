@@ -359,7 +359,7 @@ class YTHost extends React.Component {
             addSearchResultToQueue={this.addSearchResultToQueue}
             sendSearchRequest={this.sendSearchRequest}
           />
-          <button onClick={this.logPlayer}>log</button>
+          {/* <button onClick={this.logPlayer}>log</button> */}
           <span>
             {' '}
             {this.state.hasErrored

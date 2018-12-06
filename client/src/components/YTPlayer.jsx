@@ -194,7 +194,7 @@ class YTPlayer extends React.Component {
         <input type='range' name='volume' min='0' max='100' defaultValue='100' onChange={this.setVolume}/>
         <span>  {this.state.volume}/100</span> */}
         <br />
-        <button onClick={this.loadVideo}>Re-Sync To Host</button>
+        <button className='ui button' onClick={this.loadVideo}>Re-Sync To Host</button>
         {this.state.hasErrored ? 'No such session. Returning to lobby...' : ''}
       </div>
     );
