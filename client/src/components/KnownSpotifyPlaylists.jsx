@@ -8,9 +8,9 @@ const entryStyle ={
   flexBasis: 'auto',
   justifyContent: 'space-around',
   alignItems: 'left',
-  'flex-wrap': 'wrap',
-  'margin-top': '2em',
-  'max-width': '40%'
+  'flexWrap': 'wrap',
+  'marginTop': '2em',
+  'maxWidth': '40%'
 };
 
 const titleStyle = {
@@ -23,7 +23,7 @@ const KnownSpotifyPlaylists = (props) => {
     playlists = props.hostPlaylists.map(entry => {
       if (entry.album_type) {
           return (
-            <div className='known-playlist spotify-known-playlist' style={entryStyle} key={entry.id}>
+            <div className='known-playlist spotify-known-playlist' key={entry.id}>
             <div>
               <span className='known-playlist-name' style={titleStyle}>
               {entry.album_type ===  "album" ? 'Album' : 'Single'} : {entry.name}
@@ -42,7 +42,7 @@ const KnownSpotifyPlaylists = (props) => {
           )
       } else {
         return (
-          <div className='known-playlist spotify-known-playlist' style={entryStyle} key={entry.id}>
+          <div className='known-playlist spotify-known-playlist' key={entry.id}>
           <div>
             <span className='known-playlist-name'>{entry.name}</span>
           </div>
@@ -61,7 +61,7 @@ const KnownSpotifyPlaylists = (props) => {
     <button onClick={props.loadCurrentUserPlaylists}>Load Your Playlists</button>
     <GenericTextInputForm className={'spotify-search-form'}
       onSubmit={ (term) => {props.searchSpotify(term, ['album'])} }
-      buttonText={'Search for an album'}
+      // buttonText={'Search for an album'}
     />
     {playlists}
     </div>
