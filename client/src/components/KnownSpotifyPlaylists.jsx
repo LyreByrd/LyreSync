@@ -1,5 +1,6 @@
 import React from 'react';
 import GenericTextInputForm from './GenericTextInputForm.jsx';
+import { Dropdown, Icon, Menu, Input } from 'semantic-ui-react';
 
 const entryStyle ={
   display: 'flex',
@@ -13,7 +14,7 @@ const entryStyle ={
 };
 
 const titleStyle = {
-  'font-weight': 'bold'
+  'fontWeight': 'bold'
 }
 
 const KnownSpotifyPlaylists = (props) => {

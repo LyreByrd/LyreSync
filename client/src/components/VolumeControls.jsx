@@ -1,10 +1,17 @@
 import React from 'react';
 
+
 const VolumeControls = (props) => {
   return ( <div className='volume-control'>
+  {/* <div className="ui icon buttons">
     <button 
       onClick={props.toggleMute} 
-      className={'mute-unmute-btn ' + (props.isMuted ? 'unmute-btn' : 'mute-btn')}>{props.isMuted ? 'Unmute' : 'Mute'}</button>
+      className="ui toggle button">
+      <i className={props.isMuted ? 'volume off icon' : 'volume up icon'}></i>
+      {props.isMuted ? 'Unmute' : 'Mute'}
+    </button>
+  </div> */}
+  <div>
     <input 
       className='volume-slider'
       type='range' 
@@ -15,6 +22,7 @@ const VolumeControls = (props) => {
       onChange={props.setVolume}
     />
     <span className={'volume-display'}>  <span className={'volume-dsplay-current'}>{props.currentVolume}</span>/100</span>
+  </div>
   </div>)
 }
 
