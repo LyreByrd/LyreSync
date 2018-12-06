@@ -1,6 +1,5 @@
 import React from 'react';
 import GenericTextInputForm from './GenericTextInputForm.jsx';
-import { Dropdown, Icon, Menu, Input } from 'semantic-ui-react';
 
 const entryStyle ={
   display: 'flex',
@@ -34,7 +33,7 @@ const KnownSpotifyPlaylists = (props) => {
             </div>
               <img height={130} width={125} src={entry.images[0].url}/>
               <div>
-                <button className='load-playlist-btn' onClick={() => props.loadPlaylistFromKnown(entry)}>
+                <button className='ui button' onClick={() => props.loadPlaylistFromKnown(entry)}>
                   Load
                 </button>
               </div>
@@ -48,7 +47,7 @@ const KnownSpotifyPlaylists = (props) => {
           </div>
             <img height={130} width={125} src={entry.images[0].url}/>
             <div>
-              <button className='load-playlist-btn' onClick={() => props.loadPlaylistFromKnown(entry)}>
+              <button className='ui button' onClick={() => props.loadPlaylistFromKnown(entry)}>
                 Load
               </button>
             </div>
@@ -58,11 +57,15 @@ const KnownSpotifyPlaylists = (props) => {
     })
   }
   return <div className='known-playlists spotify-known-playlists'>
-    <button onClick={props.loadCurrentUserPlaylists}>Load Your Playlists</button>
+  <div>
     <GenericTextInputForm className={'spotify-search-form'}
       onSubmit={ (term) => {props.searchSpotify(term, ['album'])} }
       // buttonText={'Search for an album'}
     />
+  </div>
+  <div>
+    <button className='ui button' onClick={props.loadCurrentUserPlaylists}>Load Your Playlists</button>
+  </div>
     {playlists}
     </div>
 }

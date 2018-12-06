@@ -334,20 +334,25 @@ class YTHost extends React.Component {
         </div>
         <div className="controls">
           <form onSubmit={this.addToQueue}>
-            <input
-              type="text"
-              name="YTLocation"
-              value={this.state.idVal}
-              placeholder="  YouTube link, embed code, or video ID:"
-              onChange={this.onIdValChange}
-            />
-            <button>Add to Queue</button>
+            <div className='ui active input'>
+              <input
+                type="text"
+                name="YTLocation"
+                value={this.state.idVal}
+                placeholder="  YouTube link"
+                onChange={this.onIdValChange}
+              />
+              <button className='ui button'>Add to Queue</button>
+            </div>
           </form>
+          <div className='ui icon buttons'>
           <button
-            className="next-queue-btn next-queue-btn-yt"
+            className="ui button"
             onClick={this.handleNextClick}>
+            {/* <i className='step forward icon'></i> */}
             Skip to Next in Queue
           </button>
+          </div>
           <YTVideoQueue videoQueue={this.state.videoQueue} />
           <YTSearchResults
             searchResults={this.state.searchResults}
