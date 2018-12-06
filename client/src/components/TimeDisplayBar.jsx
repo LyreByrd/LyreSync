@@ -14,15 +14,15 @@ class TimeDisplayBar extends React.Component {
   }
   
   timeFromClick(e) {
-    console.log('X of click: ', e.clientX); //might this be the actual thing? 
+    //console.log('X of click: ', e.clientX); //might this be the actual thing? 
     //element.clientWidth maybe...
     let leftEdge = e.target.getBoundingClientRect().left;
-    console.log('left position maybe: ', leftEdge)
-    console.log('offsetWidth: ', e.target.offsetWidth);
-    console.log('clientWidth: ', e.target.clientWidth);
+    //console.log('left position maybe: ', leftEdge)
+    //console.log('offsetWidth: ', e.target.offsetWidth);
+    //console.log('clientWidth: ', e.target.clientWidth);
     let clickPercent = (e.clientX - leftEdge) / e.target.clientWidth;
-    console.log('Percentage in: ', clickPercent)
-    console.log('Possible desired time: ', clickPercent * this.props.currentPlayingDuration);
+    //console.log('Percentage in: ', clickPercent)
+    //console.log('Possible desired time: ', clickPercent * this.props.currentPlayingDuration);
     let targetTime = clickPercent * this.props.currentPlayingDuration / 1000;
     this.props.setTime(targetTime);
   }

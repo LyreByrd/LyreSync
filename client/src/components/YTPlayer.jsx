@@ -22,9 +22,9 @@ class YTPlayer extends React.Component {
       volume: 100,
       isMuted: false,
     }
-    this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
+//  this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
     this.loadVideo = this.loadVideo.bind(this);
-    this.logPlayer = this.logPlayer.bind(this);
+//  this.logPlayer = this.logPlayer.bind(this);
     this.onPlayerReady = this.onPlayerReady.bind(this);
     this.toggleMute = this.toggleMute.bind(this);
     this.setVolume = this.setVolume.bind(this);
@@ -50,7 +50,7 @@ class YTPlayer extends React.Component {
         },
         events: {
           onReady: this.onPlayerReady,
-          onStateChange: this.onPlayerStateChange
+//          onStateChange: this.onPlayerStateChange
         }
       })
     })
@@ -63,6 +63,7 @@ class YTPlayer extends React.Component {
       this.socket.emit('getClientActions', {host: this.props.sessionHost, service: 'youtube'});
     })
     this.socket.on('initState', ({status, socketId}) => {
+      //console.log('got sync data');
       if(status.state === 1) {
         this.player.loadVideoById(status.videoId, status.time);
       } else {
@@ -129,23 +130,23 @@ class YTPlayer extends React.Component {
     }
   }
 
-  onPlayerStateChange(e) {
-    if (typeof this.props.onStateChange === 'function') {
-      this.props.onStateChange(e)
-    }
-  }
-
+//  onPlayerStateChange(e) {
+//    if (typeof this.props.onStateChange === 'function') {
+//      this.props.onStateChange(e)
+//    }
+//  }
+//
   loadVideo() {
     if(this.socket) {
-      this.socket.emit('getClientStart', this.props.sessionHost);
+      this.socket.emit('getInitState', this.props.sessionHost);
     }
     //this.player.loadVideoById('QLOpdWMbebI')
   }
 
-  logPlayer() {
-    //console.log(this.player)
-    //window.player = this.player;
-  }
+  //logPlayer() {
+  //  console.log(this.player)
+  //  window.player = this.player;
+  //}
 
   toggleMute() {
     this.setState({isMuted: !this.state.isMuted},
