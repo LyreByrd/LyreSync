@@ -96,6 +96,7 @@ app.get('/duplex', (req, res) => {
 })
 
 app.get('/api/player/host/:service', (req, res) => {
+  console.log('connection to lyrsync!');
   const hostFilenames = {
     'youtube': 'ythostwindow-bundle.js',
     'spotify': 'spothostwindow-bundle.js',
