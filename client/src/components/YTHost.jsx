@@ -364,7 +364,6 @@ class YTHost extends React.Component {
         <style jsx>{`
           .player {
             margin-top: 10px;
-            background-color: red;
             height: 60vh;
             width: 60vw;
             margin: 5px;
@@ -372,11 +371,21 @@ class YTHost extends React.Component {
           .player-window {
             height: 100%;
             width: 100%;
-            background-color: red;
           }
 
           .controls {
             border: 1px solid black;
+          }
+
+          input {
+            border: 1px solid #dfdcd4;
+            background-color: #dfdcd4;
+            font-size: 14px;
+            border-radius: 5px;
+            padding: 1rem;
+            width: 200px;
+            transition: all 300ms ease;
+            position: relative;
           }
         `}</style>
       </React.Fragment>
